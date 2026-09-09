@@ -38,7 +38,6 @@ vi.mock("@/components/MemoReactionListView", () => ({
 vi.mock("@/components/MemoView/hooks", () => ({
   useMemoHandlers: () => ({
     handleMemoContentClick: vi.fn(),
-    handleMemoContentDoubleClick: vi.fn(),
   }),
 }));
 

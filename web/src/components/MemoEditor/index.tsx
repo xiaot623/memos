@@ -1,5 +1,7 @@
+import { Maximize2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { useLocalStorage } from "@/hooks";
@@ -8,8 +10,8 @@ import { cn } from "@/lib/utils";
 import { InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { convertVisibilityFromString } from "@/utils/memo";
-import { AudioRecorderPanel, EditorContent, EditorMetadata, FocusModeOverlay, TimestampPopover } from "./components";
-import { FOCUS_MODE_STYLES, FORMATTING_TOOLBAR_STORAGE_KEY } from "./constants";
+import { AudioRecorderPanel, EditorContent, EditorMetadata, FocusModeOverlay, PeekEditorDialog, TimestampPopover } from "./components";
+import { FOCUS_MODE_STYLES, FORMATTING_TOOLBAR_STORAGE_KEY, PEEK_MODE_STYLES } from "./constants";
 import { useAudioRecorder, useAutoSave, useFocusMode, useMemoInit, useMemoSave } from "./hooks";
 import { errorService, transcriptionService } from "./services";
 import { EditorProvider, useEditorContext, useEditorSelector } from "./state";
@@ -30,10 +32,12 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   memo,
   parentMemoName,
   autoFocus,
+  presentation = "inline",
   placeholder,
   defaultCreateTime,
   onConfirm,
   onCancel,
+  onSavingChange,
 }) => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
@@ -53,6 +57,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const [isFormattingToolbarVisible, setFormattingToolbarVisible] = useLocalStorage(FORMATTING_TOOLBAR_STORAGE_KEY, false);
 
   const memoName = memo?.name;
+  const isPeek = presentation === "peek";
   const canTranscribe = useMemo(() => {
     const providerId = aiSetting.transcription?.providerId ?? "";
     if (!providerId) return false;
@@ -77,7 +82,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   // Auto-save content to localStorage (subscribes to the store internally).
   const { discardDraft } = useAutoSave(currentUser?.name ?? "", cacheKey, isInitialized && isDraftCacheEnabled);
 
-  const { containerRef: editorContainerRef, placeholderHeight } = useFocusMode(isFocusMode);
+  const { containerRef: editorContainerRef, placeholderHeight } = useFocusMode(isFocusMode && !isPeek);
 
   // Live-sync the draft's createTime/updateTime to the calendar-derived prop.
   // Only applies in create mode; edit mode owns its own timestamps. Runs after
@@ -219,7 +224,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     }
   };
 
-  const handleSave = useMemoSave({
+  const saveMemo = useMemoSave({
     memoName,
     parentMemoName,
     defaultVisibility,
@@ -227,72 +232,101 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     discardDraft,
     onConfirm,
     onCancel,
+    onSavingChange,
   });
+  const handleSave = useCallback(() => saveMemo(isPeek ? { closeImmediately: true } : undefined), [isPeek, saveMemo]);
+  const handleDismiss = useCallback(() => {
+    void saveMemo({ closeIfUnchanged: true, closeImmediately: true });
+  }, [saveMemo]);
+
+  const showTimestamp = Boolean(memoName || (!memo && hasTimestamp));
+  const showPeekMaximize = isPeek && !isFocusMode;
+
+  const editorCard = (
+    <div
+      ref={editorContainerRef}
+      className={cn(
+        "group relative w-full flex flex-col justify-between items-start bg-card px-4 pt-3 pb-1 rounded-lg border border-border gap-2",
+        FOCUS_MODE_STYLES.transition,
+        isPeek && !isFocusMode && PEEK_MODE_STYLES.container,
+        isPeek && isFocusMode && PEEK_MODE_STYLES.focusContainer,
+        !isPeek && isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
+        !isPeek && !isFocusMode && className,
+      )}
+    >
+      {/* Formatting toolbar. Always shown in focus mode (with an exit button);
+          in normal mode it appears only when the user toggled it on via the
+          insert menu. */}
+      {(isFocusMode || isFormattingToolbarVisible) && (
+        <FormattingToolbar controllerRef={editorRef} onExit={isFocusMode ? handleToggleFocusMode : undefined} />
+      )}
+
+      {(showTimestamp || showPeekMaximize) && (
+        <div className="w-full -mb-1 flex items-start justify-between gap-2">
+          {showTimestamp ? <TimestampPopover /> : <span />}
+          {showPeekMaximize && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0 opacity-60 hover:opacity-100"
+              onClick={handleToggleFocusMode}
+              title={t("editor.focus-mode")}
+              aria-label={t("editor.focus-mode")}
+            >
+              <Maximize2Icon className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Editor content grows to fill available space in focus mode */}
+      <EditorContent ref={editorRef} placeholder={placeholder} onSubmit={handleSave} />
+
+      {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
+        <AudioRecorderPanel
+          audioRecorder={{ status: audioRecorder.status, elapsedSeconds: audioRecorder.elapsedSeconds }}
+          mediaStream={audioRecorder.recordingStream}
+          onStop={audioRecorder.stopRecording}
+          onCancel={handleCancelAudioRecording}
+          onTranscribe={handleTranscribeAudioRecording}
+          canTranscribe={canTranscribe}
+          isTranscribing={isTranscribingAudio}
+        />
+      )}
+
+      {/* Metadata and toolbar grouped together at bottom */}
+      <div className="w-full flex flex-col gap-2">
+        <EditorMetadata memoName={memoName} />
+        <EditorToolbar
+          onSave={handleSave}
+          onCancel={onCancel}
+          memoName={memoName}
+          onAudioRecorderClick={handleAudioRecorderClick}
+          isFormattingToolbarVisible={isFormattingToolbarVisible}
+          onToggleFormattingToolbar={handleToggleFormattingToolbar}
+        />
+      </div>
+    </div>
+  );
+
+  if (isPeek) {
+    return (
+      <PeekEditorDialog isFocusMode={isFocusMode} title={t("common.edit")} onDismiss={handleDismiss}>
+        {editorCard}
+      </PeekEditorDialog>
+    );
+  }
 
   return (
     <>
       <FocusModeOverlay isActive={isFocusMode} onToggle={handleToggleFocusMode} />
 
-      {/*
-        Layout structure:
-        - Uses justify-between to push content to top and bottom
-        - In focus mode: becomes fixed with specific spacing, editor grows to fill space
-        - In normal mode: stays relative with max-height constraint
-      */}
       {isFocusMode && placeholderHeight > 0 && (
         <div aria-hidden className={cn("w-full", className)} style={{ height: placeholderHeight }} />
       )}
 
-      <div
-        ref={editorContainerRef}
-        className={cn(
-          "group relative w-full flex flex-col justify-between items-start bg-card px-4 pt-3 pb-1 rounded-lg border border-border gap-2",
-          FOCUS_MODE_STYLES.transition,
-          isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
-          !isFocusMode && className,
-        )}
-      >
-        {/* Formatting toolbar. Always shown in focus mode (with an exit button);
-            in normal mode it appears only when the user toggled it on via the
-            insert menu. */}
-        {(isFocusMode || isFormattingToolbarVisible) && (
-          <FormattingToolbar controllerRef={editorRef} onExit={isFocusMode ? handleToggleFocusMode : undefined} />
-        )}
-
-        {(memoName || (!memo && hasTimestamp)) && (
-          <div className="w-full -mb-1">
-            <TimestampPopover />
-          </div>
-        )}
-
-        {/* Editor content grows to fill available space in focus mode */}
-        <EditorContent ref={editorRef} placeholder={placeholder} onSubmit={handleSave} />
-
-        {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
-          <AudioRecorderPanel
-            audioRecorder={{ status: audioRecorder.status, elapsedSeconds: audioRecorder.elapsedSeconds }}
-            mediaStream={audioRecorder.recordingStream}
-            onStop={audioRecorder.stopRecording}
-            onCancel={handleCancelAudioRecording}
-            onTranscribe={handleTranscribeAudioRecording}
-            canTranscribe={canTranscribe}
-            isTranscribing={isTranscribingAudio}
-          />
-        )}
-
-        {/* Metadata and toolbar grouped together at bottom */}
-        <div className="w-full flex flex-col gap-2">
-          <EditorMetadata memoName={memoName} />
-          <EditorToolbar
-            onSave={handleSave}
-            onCancel={onCancel}
-            memoName={memoName}
-            onAudioRecorderClick={handleAudioRecorderClick}
-            isFormattingToolbarVisible={isFormattingToolbarVisible}
-            onToggleFormattingToolbar={handleToggleFormattingToolbar}
-          />
-        </div>
-      </div>
+      {editorCard}
     </>
   );
 };

@@ -78,7 +78,13 @@ const VisualTile = ({
   children,
 }: PropsWithChildren<{ className?: string; onPreview?: () => void; overlayLabel?: string }>) => {
   return (
-    <div className={cn(VISUAL_TILE_BUTTON_CLASS, className)} onClick={onPreview}>
+    <div
+      className={cn(VISUAL_TILE_BUTTON_CLASS, className)}
+      onClick={(event) => {
+        event.stopPropagation();
+        onPreview?.();
+      }}
+    >
       <div className={MEDIA_HOVER_SURFACE_CLASS}>
         {children}
         <div className={MEDIA_HOVER_GRADIENT_CLASS} aria-hidden />

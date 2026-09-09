@@ -10,6 +10,11 @@ export interface MemoEditorProps {
   parentMemoName?: string;
   autoFocus?: boolean;
   /**
+   * How the editor presents itself.
+   * `peek` is the Keep-style overlay for editing an existing memo from a list card.
+   */
+  presentation?: "inline" | "peek";
+  /**
    * Default `createTime` for a *new* memo (create mode only). When set, the
    * editor seeds both `createTime` and `updateTime` to this value and renders
    * the timestamp popover so the user can adjust before saving. Tracked live:
@@ -19,6 +24,8 @@ export interface MemoEditorProps {
   defaultCreateTime?: Date;
   onConfirm?: (memoName: string) => void;
   onCancel?: () => void;
+  /** Reports save activity so a list card can keep a spinner after the peek overlay closes. */
+  onSavingChange?: (isSaving: boolean) => void;
 }
 
 export interface EditorContentProps {

@@ -13,6 +13,7 @@ import { isSuperUser } from "@/utils/user";
 import { MemoBody, MemoCommentListView, MemoHeader } from "./components";
 import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
+import { isInteractiveMemoClickTarget } from "./isInteractiveMemoClickTarget";
 import { computeCommentAmount, MemoViewContext } from "./MemoViewContext";
 import type { MemoViewProps } from "./types";
 
@@ -21,16 +22,18 @@ const PreviewImageDialog = lazyWithReload(() => import("../PreviewImageDialog"))
 
 const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const { memo: memoData, className, parentPage: parentPageProp, compact, showCreator, showVisibility, showPinned } = props;
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [EditorComponent, setEditorComponent] = useState<ComponentType<MemoEditorProps>>();
   const [cardWidth, setCardWidth] = useState(0);
+  const [isBackgroundSaving, setIsBackgroundSaving] = useState(false);
 
   const currentUser = useCurrentUser();
   const { userTagsSetting } = useAuth();
   const creator = useResolvedUser(memoData.creator, { enabled: Boolean(showCreator || props.shareImageDialogOpen) });
   const isArchived = memoData.state === State.ARCHIVED;
   const readonly = memoData.creator !== currentUser?.name && !isSuperUser(currentUser);
+  const canEdit = !readonly && !isArchived;
   const parentPage = parentPageProp || "/";
 
   // Blur content when any tag has blur_content enabled in the current user's tag settings.
@@ -41,14 +44,35 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const { previewState, openPreview, setPreviewOpen } = useImagePreview();
 
   const openEditor = useCallback(() => {
+    if (showEditor) return;
     void loadMemoEditor()
       .then(({ default: MemoEditor }) => {
         setEditorComponent(() => MemoEditor);
         setShowEditor(true);
       })
       .catch(() => undefined);
-  }, []);
+  }, [showEditor]);
   const closeEditor = useCallback(() => setShowEditor(false), []);
+
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!canEdit) return;
+      if (isInteractiveMemoClickTarget(e.target)) return;
+      openEditor();
+    },
+    [canEdit, openEditor],
+  );
+
+  const handleCardKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!canEdit) return;
+      if (e.key !== "Enter" && e.key !== " ") return;
+      if (e.target !== e.currentTarget) return;
+      e.preventDefault();
+      openEditor();
+    },
+    [canEdit, openEditor],
+  );
 
   const location = useLocation();
   const isInMemoDetailPage = location.pathname.startsWith(`/${memoData.name}`) || location.pathname.startsWith("/memos/shares/");
@@ -99,6 +123,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       showBlurredContent,
       blurred,
       openEditor,
+      isSaving: isBackgroundSaving,
       toggleBlurVisibility,
       openPreview,
     }),
@@ -113,6 +138,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       showBlurredContent,
       blurred,
       openEditor,
+      isBackgroundSaving,
       toggleBlurVisibility,
       openPreview,
     ],
@@ -120,9 +146,12 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   const article = (
     <article
-      className={cn(MEMO_CARD_BASE_CLASSES, showCommentPreview ? "mb-0 rounded-b-none" : "mb-2", className)}
+      className={cn(MEMO_CARD_BASE_CLASSES, canEdit && "cursor-pointer", showCommentPreview ? "mb-0 rounded-b-none" : "mb-2", className)}
       ref={cardRef}
-      tabIndex={readonly ? -1 : 0}
+      tabIndex={canEdit ? 0 : -1}
+      aria-busy={isBackgroundSaving || undefined}
+      onClick={canEdit ? handleCardClick : undefined}
+      onKeyDown={canEdit ? handleCardKeyDown : undefined}
     >
       <MemoHeader showCreator={showCreator} showVisibility={showVisibility} showPinned={showPinned} />
 
@@ -158,18 +187,18 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   return (
     <MemoViewContext.Provider value={contextValue}>
-      {showEditor && EditorComponent ? (
+      {memoDisplay}
+      {showEditor && EditorComponent && (
         <EditorComponent
           autoFocus
-          className="mb-2"
+          presentation="peek"
           cacheKey={`inline-memo-editor-${memoData.name}`}
           memo={memoData}
           parentMemoName={memoData.parent || undefined}
           onConfirm={closeEditor}
           onCancel={closeEditor}
+          onSavingChange={setIsBackgroundSaving}
         />
-      ) : (
-        memoDisplay
       )}
     </MemoViewContext.Provider>
   );
