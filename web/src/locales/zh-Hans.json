@@ -656,6 +656,7 @@
         "some-description": "请输入描述..."
       },
       "description": "该账号下全部的访问令牌",
+      "mcp-description": "无法设置请求头的 MCP 客户端（例如 Gemini Spark 自定义应用）可以把同一枚令牌放进 URL。将 memos_pat_... 替换为创建时显示的明文。知道此链接的人即可用你的身份访问；删除令牌后链接立即失效。",
       "title": "访问令牌",
       "token": "令牌",
       "no-tokens-found": "未找到访问令牌"

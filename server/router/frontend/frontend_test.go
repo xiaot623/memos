@@ -136,6 +136,20 @@ func TestFrontendService_MissingAssetDoesNotFallbackToIndex(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, rec.Code)
 }
 
+func TestFrontendService_SkipsMCPRoutes(t *testing.T) {
+	ctx := context.Background()
+	testStore := teststore.NewTestingStore(ctx, t)
+
+	e := echo.New()
+	NewFrontendService(&profile.Profile{}, testStore).Serve(ctx, e)
+
+	req := httptest.NewRequest(http.MethodGet, "/mcp/s/memos_pat_example", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+}
+
 func TestFrontendService_SkipsDynamicRoutes(t *testing.T) {
 	ctx := context.Background()
 	testStore := teststore.NewTestingStore(ctx, t)

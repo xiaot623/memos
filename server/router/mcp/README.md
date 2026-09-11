@@ -18,7 +18,7 @@ source of truth and reuses the API's authentication and authorization as-is.
 `server.NewServer` calls `mcp.NewMCPService` after registering the API, file, RSS, and gRPC-gateway routes, passing the same Echo server:
 
 ```go
-mcpService, err := mcp.NewMCPService(profile, echoServer)
+mcpService, err := mcp.NewMCPService(profile, echoServer, store, secret)
 if err != nil {
     return nil, errors.Wrap(err, "failed to create MCP service")
 }
@@ -46,7 +46,8 @@ fast on any inconsistency:
 
 ## Request flow
 
-`RegisterRoutes` binds `echoServer.Any("/mcp", ...)`. Each request:
+`RegisterRoutes` binds `echoServer.Any("/mcp/s/:token", ...)` and
+`echoServer.Any("/mcp", ...)`. Each `/mcp` request:
 
 1. `isAllowedMCPOrigin` (`origin.go`) rejects disallowed cross-origin browser requests with `403`.
 2. The request body is capped at 256 MiB before the SDK reads it.
@@ -63,6 +64,10 @@ fast on any inconsistency:
 8. The recorder body is decoded; a non-2xx status becomes a tool error
    (`newToolErrorResult`), otherwise the value is wrapped by
    `newStructuredToolResult`.
+
+`/mcp/s/:token` skips the Origin check, validates the path token with
+`AuthenticateByPAT`, and sets `Authorization: Bearer <token>` before the same
+dispatch path. Invalid tokens receive `401` and never reach the SDK handler.
 
 ## Schema resolution
 
@@ -103,18 +108,23 @@ response has no JSON body, the fallback is:
 ## Endpoint, transport & auth
 
 - **Endpoint:** `POST /mcp` (the SDK may also use `GET`/`DELETE` on the same
-  path for the Streamable HTTP transport).
+  path for the Streamable HTTP transport). Clients that cannot set headers may
+  use `POST /mcp/s/<personal-access-token>` instead; the path token is copied
+  into `Authorization: Bearer …` after PAT validation.
 - **Transport:** Streamable HTTP, **stateless**, JSON responses.
 - **Request size:** request bodies are limited to 256 MiB before SDK dispatch.
 - **Auth:** the caller's `Authorization: Bearer <token>` header is forwarded to
   the in-process API request. Mutating tools therefore require a valid token
   (personal access token or access token); public reads may work without one,
-  exactly as the REST API allows.
-- **Origin safety:** `isAllowedMCPOrigin` allows a request when the `Origin`
-  header is absent (desktop clients commonly omit it), when its host matches
-  the request `Host` header (host comparison only — scheme is not checked), or
-  when it matches the configured `profile.InstanceURL`. Anything else gets
-  `403`. This guards against DNS-rebinding from browsers.
+  exactly as the REST API allows. `/mcp/s/:token` requires a valid PAT and
+  returns `401` if the token is missing, malformed, expired, or unknown.
+- **Origin safety:** `isAllowedMCPOrigin` applies to `/mcp` only. It allows a
+  request when the `Origin` header is absent (desktop clients commonly omit
+  it), when its host matches the request `Host` header (host comparison only —
+  scheme is not checked), or when it matches the configured
+  `profile.InstanceURL`. Anything else gets `403`. This guards against
+  DNS-rebinding from browsers. `/mcp/s/:token` skips the Origin check so
+  browser-based MCP hosts can call the secret URL.
 
 ### Connecting a client
 
@@ -133,6 +143,13 @@ a personal access token as a bearer credential. Example client config:
     }
   }
 }
+```
+
+Clients that cannot set headers (for example Gemini Spark custom apps) can use
+the same token in the path instead:
+
+```text
+https://<your-instance>/mcp/s/<your-personal-access-token>
 ```
 
 ## Tool surface
@@ -218,7 +235,7 @@ validate an error payload against the tool's success-only output schema:
 
 | File | Responsibility |
 | --- | --- |
-| `service.go` | Constructs the MCP server, registers tools, builds the streamable HTTP handler, and binds the `/mcp` route. |
+| `service.go` | Constructs the MCP server, registers tools, builds the streamable HTTP handler, and binds the `/mcp` and `/mcp/s/:token` routes. |
 | `catalog.go` | The curated operation allowlist, tool naming, input/output schema assembly, and method-derived annotations. |
 | `adapter.go` | Translates a tool call into an `/api/v1/...` request and runs it in-process against the Echo server. |
 | `openapi.go` | Parses the OpenAPI spec, builds the operation registry, and resolves `$ref` schemas into self-contained JSON Schema. |

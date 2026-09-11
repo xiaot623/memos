@@ -456,6 +456,7 @@
       "create-first": "Create your first token",
       "description": "Create and revoke the secret keys that let other apps use the Memos API as you.",
       "about-description": "A personal access token (PAT) is a secret key that authenticates API requests as your account. Any app or script holding one — an MCP server, a CLI, a mobile client — can do everything you can do in Memos, until the token expires or you delete it. Send it as a Bearer credential in the Authorization header:",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it.",
       "empty-description": "A token lets a script or app call the API as you. It is shown once at creation, then listed here so you can revoke it.",
       "empty-title": "No access tokens yet",
       "expires": "Expires",

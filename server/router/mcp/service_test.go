@@ -13,9 +13,14 @@ import (
 	"github.com/labstack/echo/v5"
 	sdkmcp "github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/usememos/memos/internal/profile"
 	memosproto "github.com/usememos/memos/proto"
+	storepb "github.com/usememos/memos/proto/gen/store"
+	"github.com/usememos/memos/server/auth"
+	"github.com/usememos/memos/store"
+	teststore "github.com/usememos/memos/store/test"
 )
 
 func TestIsAllowedMCPOrigin(t *testing.T) {
@@ -46,8 +51,7 @@ func TestIsAllowedMCPOrigin(t *testing.T) {
 func TestNewMCPServiceRegistersCuratedTools(t *testing.T) {
 	echoServer := echo.New()
 
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-	require.NoError(t, err)
+	service := newTestMCPService(t, echoServer)
 	require.NotNil(t, service.handler)
 	require.Len(t, service.operationsByTool, len(curatedOperationIDs))
 
@@ -61,8 +65,7 @@ func TestNewMCPServiceRegistersCuratedTools(t *testing.T) {
 func TestNewMCPServiceUsesEmbeddedOpenAPISpec(t *testing.T) {
 	t.Chdir(t.TempDir())
 
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echo.New())
-	require.NoError(t, err)
+	service := newTestMCPService(t, echo.New())
 	require.NotNil(t, service.handler)
 	require.Len(t, service.operationsByTool, len(curatedOperationIDs))
 }
@@ -113,8 +116,7 @@ func TestMCPToolHandlerForwardsArgumentsAndAuthorization(t *testing.T) {
 func TestMCPProtocolListsCuratedToolsOnly(t *testing.T) {
 	echoServer := echo.New()
 
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-	require.NoError(t, err)
+	service := newTestMCPService(t, echoServer)
 	service.RegisterRoutes(echoServer)
 
 	initializeMCP(t, echoServer)
@@ -154,8 +156,7 @@ func TestMCPToolCallReturnsObjectStructuredContent(t *testing.T) {
 		})
 	})
 
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-	require.NoError(t, err)
+	service := newTestMCPService(t, echoServer)
 	service.RegisterRoutes(echoServer)
 
 	initializeMCP(t, echoServer)
@@ -195,8 +196,7 @@ func TestMCPToolCallAllowsGatewayToInferMemoUpdateMask(t *testing.T) {
 		})
 	})
 
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-	require.NoError(t, err)
+	service := newTestMCPService(t, echoServer)
 	service.RegisterRoutes(echoServer)
 
 	initializeMCP(t, echoServer)
@@ -289,8 +289,7 @@ func TestMCPToolCallBindsMemoFromPathForBodyStarOperations(t *testing.T) {
 				return c.JSON(http.StatusOK, test.response)
 			})
 
-			service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-			require.NoError(t, err)
+			service := newTestMCPService(t, echoServer)
 			service.RegisterRoutes(echoServer)
 
 			initializeMCP(t, echoServer)
@@ -327,8 +326,7 @@ func TestMCPToolCallRejectsInvalidArguments(t *testing.T) {
 		return c.JSON(http.StatusOK, map[string]any{"name": c.Param("memo")})
 	})
 
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-	require.NoError(t, err)
+	service := newTestMCPService(t, echoServer)
 	service.RegisterRoutes(echoServer)
 
 	initializeMCP(t, echoServer)
@@ -396,8 +394,7 @@ func TestMCPToolCallRejectsInvalidArguments(t *testing.T) {
 // allowlist still rejects disallowed origins.
 func TestMCPLoopbackBehindReverseProxy(t *testing.T) {
 	echoServer := echo.New()
-	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer)
-	require.NoError(t, err)
+	service := newTestMCPService(t, echoServer)
 	service.RegisterRoutes(echoServer)
 
 	initialize, err := json.Marshal(map[string]any{
@@ -439,9 +436,104 @@ func TestMCPLoopbackBehindReverseProxy(t *testing.T) {
 	})
 }
 
-func initializeMCP(t *testing.T, echoServer *echo.Echo) {
+func TestMCPSecretURLRejectsInvalidPAT(t *testing.T) {
+	ctx := context.Background()
+	ts := teststore.NewTestingStore(ctx, t)
+	t.Cleanup(func() { _ = ts.Close() })
+
+	echoServer := echo.New()
+	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer, ts, "test-secret")
+	require.NoError(t, err)
+	service.RegisterRoutes(echoServer)
+
+	payload := mcpInitializePayload()
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	tests := []struct {
+		name string
+		path string
+	}{
+		{name: "not a PAT", path: "/mcp/s/not-a-pat"},
+		{name: "unknown PAT", path: "/mcp/s/memos_pat_unknown"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, test.path, bytes.NewReader(data))
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Accept", "application/json, text/event-stream")
+			request.Header.Set("Origin", "https://gemini.google.com")
+			recorder := httptest.NewRecorder()
+			echoServer.ServeHTTP(recorder, request)
+			require.Equal(t, http.StatusUnauthorized, recorder.Code)
+		})
+	}
+}
+
+func TestMCPSecretURLAuthenticatesPATAndAllowsForeignOrigin(t *testing.T) {
+	ctx := context.Background()
+	ts := teststore.NewTestingStore(ctx, t)
+	t.Cleanup(func() { _ = ts.Close() })
+
+	user, err := ts.CreateUser(ctx, &store.User{
+		Username:     "mcp-pat-user",
+		Role:         store.RoleUser,
+		Email:        "mcp-pat-user@test.com",
+		Nickname:     "mcp-pat-user",
+		PasswordHash: "unused",
+	})
+	require.NoError(t, err)
+
+	pat := auth.GeneratePersonalAccessToken()
+	require.NoError(t, ts.AddUserPersonalAccessToken(ctx, user.ID, &storepb.PersonalAccessTokensUserSetting_PersonalAccessToken{
+		TokenId:     "pat-mcp-1",
+		TokenHash:   auth.HashPersonalAccessToken(pat),
+		Description: "mcp secret url",
+		CreatedAt:   timestamppb.Now(),
+	}))
+
+	echoServer := echo.New()
+	echoServer.GET("/api/v1/memos", func(c *echo.Context) error {
+		require.Equal(t, "Bearer "+pat, c.Request().Header.Get("Authorization"))
+		return c.JSON(http.StatusOK, map[string]any{
+			"memos": []any{map[string]any{"name": "memos/from-pat"}},
+		})
+	})
+
+	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer, ts, "test-secret")
+	require.NoError(t, err)
+	service.RegisterRoutes(echoServer)
+
+	path := "/mcp/s/" + pat
+	initializeMCPAt(t, echoServer, path, "https://gemini.google.com")
+	response := postMCPAt(t, echoServer, path, map[string]any{
+		"jsonrpc": "2.0",
+		"id":      2,
+		"method":  "tools/call",
+		"params": map[string]any{
+			"name": "memo_list_memos",
+			"arguments": map[string]any{
+				"pageSize": 1,
+			},
+		},
+	}, "https://gemini.google.com")
+
+	result, ok := response["result"].(map[string]any)
+	require.True(t, ok)
+	require.Equal(t, map[string]any{
+		"memos": []any{map[string]any{"name": "memos/from-pat"}},
+	}, result["structuredContent"])
+}
+
+func newTestMCPService(t *testing.T, echoServer *echo.Echo) *MCPService {
 	t.Helper()
-	response := postMCP(t, echoServer, map[string]any{
+	service, err := NewMCPService(&profile.Profile{Version: "test-version"}, echoServer, nil, "")
+	require.NoError(t, err)
+	return service
+}
+
+func mcpInitializePayload() map[string]any {
+	return map[string]any{
 		"jsonrpc": "2.0",
 		"id":      1,
 		"method":  "initialize",
@@ -453,18 +545,36 @@ func initializeMCP(t *testing.T, echoServer *echo.Echo) {
 				"version": "1.0.0",
 			},
 		},
-	})
+	}
+}
+
+func initializeMCP(t *testing.T, echoServer *echo.Echo) {
+	t.Helper()
+	initializeMCPAt(t, echoServer, "/mcp", "")
+}
+
+func initializeMCPAt(t *testing.T, echoServer *echo.Echo, path string, origin string) {
+	t.Helper()
+	response := postMCPAt(t, echoServer, path, mcpInitializePayload(), origin)
 	require.NotNil(t, response["result"])
 }
 
 func postMCP(t *testing.T, echoServer *echo.Echo, payload map[string]any) map[string]any {
 	t.Helper()
+	return postMCPAt(t, echoServer, "/mcp", payload, "")
+}
+
+func postMCPAt(t *testing.T, echoServer *echo.Echo, path string, payload map[string]any, origin string) map[string]any {
+	t.Helper()
 	data, err := json.Marshal(payload)
 	require.NoError(t, err)
 
-	request := httptest.NewRequest(http.MethodPost, "/mcp", bytes.NewReader(data))
+	request := httptest.NewRequest(http.MethodPost, path, bytes.NewReader(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json, text/event-stream")
+	if origin != "" {
+		request.Header.Set("Origin", origin)
+	}
 
 	recorder := httptest.NewRecorder()
 	echoServer.ServeHTTP(recorder, request)

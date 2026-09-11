@@ -13,7 +13,9 @@ import (
 
 	"github.com/usememos/memos/internal/profile"
 	memosproto "github.com/usememos/memos/proto"
+	"github.com/usememos/memos/server/auth"
 	apiv1 "github.com/usememos/memos/server/router/api/v1"
+	"github.com/usememos/memos/store"
 )
 
 // maxMCPRequestBytes caps the /mcp request body. It tracks the API limit because
@@ -22,14 +24,15 @@ const maxMCPRequestBytes int64 = apiv1.MaxAPIRequestBytes
 
 // MCPService serves the OpenAPI-driven MCP endpoint.
 type MCPService struct {
-	profile *profile.Profile
+	profile       *profile.Profile
+	authenticator *auth.Authenticator
 
 	operationsByTool map[string]*registeredOperation
 	handler          http.Handler
 }
 
 // NewMCPService creates an MCP service backed by the in-process API routes.
-func NewMCPService(profile *profile.Profile, echoServer *echo.Echo) (*MCPService, error) {
+func NewMCPService(profile *profile.Profile, echoServer *echo.Echo, st *store.Store, secret string) (*MCPService, error) {
 	spec, err := loadMCPServiceOpenAPISpec()
 	if err != nil {
 		return nil, err
@@ -71,8 +74,13 @@ func NewMCPService(profile *profile.Profile, echoServer *echo.Echo) (*MCPService
 		// CSRF / DNS-rebinding protection instead.
 		DisableLocalhostProtection: true,
 	})
+	var authenticator *auth.Authenticator
+	if st != nil {
+		authenticator = auth.NewAuthenticator(st, secret)
+	}
 	return &MCPService{
 		profile:          profile,
+		authenticator:    authenticator,
 		operationsByTool: operationsByTool,
 		handler:          streamableHandler,
 	}, nil
@@ -111,12 +119,30 @@ func newMCPToolHandler(adapter *apiAdapter, operation *registeredOperation) sdkm
 
 // RegisterRoutes registers the streamable HTTP MCP endpoint.
 func (s *MCPService) RegisterRoutes(echoServer *echo.Echo) {
-	echoServer.Any("/mcp", func(c *echo.Context) error {
-		request := c.Request()
-		if !isAllowedMCPOrigin(request.Host, request.Header.Get("Origin"), s.profile) {
-			return c.NoContent(http.StatusForbidden)
-		}
-		s.handler.ServeHTTP(c.Response(), request)
-		return nil
-	}, middleware.BodyLimit(maxMCPRequestBytes))
+	echoServer.Any("/mcp/s/:token", s.handleSecretMCP, middleware.BodyLimit(maxMCPRequestBytes))
+	echoServer.Any("/mcp", s.handleMCP, middleware.BodyLimit(maxMCPRequestBytes))
+}
+
+func (s *MCPService) handleMCP(c *echo.Context) error {
+	request := c.Request()
+	if !isAllowedMCPOrigin(request.Host, request.Header.Get("Origin"), s.profile) {
+		return c.NoContent(http.StatusForbidden)
+	}
+	s.handler.ServeHTTP(c.Response(), request)
+	return nil
+}
+
+func (s *MCPService) handleSecretMCP(c *echo.Context) error {
+	token := c.Param("token")
+	if s.authenticator == nil {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+	if _, _, err := s.authenticator.AuthenticateByPAT(c.Request().Context(), token); err != nil {
+		return c.NoContent(http.StatusUnauthorized)
+	}
+
+	request := c.Request()
+	request.Header.Set("Authorization", "Bearer "+token)
+	s.handler.ServeHTTP(c.Response(), request)
+	return nil
 }
