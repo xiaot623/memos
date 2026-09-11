@@ -1,4 +1,4 @@
-import { BellIcon, EarthIcon, InfoIcon, LibraryIcon, PaperclipIcon, UserCircleIcon } from "lucide-react";
+import { BellIcon, EarthIcon, InfoIcon, LibraryIcon, UserCircleIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -46,12 +46,6 @@ const Navigation = (props: Props) => {
     title: t("common.about"),
     icon: <InfoIcon className="w-6 h-auto shrink-0" />,
   };
-  const attachmentsNavLink: NavLinkItem = {
-    id: "header-attachments",
-    path: Routes.ATTACHMENTS,
-    title: t("common.attachments"),
-    icon: <PaperclipIcon className="w-6 h-auto shrink-0" />,
-  };
   const unreadCount = notifications.filter((n) => n.status === UserNotification_Status.UNREAD).length;
   const inboxNavLink: NavLinkItem = {
     id: "header-inbox",
@@ -76,7 +70,7 @@ const Navigation = (props: Props) => {
   };
 
   const primaryNavLinks: NavLinkItem[] = currentUser
-    ? [homeNavLink, exploreNavLink, attachmentsNavLink, inboxNavLink]
+    ? [homeNavLink, exploreNavLink, inboxNavLink]
     : [exploreNavLink, aboutNavLink, signInNavLink];
   const inboxAriaLabel = unreadCount > 0 ? `${t("common.inbox")}, ${unreadCount} unread` : t("common.inbox");
 
