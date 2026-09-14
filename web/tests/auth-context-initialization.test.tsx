@@ -62,12 +62,8 @@ describe("AuthProvider initialization", () => {
     let resolveSettings!: (value: { settings: [] }) => void;
     let resolveShortcuts!: (value: { shortcuts: [] }) => void;
     clients.getCurrentUser.mockResolvedValue({ user: { name: "users/alice", username: "alice" } });
-    clients.listUserSettings.mockImplementation(
-      () => new Promise<{ settings: [] }>((resolve) => (resolveSettings = resolve)),
-    );
-    clients.listShortcuts.mockImplementation(
-      () => new Promise<{ shortcuts: [] }>((resolve) => (resolveShortcuts = resolve)),
-    );
+    clients.listUserSettings.mockImplementation(() => new Promise<{ settings: [] }>((resolve) => (resolveSettings = resolve)));
+    clients.listShortcuts.mockImplementation(() => new Promise<{ shortcuts: [] }>((resolve) => (resolveShortcuts = resolve)));
 
     render(<Probe />, { wrapper });
 

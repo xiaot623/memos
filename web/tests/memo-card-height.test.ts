@@ -1,8 +1,14 @@
 import { create } from "@bufbuild/protobuf";
 import { describe, expect, it } from "vitest";
 import { estimateMemoCardHeight } from "@/components/PagedMemoList/memoCardHeight";
-import { AttachmentSchema, type Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import { MemoRelation_MemoSchema, MemoRelation_Type, MemoRelationSchema, MemoSchema, type Memo } from "@/types/proto/api/v1/memo_service_pb";
+import { type Attachment, AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
+import {
+  type Memo,
+  MemoRelation_MemoSchema,
+  MemoRelation_Type,
+  MemoRelationSchema,
+  MemoSchema,
+} from "@/types/proto/api/v1/memo_service_pb";
 
 const buildAttachment = (overrides: Partial<Attachment>) =>
   create(AttachmentSchema, {

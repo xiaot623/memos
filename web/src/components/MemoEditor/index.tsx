@@ -1,6 +1,7 @@
 import { Maximize2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { needsRawMarkdown } from "@/components/MarkdownRuntime/unsupportedSyntax";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstance } from "@/contexts/InstanceContext";
@@ -42,11 +43,12 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const t = useTranslate();
   const currentUser = useCurrentUser();
   const editorRef = useRef<EditorController>(null);
-  const { actions, dispatch } = useEditorContext();
+  const { actions, dispatch, getState } = useEditorContext();
   // Subscribe only to the low-frequency slices this component renders from, so
   // typing (which changes content) does not re-render the editor shell and its
   // toolbar/metadata children.
   const isFocusMode = useEditorSelector((s) => s.ui.isFocusMode);
+  const isRawMode = useEditorSelector((s) => s.ui.isRawMode);
   const hasTimestamp = useEditorSelector((s) => Boolean(s.timestamps.createTime));
   const { userGeneralSetting } = useAuth();
   const { aiSetting, fetchSetting } = useInstance();
@@ -78,6 +80,17 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     defaultCreateTime,
   });
   const isDraftCacheEnabled = !memo;
+
+  useEffect(() => {
+    if (!isInitialized) {
+      return;
+    }
+    if (!needsRawMarkdown(getState().content)) {
+      return;
+    }
+    dispatch(actions.setRawMode(true));
+    toast(t("editor.unsupported-syntax-raw-mode"));
+  }, [isInitialized, actions, dispatch, getState, t]);
 
   // Auto-save content to localStorage (subscribes to the store internally).
   const { discardDraft } = useAutoSave(currentUser?.name ?? "", cacheKey, isInitialized && isDraftCacheEnabled);
@@ -193,6 +206,10 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     setFormattingToolbarVisible((visible) => !visible);
   }, [setFormattingToolbarVisible]);
 
+  const handleToggleRawMode = useCallback(() => {
+    dispatch(actions.setRawMode(!isRawMode));
+  }, [actions, dispatch, isRawMode]);
+
   const handleStartAudioRecording = async () => {
     setIsAudioRecorderOpen(true);
     await audioRecorder.startRecording();
@@ -234,10 +251,31 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     onCancel,
     onSavingChange,
   });
-  const handleSave = useCallback(() => saveMemo(isPeek ? { closeImmediately: true } : undefined), [isPeek, saveMemo]);
-  const handleDismiss = useCallback(() => {
+  const [peekOpen, setPeekOpen] = useState(true);
+  const peekCanceledRef = useRef(false);
+
+  const closePeek = useCallback((canceled = false) => {
+    if (canceled) {
+      peekCanceledRef.current = true;
+    }
+    setPeekOpen(false);
+  }, []);
+
+  const handlePeekExited = useCallback(() => {
+    if (peekCanceledRef.current) {
+      onCancel?.();
+      return;
+    }
     void saveMemo({ closeIfUnchanged: true, closeImmediately: true });
-  }, [saveMemo]);
+  }, [onCancel, saveMemo]);
+
+  const handleSave = useCallback(() => {
+    if (isPeek) {
+      closePeek();
+      return;
+    }
+    void saveMemo();
+  }, [closePeek, isPeek, saveMemo]);
 
   const showTimestamp = Boolean(memoName || (!memo && hasTimestamp));
   const showPeekMaximize = isPeek && !isFocusMode;
@@ -246,10 +284,9 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     <div
       ref={editorContainerRef}
       className={cn(
-        "group relative w-full flex flex-col justify-between items-start bg-card px-4 pt-3 pb-1 rounded-lg border border-border gap-2",
-        FOCUS_MODE_STYLES.transition,
-        isPeek && !isFocusMode && PEEK_MODE_STYLES.container,
-        isPeek && isFocusMode && PEEK_MODE_STYLES.focusContainer,
+        "group relative w-full min-w-0 flex flex-col justify-between items-stretch bg-card px-4 pt-3 pb-1 rounded-lg border border-border gap-2",
+        isPeek && PEEK_MODE_STYLES.container,
+        !isPeek && FOCUS_MODE_STYLES.transition,
         !isPeek && isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
         !isPeek && !isFocusMode && className,
       )}
@@ -300,11 +337,13 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         <EditorMetadata memoName={memoName} />
         <EditorToolbar
           onSave={handleSave}
-          onCancel={onCancel}
+          onCancel={onCancel ? (isPeek ? () => closePeek(true) : onCancel) : undefined}
           memoName={memoName}
           onAudioRecorderClick={handleAudioRecorderClick}
           isFormattingToolbarVisible={isFormattingToolbarVisible}
           onToggleFormattingToolbar={handleToggleFormattingToolbar}
+          isRawMode={isRawMode}
+          onToggleRawMode={handleToggleRawMode}
         />
       </div>
     </div>
@@ -312,7 +351,15 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
 
   if (isPeek) {
     return (
-      <PeekEditorDialog isFocusMode={isFocusMode} title={t("common.edit")} onDismiss={handleDismiss}>
+      <PeekEditorDialog
+        open={peekOpen}
+        isFocusMode={isFocusMode}
+        title={t("common.edit")}
+        onOpenChange={(open) => {
+          if (!open) closePeek();
+        }}
+        onDismiss={handlePeekExited}
+      >
         {editorCard}
       </PeekEditorDialog>
     );

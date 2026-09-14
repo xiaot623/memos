@@ -1,5 +1,5 @@
 import { BookmarkIcon, LoaderCircleIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { type MouseEvent, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import RelativeTime from "@/components/RelativeTime";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -28,9 +28,13 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ showCreator, showVisibility, sh
   const { newMemoName } = useNewMemo();
 
   const navigateTo = useNavigateTo();
-  const handleGotoMemoDetailPage = useCallback(() => {
-    navigateTo(`/${memo.name}`, { state: { from: parentPage } });
-  }, [memo.name, parentPage, navigateTo]);
+  const handleGotoMemoDetailPage = useCallback(
+    (event: MouseEvent) => {
+      event.stopPropagation();
+      navigateTo(`/${memo.name}`, { state: { from: parentPage } });
+    },
+    [memo.name, parentPage, navigateTo],
+  );
 
   const { unpinMemo } = useMemoActions(memo);
 
@@ -119,7 +123,7 @@ interface CreatorDisplayProps {
   creator: User;
   displayTime: React.ReactNode;
   timeTooltip: TimeTooltipContent;
-  onGotoDetail: () => void;
+  onGotoDetail: (event: MouseEvent) => void;
 }
 
 const CreatorDisplay: React.FC<CreatorDisplayProps> = ({ creator, displayTime, timeTooltip, onGotoDetail }) => (
@@ -137,6 +141,7 @@ const CreatorDisplay: React.FC<CreatorDisplayProps> = ({ creator, displayTime, t
       </Link>
       <TimeTooltip content={timeTooltip}>
         <span
+          data-slot="memo-goto-detail"
           className="w-auto -mt-0.5 text-xs leading-tight text-muted-foreground select-none cursor-pointer hover:opacity-80 transition-colors text-left"
           onClick={onGotoDetail}
         >
@@ -165,12 +170,13 @@ const TimeTooltip = ({ children, content }: { children: React.ReactElement; cont
 interface TimeDisplayProps {
   displayTime: React.ReactNode;
   timeTooltip: TimeTooltipContent;
-  onGotoDetail: () => void;
+  onGotoDetail: (event: MouseEvent) => void;
 }
 
 const TimeDisplay: React.FC<TimeDisplayProps> = ({ displayTime, timeTooltip, onGotoDetail }) => (
   <TimeTooltip content={timeTooltip}>
     <span
+      data-slot="memo-goto-detail"
       className="w-auto text-sm leading-tight text-muted-foreground select-none cursor-pointer hover:text-foreground transition-colors text-left"
       onClick={onGotoDetail}
     >

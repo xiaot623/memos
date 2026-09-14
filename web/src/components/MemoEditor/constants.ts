@@ -9,12 +9,19 @@ export const FOCUS_MODE_STYLES = {
 } as const;
 
 /** Keep-style peek overlay: compact centered card over a blurred list. */
+export const PEEK_MORPH_MS = 420;
+export const PEEK_PRESENCE_MS = 280;
+export const PEEK_MORPH_EASING = "cubic-bezier(0.32, 0.72, 0, 1)";
+
 export const PEEK_MODE_STYLES = {
-  backdrop: "fixed inset-0 z-overlay bg-black/20 backdrop-blur-sm",
-  popup: "fixed left-1/2 top-1/2 z-overlay w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
-  focusPopup: "fixed inset-0 z-overlay flex flex-col p-2 sm:p-4 md:p-8",
-  container: "max-h-[85vh] overflow-y-auto shadow-2xl",
-  focusContainer: "flex-1 min-h-0 max-w-5xl mx-auto overflow-y-auto shadow-2xl",
+  backdrop:
+    "fixed inset-0 z-overlay bg-black/20 backdrop-blur-sm transition-opacity duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none data-starting-style:opacity-0 data-ending-style:opacity-0",
+  popup:
+    "fixed top-1/2 left-1/2 z-overlay origin-center -translate-x-1/2 -translate-y-1/2 outline-none transition-[opacity,scale] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none data-starting-style:scale-[0.96] data-starting-style:opacity-0 data-ending-style:scale-[0.96] data-ending-style:opacity-0",
+  shell: "flex min-h-0 w-[calc(100vw-2rem)] flex-col md:w-[calc(100vw-4rem)]",
+  compactShell: "max-h-[85vh] max-w-lg",
+  focusShell: "h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] max-w-5xl md:h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4rem)]",
+  container: "min-h-0 flex-1 overflow-y-auto shadow-2xl",
 } as const;
 
 // localStorage key for the user's preference to show the formatting toolbar in

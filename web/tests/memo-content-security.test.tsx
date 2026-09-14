@@ -1,64 +1,39 @@
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import ReactMarkdown from "react-markdown";
-import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
-import rehypeSanitize from "rehype-sanitize";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import { describe, expect, it } from "vitest";
-import { SANITIZE_SCHEMA, isTrustedIframeSrc } from "@/components/MemoContent/constants";
+import type { Node } from "@milkdown/kit/prose/model";
+import { afterEach, describe, expect, it } from "vitest";
+import { htmlToDOM } from "@/components/MarkdownRuntime/plugins/html";
+import { isTrustedIframeSrc } from "@/components/MemoContent/constants";
+import { mountRuntime } from "./markdown-runtime-harness";
 
-type IframeProps = React.ComponentProps<"iframe">;
+const asHtmlNode = (value: string) => ({ attrs: { value } }) as unknown as Node;
 
-const TrustedIframe = (props: IframeProps) => {
-  if (typeof props.src !== "string" || !isTrustedIframeSrc(props.src)) {
-    return null;
-  }
-  return <iframe {...props} />;
-};
+describe("trusted HTML in the Milkdown runtime", () => {
+  const runtimes: Array<{ cleanup: () => Promise<void> }> = [];
 
-const renderMemoContent = (content: string): string =>
-  renderToStaticMarkup(
-    <ReactMarkdown
-      remarkPlugins={[remarkMath]}
-      rehypePlugins={[rehypeRaw, [rehypeSanitize, SANITIZE_SCHEMA], [rehypeKatex, { throwOnError: false, strict: false }]]}
-      components={{ iframe: TrustedIframe }}
-    >
-      {content}
-    </ReactMarkdown>,
-  );
-
-const renderGfmContent = (content: string): string =>
-  renderToStaticMarkup(
-    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[[rehypeSanitize, SANITIZE_SCHEMA]]}>
-      {content}
-    </ReactMarkdown>,
-  );
-
-describe("memo content sanitization", () => {
-  it("strips user-controlled inline styles from raw HTML spans", () => {
-    const html = renderMemoContent('<span style="position:fixed;inset:0;z-index:99999">overlay</span>');
-
-    expect(html).toMatch(/<span>overlay<\/span>/);
-    expect(html).not.toMatch(/style=/);
-    expect(html).not.toMatch(/position:fixed/);
+  afterEach(async () => {
+    await Promise.all(runtimes.splice(0).map((runtime) => runtime.cleanup()));
   });
 
-  it("still renders KaTeX output after sanitizing math marker classes", () => {
-    const html = renderMemoContent("$L$");
+  it("renders trusted iframes and drops untrusted HTML from the visual tree", () => {
+    const trusted = htmlToDOM(asHtmlNode('<iframe src="https://www.youtube.com/embed/abc123" title="demo"></iframe>'));
+    expect(trusted[0]).toBe("iframe");
+    expect(trusted[1].src).toBe("https://www.youtube.com/embed/abc123");
 
-    expect(html).toMatch(/class="katex"/);
-    expect(html).toMatch(/class="katex-html"/);
+    const untrusted = htmlToDOM(asHtmlNode('<iframe src="https://evil.example/embed/abc123" title="demo"></iframe>'));
+    expect(untrusted[0]).toBe("span");
+    expect(untrusted[1].hidden).toBe("true");
+
+    const styled = htmlToDOM(asHtmlNode('<span style="position:fixed;inset:0;z-index:99999">overlay</span>'));
+    expect(styled[0]).toBe("span");
+    expect(styled[1].hidden).toBe("true");
+    expect(styled[1]).not.toHaveProperty("style");
   });
 
-  it("preserves checked state for GFM task list items", () => {
-    const html = renderGfmContent("- [x] Done\n- [ ] Todo");
-    const inputs = html.match(/<input[^>]+\/>/g) ?? [];
-
-    expect(inputs).toHaveLength(2);
-    expect(inputs[0]).toContain('checked=""');
-    expect(inputs[1]).not.toContain('checked=""');
+  it("renders a trusted iframe in the live editor", async () => {
+    const runtime = await mountRuntime('<iframe src="https://www.youtube.com/embed/abc123" title="demo"></iframe>');
+    runtimes.push(runtime);
+    const iframe = runtime.root.querySelector("iframe");
+    expect(iframe).not.toBeNull();
+    expect(iframe).toHaveAttribute("src", "https://www.youtube.com/embed/abc123");
   });
 });
 
@@ -74,14 +49,5 @@ describe("trusted iframe providers", () => {
     expect(isTrustedIframeSrc("https://app.diagrams.net/?embed=1")).toBe(true);
     expect(isTrustedIframeSrc("https://www.draw.io/?embed=1")).toBe(true);
     expect(isTrustedIframeSrc("https://evil.example/embed/abc123")).toBe(false);
-  });
-
-  it("drops untrusted iframe embeds during rendering", () => {
-    const trusted = renderMemoContent('<iframe src="https://www.youtube.com/embed/abc123" title="demo"></iframe>');
-    const untrusted = renderMemoContent('<iframe src="https://evil.example/embed/abc123" title="demo"></iframe>');
-
-    expect(trusted).toMatch(/<iframe/);
-    expect(trusted).toMatch(/youtube\.com\/embed\/abc123/);
-    expect(untrusted).not.toMatch(/<iframe/);
   });
 });

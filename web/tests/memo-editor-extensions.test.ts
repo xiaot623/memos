@@ -59,9 +59,7 @@ describe("MemoEditor CodeMirror extensions", () => {
     views.push(view);
     const file = new File(["must not become memo content"], "attachment.txt", { type: "text/plain" });
     const transfer =
-      eventType === "paste"
-        ? { items: [{ kind: "file", getAsFile: () => file }], files: [file] }
-        : { files: [file], types: ["Files"] };
+      eventType === "paste" ? { items: [{ kind: "file", getAsFile: () => file }], files: [file] } : { files: [file], types: ["Files"] };
     const event = new Event(eventType, { bubbles: true, cancelable: true });
     Object.defineProperty(event, transferProperty, { value: transfer });
 

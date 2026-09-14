@@ -53,6 +53,15 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         },
       };
 
+    case "SET_RAW_MODE":
+      return {
+        ...state,
+        ui: {
+          ...state.ui,
+          isRawMode: action.payload,
+        },
+      };
+
     case "SET_LOADING":
       return {
         ...state,

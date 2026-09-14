@@ -40,7 +40,7 @@ const headingClasses: Record<HeadingLevel, string> = {
  */
 export const markdownStyles = {
   paragraph: "my-0 mb-2 leading-6",
-  blockquote: "my-0 mb-2 border-l-4 border-primary/30 pl-3 text-muted-foreground italic",
+  blockquote: "my-0 mb-2 border-l-4 border-primary/30 pl-3 text-muted-foreground",
   bulletList: "my-0 mb-2 list-outside pl-6 list-disc",
   orderedList: "my-0 mb-2 list-outside pl-6 list-decimal",
   listItem: "mt-0.5 leading-6",
@@ -50,7 +50,7 @@ export const markdownStyles = {
   taskItemContent: "min-w-0 [overflow-wrap:anywhere] [&>*:last-child]:mb-0",
   inlineCode: "font-mono text-sm bg-muted px-1 py-0.5 rounded-md",
   link: "text-primary underline decoration-primary/50 underline-offset-2 transition-colors hover:decoration-primary",
-  horizontalRule: "my-2 h-0 border-0 border-b border-border",
+  horizontalRule: "my-2 h-0 border-0 border-b-2 border-border",
 } as const;
 
 /** Complete heading class for a given level (shared base + per-level classes). */

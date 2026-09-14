@@ -15,6 +15,8 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
   onAudioRecorderClick,
   isFormattingToolbarVisible,
   onToggleFormattingToolbar,
+  isRawMode,
+  onToggleRawMode,
 }) => {
   const t = useTranslate();
   const { actions, dispatch } = useEditorContext();
@@ -51,6 +53,8 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
           onAudioRecorderClick={onAudioRecorderClick}
           isFormattingToolbarVisible={isFormattingToolbarVisible}
           onToggleFormattingToolbar={onToggleFormattingToolbar}
+          isRawMode={isRawMode}
+          onToggleRawMode={onToggleRawMode}
         />
         <VisibilitySelector value={visibility} onChange={handleVisibilityChange} />
       </div>

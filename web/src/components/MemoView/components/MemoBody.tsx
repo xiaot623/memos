@@ -38,12 +38,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
         {/* Compact bounds the whole body — attachments included — behind one Show more.
             Reactions stay outside so they never hide under the fade. */}
         <ClampedSection enabled={Boolean(compact)}>
-          <MemoContent
-            memoName={memo.name}
-            content={memo.content}
-            onClick={handleMemoContentClick}
-            compact={Boolean(compact)}
-          />
+          <MemoContent memoName={memo.name} content={memo.content} onClick={handleMemoContentClick} compact={Boolean(compact)} />
           <AttachmentListView attachments={memo.attachments} onImagePreview={openPreview} />
           <RelationListView relations={referencedMemos} currentMemoName={memo.name} parentPage={parentPage} />
           {memo.location && <LocationDisplayView location={memo.location} />}

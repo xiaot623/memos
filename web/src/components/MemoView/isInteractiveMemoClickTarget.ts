@@ -12,6 +12,7 @@ const INTERACTIVE_SELECTOR = [
   "[role='link']",
   "[data-slot='checkbox']",
   "[data-slot='memo-header-actions']",
+  "[data-slot='memo-goto-detail']",
   "[data-tag]",
 ].join(",");
 

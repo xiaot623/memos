@@ -42,6 +42,8 @@ export interface EditorToolbarProps {
   /** Whether the formatting toolbar is shown in normal mode (persisted preference). */
   isFormattingToolbarVisible: boolean;
   onToggleFormattingToolbar: () => void;
+  isRawMode: boolean;
+  onToggleRawMode: () => void;
 }
 
 export interface EditorMetadataProps {
@@ -80,6 +82,8 @@ export interface InsertMenuProps {
   /** Persisted toggle for the normal-mode formatting toolbar. */
   isFormattingToolbarVisible?: boolean;
   onToggleFormattingToolbar?: () => void;
+  isRawMode?: boolean;
+  onToggleRawMode?: () => void;
 }
 
 export interface VisibilitySelectorProps {

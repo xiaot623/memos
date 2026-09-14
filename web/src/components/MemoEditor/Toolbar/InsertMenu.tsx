@@ -1,5 +1,17 @@
 import { uniqBy } from "lodash-es";
-import { CheckIcon, FileIcon, ImageIcon, LinkIcon, LoaderIcon, MapPinIcon, Maximize2Icon, MicIcon, PlusIcon, TypeIcon } from "lucide-react";
+import {
+  CheckIcon,
+  FileIcon,
+  FileTextIcon,
+  ImageIcon,
+  LinkIcon,
+  LoaderIcon,
+  MapPinIcon,
+  Maximize2Icon,
+  MicIcon,
+  PlusIcon,
+  TypeIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { LinkMemoDialog, LocationDialog } from "@/components/MemoMetadata";
 import type { MapPoint } from "@/components/map/types";
@@ -31,6 +43,8 @@ const InsertMenu = (props: InsertMenuProps) => {
     onToggleFormattingToolbar,
     isFormattingToolbarVisible,
     isUploading: isUploadingProp,
+    isRawMode,
+    onToggleRawMode,
   } = props;
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -155,6 +169,13 @@ const InsertMenu = (props: InsertMenuProps) => {
             {t("editor.formatting-toolbar")}
             {isFormattingToolbarVisible && <CheckIcon className="w-4 h-4 ml-auto" />}
           </DropdownMenuItem>
+          {onToggleRawMode && (
+            <DropdownMenuItem onClick={onToggleRawMode}>
+              <FileTextIcon className="w-4 h-4" />
+              {isRawMode ? t("editor.wysiwyg-editor") : t("editor.raw-markdown")}
+              {isRawMode && <CheckIcon className="w-4 h-4 ml-auto" />}
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

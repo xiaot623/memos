@@ -2,7 +2,7 @@
 
 ## Overview
 
-MemoEditor is a three-layer component. At its core is a single editor — `Editor/`, a CodeMirror 6 "decorated source" editor. It stores the memo as **raw markdown, verbatim** (no parse/serialize round-trip) and styles that source in place with CodeMirror decorations: the markers (`#`, `*`, `` ` ``, list bullets, fences) stay visible but de-emphasized while the styled text leads. There is one editor and one storage format; everything above the editor boundary talks markdown through the `EditorController` contract.
+MemoEditor is a three-layer component. At its core is a Milkdown Crepe **WYSIWYG** editor (`Wysiwyg/`) with a CodeMirror 6 **raw markdown** fallback (`Editor/`). Both store the memo as **raw markdown** and talk to the rest of the app through the `EditorController` contract. Unsupported HTML falls back to raw mode automatically.
 
 ## Architecture
 

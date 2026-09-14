@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { renderMermaidSvg } from "@/components/MarkdownRuntime/mermaidPreview";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { getThemeWithFallback, resolveTheme, setupSystemThemeListener } from "@/utils/theme";
@@ -8,10 +9,6 @@ interface MermaidBlockProps {
   children?: React.ReactNode;
   className?: string;
 }
-
-type MermaidTheme = "default" | "dark";
-
-const toMermaidTheme = (appTheme: string): MermaidTheme => (appTheme === "default-dark" ? "dark" : "default");
 
 const formatErrorMessage = (err: unknown): string => {
   const msg = err instanceof Error ? err.message : "Failed to render diagram";
@@ -49,26 +46,7 @@ export const MermaidBlock = ({ children, className }: MermaidBlockProps) => {
 
     const renderDiagram = async () => {
       try {
-        const { default: mermaid } = await import("mermaid");
-        // Text is measured against the final glyphs, so webfonts must be loaded
-        // first. The Font Loading API is absent in some environments (jsdom).
-        await document.fonts?.ready;
-        if (cancelled) return;
-
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: toMermaidTheme(currentTheme),
-          securityLevel: "strict",
-          // Mermaid measures labels in a detached element at body level, but the
-          // rendered SVG lands inside a <pre> (monospace). "inherit" resolves to
-          // different fonts in those two places, sizing boxes too small for the
-          // final glyphs — pin the font so measurement and display agree.
-          fontFamily: getComputedStyle(document.body).fontFamily || "sans-serif",
-          suppressErrorRendering: true,
-        });
-
-        const id = `mermaid-${Math.random().toString(36).substring(7)}`;
-        const { svg: renderedSvg } = await mermaid.render(id, codeContent);
+        const renderedSvg = await renderMermaidSvg(codeContent, currentTheme);
         if (cancelled) return;
 
         setSvg(renderedSvg);

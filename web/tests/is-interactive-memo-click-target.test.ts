@@ -22,6 +22,8 @@ describe("isInteractiveMemoClickTarget", () => {
     expect(fire('<img src="/x.png" alt="">', "img")).toBe(true);
     expect(fire('<span data-tag="inbox">#inbox</span>', "[data-tag]")).toBe(true);
     expect(fire('<button data-slot="checkbox"></button>', "[data-slot='checkbox']")).toBe(true);
+    expect(fire('<span data-slot="memo-goto-detail">8 minutes ago</span>', "[data-slot='memo-goto-detail']")).toBe(true);
+    expect(fire('<span data-slot="memo-goto-detail"><relative-time>8 minutes ago</relative-time></span>', "relative-time")).toBe(true);
   });
 
   it("walks out of a text node inside a control", () => {

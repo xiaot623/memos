@@ -1,0 +1,292 @@
+@import "@milkdown/crepe/theme/common/style.css";
+
+/*
+ * Map Crepe tokens onto the app theme, and shrink Typora-style chrome so the
+ * editor fits memo cards (Crepe's default ProseMirror padding is 60px/120px).
+ */
+.markdown-runtime {
+  --crepe-color-background: transparent;
+  --crepe-color-on-background: var(--foreground);
+  --crepe-color-surface: var(--card);
+  --crepe-color-surface-low: var(--muted);
+  --crepe-color-on-surface: var(--card-foreground);
+  --crepe-color-on-surface-variant: var(--muted-foreground);
+  --crepe-color-outline: var(--border);
+  --crepe-color-primary: var(--primary);
+  --crepe-color-secondary: var(--secondary);
+  --crepe-color-on-secondary: var(--secondary-foreground);
+  --crepe-color-inverse: var(--foreground);
+  --crepe-color-on-inverse: var(--background);
+  --crepe-color-inline-code: var(--foreground);
+  --crepe-color-error: var(--destructive);
+  --crepe-color-hover: var(--accent);
+  --crepe-color-selected: var(--accent);
+  --crepe-color-inline-area: var(--muted);
+  --crepe-font-title: var(--font-sans);
+  --crepe-font-default: var(--font-sans);
+  --crepe-font-code: var(--font-mono);
+  --crepe-base-font-size: 1rem;
+  --crepe-shadow-1: var(--shadow-sm);
+  --crepe-shadow-2: var(--shadow-md);
+}
+
+.markdown-runtime [data-milkdown-root],
+.markdown-runtime .milkdown {
+  width: 100%;
+  min-width: 0;
+}
+
+.markdown-runtime .milkdown {
+  background: transparent;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.markdown-runtime .milkdown .ProseMirror {
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 4.5rem;
+  outline: none;
+  cursor: text;
+  caret-color: var(--foreground);
+}
+
+.markdown-runtime[data-readonly] .milkdown .ProseMirror {
+  min-height: 0;
+  cursor: inherit;
+  caret-color: transparent;
+}
+
+.markdown-runtime .milkdown .ProseMirror.virtual-cursor-enabled {
+  caret-color: transparent;
+}
+
+.markdown-runtime .milkdown .ProseMirror-focused {
+  --prosemirror-virtual-cursor-color: var(--foreground);
+}
+
+.markdown-runtime .milkdown .prosemirror-virtual-cursor {
+  border-left-width: 2px;
+}
+
+.markdown-runtime .milkdown .ProseMirror-focused .prosemirror-virtual-cursor-animation {
+  animation: markdown-runtime-caret-blink 1s step-end infinite;
+}
+
+@keyframes markdown-runtime-caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.markdown-runtime .milkdown .ProseMirror-gapcursor:after {
+  border-top: 2px solid var(--foreground);
+}
+
+/* Crepe's placeholder ::before is position:absolute; pin it to the empty
+   paragraph so a collapsed parent cannot squeeze CJK text into a 1ch column. */
+.markdown-runtime .milkdown .crepe-placeholder {
+  position: relative;
+}
+
+.markdown-runtime[data-focus-mode] .milkdown .ProseMirror {
+  min-height: 0;
+  height: 100%;
+}
+
+.markdown-runtime .milkdown .ProseMirror h1,
+.markdown-runtime .milkdown .ProseMirror h2,
+.markdown-runtime .milkdown .ProseMirror h3,
+.markdown-runtime .milkdown .ProseMirror h4,
+.markdown-runtime .milkdown .ProseMirror h5,
+.markdown-runtime .milkdown .ProseMirror h6 {
+  font-family: inherit;
+  font-weight: 600;
+  padding: 0;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+
+.markdown-runtime .milkdown .ProseMirror h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.markdown-runtime .milkdown .ProseMirror h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.375rem;
+}
+
+.markdown-runtime .milkdown .ProseMirror h3 {
+  font-size: 1.25rem;
+}
+
+.markdown-runtime .milkdown .ProseMirror h4 {
+  font-size: 1.125rem;
+}
+
+.markdown-runtime .milkdown .ProseMirror h5,
+.markdown-runtime .milkdown .ProseMirror h6 {
+  font-size: 1rem;
+}
+
+.markdown-runtime .milkdown .ProseMirror h6 {
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.markdown-runtime .milkdown .ProseMirror p {
+  padding: 0;
+  margin: 0 0 0.5rem;
+  line-height: 1.5;
+}
+
+.markdown-runtime .milkdown .ProseMirror blockquote {
+  padding-left: 0.75rem;
+  margin: 0 0 0.5rem;
+  border-left: 4px solid color-mix(in oklch, var(--primary) 30%, transparent);
+  color: var(--muted-foreground);
+  font-style: normal;
+}
+
+.markdown-runtime .milkdown .ProseMirror blockquote::before {
+  display: none;
+}
+
+.markdown-runtime .milkdown .ProseMirror hr {
+  border: none;
+  background-color: var(--border);
+  background-clip: content-box;
+  padding: 0.5rem 0;
+  height: 18px;
+}
+
+.markdown-runtime .milkdown .ProseMirror code {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  background: var(--muted);
+  color: var(--foreground);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.375rem;
+}
+
+.markdown-runtime .milkdown .ProseMirror a {
+  color: var(--primary);
+  text-underline-offset: 2px;
+}
+
+.markdown-runtime .milkdown-code-block {
+  margin: 0.5rem 0;
+  padding: 0.25rem 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--muted) 20%, transparent);
+}
+
+.markdown-runtime .milkdown-code-block .tools {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  left: 0.5rem;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.markdown-runtime .milkdown-code-block:hover .tools,
+.markdown-runtime .milkdown-code-block:focus-within .tools {
+  pointer-events: auto;
+}
+
+.markdown-runtime .milkdown-code-block .tools .language-button {
+  margin-bottom: 0;
+}
+
+.markdown-runtime .milkdown-code-block .cm-editor,
+.markdown-runtime .milkdown-code-block .cm-gutters {
+  background: transparent;
+}
+
+/* Crepe's CodeMirror basicSetup always marks the cursor line. Nested editors
+   keep a cursor at the end of the snippet even when the block is not focused,
+   so the last line looks selected in memo cards. */
+.markdown-runtime .milkdown-code-block .cm-editor .cm-activeLineGutter {
+  background-color: transparent;
+  color: inherit;
+}
+
+.markdown-runtime .milkdown-code-block .cm-editor:not(.cm-focused) .cm-activeLine,
+.markdown-runtime[data-readonly] .milkdown-code-block .cm-activeLine {
+  background-color: transparent;
+}
+
+.markdown-runtime .milkdown-code-block .cm-content {
+  padding: 0.25rem 0.75rem 0.5rem 0.25rem;
+  caret-color: var(--foreground);
+}
+
+.markdown-runtime[data-readonly] .milkdown-code-block .cm-content {
+  caret-color: transparent;
+  cursor: inherit;
+}
+
+.markdown-runtime[data-readonly] .milkdown-code-block .language-button {
+  pointer-events: none;
+  cursor: inherit;
+}
+
+.markdown-runtime[data-readonly] .milkdown-code-block .language-button .expand-icon {
+  display: none;
+}
+
+.markdown-runtime[data-readonly] .milkdown-block-handle,
+.markdown-runtime[data-readonly] .milkdown-slash-menu,
+.markdown-runtime[data-readonly] .milkdown-toolbar,
+.markdown-runtime[data-readonly] .milkdown-link-preview,
+.markdown-runtime[data-readonly] .milkdown-link-edit,
+.markdown-runtime[data-readonly] .link-card-source {
+  display: none !important;
+}
+
+.markdown-runtime span[data-type="html"][hidden] {
+  display: none !important;
+}
+
+.markdown-runtime iframe {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
+.markdown-runtime dl[data-type="footnote_definition"] {
+  margin: 0.75rem 0 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.markdown-runtime sup[data-type="footnote_reference"] a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.markdown-runtime.memo-editor-content .milkdown .ProseMirror,
+.memo-editor-content .markdown-runtime .milkdown .ProseMirror {
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.markdown-runtime.memo-editor-content[data-focus-mode] .milkdown .ProseMirror,
+.memo-editor-content[data-focus-mode] .markdown-runtime .milkdown .ProseMirror {
+  max-height: none;
+}
