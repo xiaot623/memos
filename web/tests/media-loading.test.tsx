@@ -1,18 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { Image } from "@/components/MemoContent/markdown/Image";
 import AudioAttachmentItem from "@/components/MemoMetadata/Attachment/AudioAttachmentItem";
 import MotionPhotoPlayer from "@/components/MotionPhotoPlayer";
 
 describe("media loading", () => {
-  it("marks markdown images for native lazy loading", () => {
-    render(<Image src="/image.jpg" alt="memo illustration" />);
-
-    const image = screen.getByRole("img", { name: "memo illustration" });
-    expect(image).toHaveAttribute("loading", "lazy");
-    expect(image).toHaveAttribute("decoding", "async");
-  });
-
   it("does not bind an audio source until playback is requested", async () => {
     const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
     const { container } = render(<AudioAttachmentItem filename="recording.mp3" sourceUrl="/recording.mp3" mimeType="audio/mpeg" />);

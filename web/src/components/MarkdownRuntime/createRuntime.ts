@@ -1,9 +1,7 @@
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { Crepe } from "@milkdown/crepe";
-import { codeBlockConfig } from "@milkdown/kit/component/code-block";
 import { editorViewOptionsCtx } from "@milkdown/kit/core";
-import type { MilkdownPlugin } from "@milkdown/kit/ctx";
 import { createMermaidPreviewRenderer } from "./mermaidPreview";
 import { configureFootnoteDom } from "./plugins/footnotes";
 import { createFileHandlerPlugin, createSubmitKeymap } from "./plugins/handlers";
@@ -88,22 +86,11 @@ export function createMarkdownRuntime({
         },
       }));
     }
-    ctx.update(codeBlockConfig.key, (prev) => ({
-      ...prev,
-      renderPreview: createMermaidPreviewRenderer(getTheme),
-      previewOnlyByDefault: readonly,
-    }));
   });
 
-  const plugins: MilkdownPlugin[] = [];
   for (const plugin of tagMentionPlugins) {
-    if (Array.isArray(plugin)) {
-      plugins.push(...plugin);
-    } else {
-      plugins.push(plugin);
-    }
+    crepe.editor.use(plugin);
   }
-  crepe.editor.use(plugins);
   if (readonly) {
     crepe.editor.use(createLinkCardPlugin());
   }

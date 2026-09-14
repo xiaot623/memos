@@ -1,29 +1,18 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { createMarkdownRuntime } from "@/components/MarkdownRuntime/createRuntime";
+import { mountRuntime } from "./markdown-runtime-harness";
 
 describe("Milkdown markdown round-trip", () => {
-  let destroy: (() => Promise<void>) | undefined;
+  const runtimes: Array<{ cleanup: () => Promise<void> }> = [];
 
   afterEach(async () => {
-    await destroy?.();
-    destroy = undefined;
+    await Promise.all(runtimes.splice(0).map((runtime) => runtime.cleanup()));
   });
 
   it("keeps headings, lists, tags, mentions, tasks, and tables in serialized markdown", async () => {
-    const root = document.createElement("div");
-    document.body.append(root);
     const markdown = "## Title\n\n- item\n- [ ] task\n\n#work and @alice\n\n| a | b |\n| --- | --- |\n| 1 | 2 |";
-    const crepe = createMarkdownRuntime({
-      root,
-      defaultValue: markdown,
-      mode: "edit",
-    });
-    destroy = async () => {
-      await crepe.destroy();
-      root.remove();
-    };
-    await crepe.create();
-    const next = crepe.getMarkdown();
+    const runtime = await mountRuntime(markdown, "edit");
+    runtimes.push(runtime);
+    const next = runtime.crepe.getMarkdown();
     expect(next).toContain("Title");
     expect(next).toMatch(/item/);
     expect(next).toMatch(/task/);

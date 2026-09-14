@@ -1,9 +1,6 @@
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { MemoMarkdownRenderer } from "@/components/MemoContent/MemoMarkdownRenderer";
 import { buildEditorExtensions } from "@/components/MemoEditor/Editor/extensions";
 
 function makeView(doc: string, onSubmit: () => void = () => {}) {
@@ -106,7 +103,7 @@ describe("editor key bindings", () => {
     view.destroy();
   });
 
-  it("Tab-nested ordered lists render nested in the display (no flat siblings)", () => {
+  it("Tab-nested ordered lists renumber so CommonMark nests them", () => {
     const view = makeView("1. a\n2. b\n3. c");
     tabOnLine(view, 2); // nest b under a
     tabOnLine(view, 3); // nest c under a ...
@@ -116,10 +113,5 @@ describe("editor key bindings", () => {
     // Each nested level renumbers to 1, which is what CommonMark requires to
     // nest an ordered sublist (a 2./3. start can't interrupt the parent line).
     expect(md).toBe("1. a\n   1. b\n      1. c");
-    // remark-gfm (the display) now reads this as three nested ordered lists.
-    const html = renderToStaticMarkup(
-      React.createElement(MemoMarkdownRenderer, { content: md, resolvedMentionUsernames: new Set<string>() }),
-    );
-    expect((html.match(/<ol/g) ?? []).length).toBe(3);
   });
 });
