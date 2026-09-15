@@ -10,10 +10,20 @@ const MemoContent = (props: MemoContentProps) => {
       <div
         data-memo-content
         className={`relative w-full max-w-full wrap-break-word text-base leading-6 [&>*:last-child]:mb-0 ${contentClassName || ""}`}
-        onMouseUp={props.onClick}
-        onDoubleClick={props.onDoubleClick}
+        onMouseUp={props.editable ? undefined : props.onClick}
+        onDoubleClick={props.editable ? undefined : props.onDoubleClick}
       >
-        <MarkdownView content={content} compact={Boolean(props.compact)} memoName={props.memoName} eager={!props.compact} />
+        <MarkdownView
+          content={content}
+          compact={Boolean(props.compact)}
+          memoName={props.memoName}
+          eager={!props.compact}
+          editable={props.editable}
+          autoFocus={props.autoFocus}
+          onContentChange={props.onContentChange}
+          onSubmit={props.onSubmit}
+          onBlur={props.editable ? props.onBlur : undefined}
+        />
       </div>
     </div>
   );

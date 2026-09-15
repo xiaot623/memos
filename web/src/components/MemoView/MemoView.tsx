@@ -1,10 +1,11 @@
-import { type ComponentType, memo, Suspense, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type ComponentType, memo, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useResolvedUser } from "@/components/MemoContent/MentionResolutionContext";
 import { loadMemoEditor } from "@/components/MemoEditor/loader";
 import type { MemoEditorProps } from "@/components/MemoEditor/types";
 import { useAuth } from "@/contexts/AuthContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import { findTagMetadata } from "@/lib/tag";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
@@ -42,41 +43,83 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const toggleBlurVisibility = useCallback(() => setShowBlurredContent((prev) => !prev), []);
 
   const { previewState, openPreview, setPreviewOpen } = useImagePreview();
+  const { mutate: updateMemo } = useUpdateMemo();
+  const location = useLocation();
+  const isInMemoDetailPage = location.pathname.startsWith(`/${memoData.name}`) || location.pathname.startsWith("/memos/shares/");
+  const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
+  const isEditing = showEditor && isInMemoDetailPage;
+  const draftRef = useRef(memoData.content);
 
+  const closeEditor = useCallback(() => setShowEditor(false), []);
   const openEditor = useCallback(() => {
     if (showEditor) return;
+    if (isInMemoDetailPage) {
+      draftRef.current = memoData.content;
+      setShowEditor(true);
+      return;
+    }
     void loadMemoEditor()
       .then(({ default: MemoEditor }) => {
         setEditorComponent(() => MemoEditor);
         setShowEditor(true);
       })
       .catch(() => undefined);
-  }, [showEditor]);
-  const closeEditor = useCallback(() => setShowEditor(false), []);
+  }, [isInMemoDetailPage, memoData.content, showEditor]);
+  const saveEditor = useCallback(() => {
+    if (!isInMemoDetailPage) {
+      return;
+    }
+    if (draftRef.current === memoData.content) {
+      closeEditor();
+      return;
+    }
+    setIsBackgroundSaving(true);
+    updateMemo(
+      { update: { name: memoData.name, content: draftRef.current }, updateMask: ["content", "update_time"] },
+      {
+        onSuccess: () => setShowEditor(false),
+        onSettled: () => setIsBackgroundSaving(false),
+      },
+    );
+  }, [closeEditor, isInMemoDetailPage, memoData.content, memoData.name, updateMemo]);
+  const onDraftChange = useCallback((content: string) => {
+    draftRef.current = content;
+  }, []);
 
   const handleCardClick = useCallback(
     (e: React.MouseEvent) => {
-      if (!canEdit) return;
+      if (!canEdit || showEditor) return;
       if (isInteractiveMemoClickTarget(e.target)) return;
       openEditor();
     },
-    [canEdit, openEditor],
+    [canEdit, openEditor, showEditor],
   );
 
   const handleCardKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (!canEdit) return;
+      if (!canEdit || showEditor) return;
       if (e.key !== "Enter" && e.key !== " ") return;
       if (e.target !== e.currentTarget) return;
       e.preventDefault();
       openEditor();
     },
-    [canEdit, openEditor],
+    [canEdit, openEditor, showEditor],
   );
 
-  const location = useLocation();
-  const isInMemoDetailPage = location.pathname.startsWith(`/${memoData.name}`) || location.pathname.startsWith("/memos/shares/");
-  const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      event.preventDefault();
+      saveEditor();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isEditing, saveEditor]);
 
   // The card width is only needed by the share-image dialog. Keep feed cards
   // free of a permanent ResizeObserver and measure only while that dialog is open.
@@ -122,7 +165,10 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       readonly,
       showBlurredContent,
       blurred,
+      isEditing,
       openEditor,
+      saveEditor,
+      onDraftChange,
       isSaving: isBackgroundSaving,
       toggleBlurVisibility,
       openPreview,
@@ -137,7 +183,10 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       readonly,
       showBlurredContent,
       blurred,
+      isEditing,
       openEditor,
+      saveEditor,
+      onDraftChange,
       isBackgroundSaving,
       toggleBlurVisibility,
       openPreview,
@@ -146,7 +195,12 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   const article = (
     <article
-      className={cn(MEMO_CARD_BASE_CLASSES, canEdit && "cursor-pointer", showCommentPreview ? "mb-0 rounded-b-none" : "mb-2", className)}
+      className={cn(
+        MEMO_CARD_BASE_CLASSES,
+        canEdit && (isEditing ? "cursor-text" : "cursor-pointer"),
+        showCommentPreview ? "mb-0 rounded-b-none" : "mb-2",
+        className,
+      )}
       ref={cardRef}
       tabIndex={canEdit ? 0 : -1}
       aria-busy={isBackgroundSaving || undefined}
@@ -188,7 +242,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   return (
     <MemoViewContext.Provider value={contextValue}>
       {memoDisplay}
-      {showEditor && EditorComponent && (
+      {showEditor && !isInMemoDetailPage && EditorComponent && (
         <EditorComponent
           autoFocus
           presentation="peek"

@@ -7,6 +7,7 @@ import { configureFootnoteDom } from "./plugins/footnotes";
 import { createFileHandlerPlugin, createSubmitKeymap } from "./plugins/handlers";
 import { createHeadingIdPlugin } from "./plugins/headingIds";
 import { configureTrustedHtml } from "./plugins/html";
+import { createImageResizePlugin } from "./plugins/imageResize";
 import { createLinkCardPlugin } from "./plugins/linkCard";
 import { tagMentionPlugins } from "./plugins/tagMention";
 
@@ -93,6 +94,7 @@ export function createMarkdownRuntime({
     crepe.editor.use(plugin);
   }
   crepe.editor.use(createHeadingIdPlugin());
+  crepe.editor.use(createImageResizePlugin());
   if (readonly) {
     crepe.editor.use(createLinkCardPlugin());
   }

@@ -31,6 +31,10 @@ vi.mock("@/hooks/useCurrentUser", () => ({
   default: () => mocks.currentUser,
 }));
 
+vi.mock("@/hooks/useMemoQueries", () => ({
+  useUpdateMemo: () => ({ mutate: vi.fn() }),
+}));
+
 vi.mock("@/components/MemoView/components/MemoHeader", () => ({
   default: () => (
     <button type="button" aria-label="goto-detail">
@@ -65,13 +69,15 @@ const MockPeekEditor = (props: MemoEditorProps) => {
   );
 };
 
-const wrapper = ({ children }: PropsWithChildren) => (
-  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-    <MemoryRouter>{children}</MemoryRouter>
-  </QueryClientProvider>
-);
+const wrapper =
+  (path = "/") =>
+  ({ children }: PropsWithChildren) => (
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter initialEntries={[path]}>{children}</MemoryRouter>
+    </QueryClientProvider>
+  );
 
-const renderMemo = (creator = "users/alice") =>
+const renderMemo = (creator = "users/alice", path = "/") =>
   render(
     <MemoView
       memo={create(MemoSchema, {
@@ -81,7 +87,7 @@ const renderMemo = (creator = "users/alice") =>
         state: State.NORMAL,
       })}
     />,
-    { wrapper },
+    { wrapper: wrapper(path) },
   );
 
 describe("<MemoView> peek editor", () => {
@@ -98,6 +104,17 @@ describe("<MemoView> peek editor", () => {
 
     await waitFor(() => expect(screen.getByTestId("peek-editor")).toBeInTheDocument());
     expect(screen.getByTestId("peek-editor")).toHaveAttribute("data-presentation", "peek");
+    expect(screen.getByText("note body")).toBeInTheDocument();
+  });
+
+  it("keeps the reading card and does not open a peek editor on the detail page", async () => {
+    renderMemo("users/alice", "/memos/1");
+
+    fireEvent.click(screen.getByText("note body"));
+
+    await Promise.resolve();
+    expect(screen.queryByTestId("peek-editor")).toBeNull();
+    expect(mocks.loadMemoEditor).not.toHaveBeenCalled();
     expect(screen.getByText("note body")).toBeInTheDocument();
   });
 

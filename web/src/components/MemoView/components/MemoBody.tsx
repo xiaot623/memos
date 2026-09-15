@@ -21,7 +21,8 @@ const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 };
 
 const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
-  const { memo, parentPage, showBlurredContent, blurred, openPreview, toggleBlurVisibility } = useMemoViewContext();
+  const { memo, parentPage, showBlurredContent, blurred, openPreview, toggleBlurVisibility, isEditing, onDraftChange, saveEditor } =
+    useMemoViewContext();
 
   const { handleMemoContentClick } = useMemoHandlers({ openPreview });
 
@@ -38,7 +39,17 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
         {/* Compact bounds the whole body — attachments included — behind one Show more.
             Reactions stay outside so they never hide under the fade. */}
         <ClampedSection enabled={Boolean(compact)}>
-          <MemoContent memoName={memo.name} content={memo.content} onClick={handleMemoContentClick} compact={Boolean(compact)} />
+          <MemoContent
+            memoName={memo.name}
+            content={memo.content}
+            onClick={handleMemoContentClick}
+            compact={Boolean(compact)}
+            editable={isEditing}
+            autoFocus={isEditing}
+            onContentChange={onDraftChange}
+            onSubmit={saveEditor}
+            onBlur={saveEditor}
+          />
           <AttachmentListView attachments={memo.attachments} onImagePreview={openPreview} />
           <RelationListView relations={referencedMemos} currentMemoName={memo.name} parentPage={parentPage} />
           {memo.location && <LocationDisplayView location={memo.location} />}
