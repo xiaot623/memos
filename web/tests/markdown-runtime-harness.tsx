@@ -1,7 +1,12 @@
 import type { MarkdownRuntimeMode } from "@/components/MarkdownRuntime/createRuntime";
 import { createMarkdownRuntime } from "@/components/MarkdownRuntime/createRuntime";
 
-export async function mountRuntime(markdown: string, mode: MarkdownRuntimeMode = "view", placeholder = "") {
+export async function mountRuntime(
+  markdown: string,
+  mode: MarkdownRuntimeMode = "view",
+  placeholder = "",
+  onFiles?: (files: File[]) => void,
+) {
   const root = document.createElement("div");
   root.dataset.memoContent = "";
   document.body.append(root);
@@ -10,6 +15,7 @@ export async function mountRuntime(markdown: string, mode: MarkdownRuntimeMode =
     defaultValue: markdown,
     mode,
     placeholder,
+    onFiles,
   });
   await crepe.create();
   return {

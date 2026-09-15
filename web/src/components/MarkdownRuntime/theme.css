@@ -97,14 +97,6 @@
   position: relative;
 }
 
-/* Crepe's caption field keeps the native placeholder while focused (and during
-   IME composition). Hide it as soon as the input is active. */
-.markdown-runtime .milkdown .caption-input:focus::placeholder,
-.markdown-runtime .milkdown .caption-input:not(:placeholder-shown)::placeholder {
-  color: transparent;
-  opacity: 0;
-}
-
 .markdown-runtime[data-focus-mode] .milkdown,
 .markdown-runtime[data-focus-mode] [data-milkdown-root],
 .markdown-runtime[data-focus-mode] .milkdown .ProseMirror {
@@ -278,123 +270,9 @@
   border-radius: 0.5rem;
 }
 
-.markdown-runtime .milkdown-image-block .image-wrapper > .image-resize-handle {
-  display: none;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper img {
-  height: auto !important;
-  min-height: 0;
-  object-fit: contain;
+.markdown-runtime img {
   max-width: 100%;
-}
-
-.markdown-runtime .milkdown-image-block.selected > .image-wrapper::before {
-  display: none;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .operation {
-  z-index: 3;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip {
-  position: absolute;
-  z-index: 2;
-  box-sizing: border-box;
-  background: transparent;
-  opacity: 0;
-  transition: opacity 0.15s;
-  touch-action: none;
-}
-
-.markdown-runtime:not([data-readonly]) .milkdown-image-block:hover .image-wrapper,
-.markdown-runtime:not([data-readonly]) .milkdown-image-block.selected .image-wrapper {
-  outline: 1px solid var(--primary);
-  outline-offset: -1px;
-}
-
-.markdown-runtime .milkdown-image-block:hover .image-resize-grip,
-.markdown-runtime .milkdown-image-block.selected .image-resize-grip {
-  opacity: 1;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="nw"],
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="ne"],
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="se"],
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="sw"] {
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--primary);
-  border-radius: 50%;
-  background: var(--card);
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="nw"] {
-  top: 0;
-  left: 0;
-  transform: translate(-50%, -50%);
-  cursor: nwse-resize;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="ne"] {
-  top: 0;
-  right: 0;
-  transform: translate(50%, -50%);
-  cursor: nesw-resize;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="se"] {
-  bottom: 0;
-  right: 0;
-  transform: translate(50%, 50%);
-  cursor: nwse-resize;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="sw"] {
-  bottom: 0;
-  left: 0;
-  transform: translate(-50%, 50%);
-  cursor: nesw-resize;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="n"],
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="s"] {
-  left: 8px;
-  right: 8px;
-  height: 8px;
-  cursor: ns-resize;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="n"] {
-  top: 0;
-  transform: translateY(-50%);
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="s"] {
-  bottom: 0;
-  transform: translateY(50%);
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="e"],
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="w"] {
-  top: 8px;
-  bottom: 8px;
-  width: 8px;
-  cursor: ew-resize;
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="e"] {
-  right: 0;
-  transform: translateX(50%);
-}
-
-.markdown-runtime .milkdown-image-block .image-wrapper .image-resize-grip[data-resize="w"] {
-  left: 0;
-  transform: translateX(-50%);
-}
-
-.markdown-runtime[data-readonly] .milkdown-image-block .image-resize-grip {
-  display: none !important;
+  height: auto;
 }
 
 .markdown-runtime dl[data-type="footnote_definition"] {

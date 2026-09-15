@@ -2,12 +2,12 @@ import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { Crepe } from "@milkdown/crepe";
 import { editorViewOptionsCtx } from "@milkdown/kit/core";
+import { uploadConfig } from "@milkdown/kit/plugin/upload";
 import { createMermaidPreviewRenderer } from "./mermaidPreview";
 import { configureFootnoteDom } from "./plugins/footnotes";
 import { createFileHandlerPlugin, createSubmitKeymap } from "./plugins/handlers";
 import { createHeadingIdPlugin } from "./plugins/headingIds";
 import { configureTrustedHtml } from "./plugins/html";
-import { createImageResizePlugin } from "./plugins/imageResize";
 import { createLinkCardPlugin } from "./plugins/linkCard";
 import { tagMentionPlugins } from "./plugins/tagMention";
 
@@ -46,7 +46,7 @@ export function createMarkdownRuntime({
       [Crepe.Feature.BlockEdit]: false,
       [Crepe.Feature.Cursor]: !readonly,
       [Crepe.Feature.LinkTooltip]: !readonly,
-      [Crepe.Feature.ImageBlock]: true,
+      [Crepe.Feature.ImageBlock]: false,
       [Crepe.Feature.ListItem]: true,
       [Crepe.Feature.CodeMirror]: true,
       [Crepe.Feature.Table]: true,
@@ -79,6 +79,12 @@ export function createMarkdownRuntime({
   crepe.editor.config((ctx) => {
     configureTrustedHtml(ctx);
     configureFootnoteDom(ctx);
+    // Crepe's default uploader inserts blob: image nodes. Files belong on
+    // memo attachments, so never turn a paste/drop into document images.
+    ctx.update(uploadConfig.key, (prev) => ({
+      ...prev,
+      uploader: async () => [],
+    }));
     if (readonly) {
       ctx.update(editorViewOptionsCtx, (prev) => ({
         ...prev,
@@ -94,7 +100,6 @@ export function createMarkdownRuntime({
     crepe.editor.use(plugin);
   }
   crepe.editor.use(createHeadingIdPlugin());
-  crepe.editor.use(createImageResizePlugin());
   if (readonly) {
     crepe.editor.use(createLinkCardPlugin());
   }
