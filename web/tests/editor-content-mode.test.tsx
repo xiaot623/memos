@@ -29,7 +29,7 @@ describe("EditorContent", () => {
     );
     expect(screen.getByTestId("wysiwyg-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("source-editor")).not.toBeInTheDocument();
-    expect(container.firstElementChild).toHaveClass("min-w-0");
+    expect(container.firstElementChild).toHaveClass("min-h-0", "min-w-0");
   });
 
   it("falls back to the CodeMirror source editor in raw mode", () => {

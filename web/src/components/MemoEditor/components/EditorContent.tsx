@@ -34,7 +34,7 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
   const EditorImpl = isRawMode ? Editor : WysiwygEditor;
 
   return (
-    <div className="w-full min-w-0 flex flex-col flex-1">
+    <div className="flex w-full min-h-0 min-w-0 flex-1 flex-col">
       <EditorImpl
         ref={ref}
         className="memo-editor-content"

@@ -1,7 +1,7 @@
 export const FOCUS_MODE_STYLES = {
   backdrop: "fixed inset-0 bg-black/20 backdrop-blur-sm z-40",
   container: {
-    base: "fixed z-50 w-auto max-w-5xl mx-auto shadow-2xl border-border h-auto overflow-y-auto",
+    base: "fixed z-50 w-auto max-w-5xl mx-auto shadow-2xl border-border h-auto overflow-hidden",
     spacing: "top-2 left-2 right-2 bottom-2 sm:top-4 sm:left-4 sm:right-4 sm:bottom-4 md:top-8 md:left-8 md:right-8 md:bottom-8",
   },
   transition: "transition-all duration-300 ease-in-out",
@@ -21,7 +21,7 @@ export const PEEK_MODE_STYLES = {
   shell: "flex min-h-0 w-[calc(100vw-2rem)] flex-col md:w-[calc(100vw-4rem)]",
   compactShell: "max-h-[85vh] max-w-lg",
   focusShell: "h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] max-w-5xl md:h-[calc(100vh-4rem)] md:max-h-[calc(100vh-4rem)]",
-  container: "min-h-0 flex-1 overflow-y-auto shadow-2xl",
+  container: "min-h-0 flex-1 overflow-hidden shadow-2xl",
 } as const;
 
 // localStorage key for the user's preference to show the formatting toolbar in
