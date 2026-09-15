@@ -5,6 +5,7 @@ import { editorViewOptionsCtx } from "@milkdown/kit/core";
 import { createMermaidPreviewRenderer } from "./mermaidPreview";
 import { configureFootnoteDom } from "./plugins/footnotes";
 import { createFileHandlerPlugin, createSubmitKeymap } from "./plugins/handlers";
+import { createHeadingIdPlugin } from "./plugins/headingIds";
 import { configureTrustedHtml } from "./plugins/html";
 import { createLinkCardPlugin } from "./plugins/linkCard";
 import { tagMentionPlugins } from "./plugins/tagMention";
@@ -91,6 +92,7 @@ export function createMarkdownRuntime({
   for (const plugin of tagMentionPlugins) {
     crepe.editor.use(plugin);
   }
+  crepe.editor.use(createHeadingIdPlugin());
   if (readonly) {
     crepe.editor.use(createLinkCardPlugin());
   }

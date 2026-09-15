@@ -94,17 +94,14 @@ export interface HeadingItem {
   slug: string;
 }
 
-/**
- * Slugify a string into a URL-friendly anchor ID.
- */
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
+const HASH_UNSAFE = /[\s#?]/g;
+
+/** Unique URL fragment for an outline heading. Callers must walk h1–h4 in document order. */
+export function headingAnchor(text: string, used: Map<string, number>): string {
+  const base = text.trim().replace(HASH_UNSAFE, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "h";
+  const count = used.get(base) ?? 0;
+  used.set(base, count + 1);
+  return count === 0 ? base : `${base}-${count}`;
 }
 
 /**
@@ -117,7 +114,7 @@ export function extractHeadings(markdown: string): HeadingItem[] {
   });
 
   const headings: HeadingItem[] = [];
-  const slugCounts = new Map<string, number>();
+  const used = new Map<string, number>();
 
   visit(tree, "heading", (node: Heading) => {
     if (node.depth < 1 || node.depth > 4) return;
@@ -125,12 +122,7 @@ export function extractHeadings(markdown: string): HeadingItem[] {
     const text = getNodeText(node as unknown as MdastNode);
     if (!text) return;
 
-    let slug = slugify(text);
-    const count = slugCounts.get(slug) || 0;
-    slugCounts.set(slug, count + 1);
-    if (count > 0) slug = `${slug}-${count}`;
-
-    headings.push({ text, level: node.depth as 1 | 2 | 3 | 4, slug });
+    headings.push({ text, level: node.depth as 1 | 2 | 3 | 4, slug: headingAnchor(text, used) });
   });
 
   return headings;
