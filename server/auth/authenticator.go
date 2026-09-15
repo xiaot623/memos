@@ -127,7 +127,9 @@ func (a *Authenticator) AuthenticateByPAT(ctx context.Context, token string) (*s
 type AuthResult struct {
 	User        *store.User // Set for PAT authentication
 	Claims      *UserClaims // Set for Access Token V2 (stateless)
-	AccessToken string      // Non-empty if authenticated via JWT
+	AccessToken string      // Non-empty if authenticated via bearer token
+	// PAT is set when the request was authenticated with a personal access token.
+	PAT *storepb.PersonalAccessTokensUserSetting_PersonalAccessToken
 }
 
 // bearerAuth is the outcome of successfully validating a Bearer token: the resolved
@@ -219,7 +221,7 @@ func (a *Authenticator) Authenticate(ctx context.Context, authHeader string) *Au
 		return nil
 	}
 	if bearer.pat != nil {
-		return &AuthResult{User: bearer.user, AccessToken: token}
+		return &AuthResult{User: bearer.user, AccessToken: token, PAT: bearer.pat}
 	}
 	return &AuthResult{Claims: bearer.claims, AccessToken: token}
 }

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"strings"
 	"unicode"
 	"unicode/utf8"
 
@@ -68,6 +69,53 @@ func isValidTagRune(r rune) bool {
 	}
 
 	return false
+}
+
+// SanitizeTagName converts free-form text into a valid tag name.
+// Whitespace runs become a single hyphen, invalid tag runes are dropped, and the
+// result is truncated to MaxTagLength runes. Returns an empty string if nothing remains.
+func SanitizeTagName(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ""
+	}
+
+	var b strings.Builder
+	b.Grow(len(s))
+	runeCount := 0
+	pendingHyphen := false
+	started := false
+
+	for _, r := range s {
+		if unicode.IsSpace(r) {
+			if started {
+				pendingHyphen = true
+			}
+			continue
+		}
+		if !isValidTagRune(r) {
+			continue
+		}
+		if pendingHyphen {
+			if runeCount >= MaxTagLength {
+				break
+			}
+			b.WriteRune('-')
+			runeCount++
+			pendingHyphen = false
+			if runeCount >= MaxTagLength {
+				break
+			}
+		}
+		if runeCount >= MaxTagLength {
+			break
+		}
+		b.WriteRune(r)
+		runeCount++
+		started = true
+	}
+
+	return b.String()
 }
 
 // Parse parses #tag syntax using Unicode-aware validation.

@@ -453,6 +453,7 @@
         "access-token-created": "Access token `{{description}}` created",
         "create-access-token": "Create Access Token",
         "description": "Description",
+        "description-as-tag": "Memos created with this token are tagged with this description.",
         "duration-1m": "1 Month",
         "duration-90d": "90 Days",
         "duration-8h": "8 Hours",

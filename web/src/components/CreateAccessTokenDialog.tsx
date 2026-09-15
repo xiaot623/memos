@@ -140,6 +140,7 @@ function CreateAccessTokenDialog({ open, onOpenChange, onSuccess }: Props) {
                 value={state.description}
                 onChange={handleDescriptionInputChange}
               />
+              <p className="text-xs text-muted-foreground">{t("setting.access-token.create-dialog.description-as-tag")}</p>
             </div>
             <div className="grid gap-2">
               <Label>

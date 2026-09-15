@@ -14,7 +14,9 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/usememos/memos/internal/httpgetter"
+	mdparser "github.com/usememos/memos/internal/markdown/parser"
 	v1pb "github.com/usememos/memos/proto/gen/api/v1"
+	"github.com/usememos/memos/server/auth"
 	"github.com/usememos/memos/server/runner/memopayload"
 	"github.com/usememos/memos/store"
 )
@@ -34,6 +36,35 @@ func withSuppressSSE(ctx context.Context) context.Context {
 func isSSESuppressed(ctx context.Context) bool {
 	v, ok := ctx.Value(suppressSSEKey{}).(bool)
 	return ok && v
+}
+
+// applyPATSourceTag appends a #tag derived from the current personal access token's
+// description. JWT sessions and comments (which suppress SSE via CreateMemoComment)
+// are left unchanged.
+func (s *APIV1Service) applyPATSourceTag(ctx context.Context, content string) string {
+	if isSSESuppressed(ctx) {
+		return content
+	}
+	pat := auth.GetPAT(ctx)
+	if pat == nil {
+		return content
+	}
+	tag := mdparser.SanitizeTagName(pat.Description)
+	if tag == "" {
+		return content
+	}
+	existing, err := s.MarkdownService.ExtractTags([]byte(content))
+	if err == nil {
+		for _, existingTag := range existing {
+			if strings.EqualFold(existingTag, tag) {
+				return content
+			}
+		}
+	}
+	if strings.TrimSpace(content) == "" {
+		return "#" + tag
+	}
+	return strings.TrimRight(content, " \t") + "\n#" + tag
 }
 
 func (s *APIV1Service) checkMemoReadAccess(ctx context.Context, memo *store.Memo) error {
@@ -84,7 +115,7 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 	create := &store.Memo{
 		UID:        memoUID,
 		CreatorID:  user.ID,
-		Content:    request.Memo.Content,
+		Content:    s.applyPATSourceTag(ctx, request.Memo.Content),
 		Visibility: convertVisibilityToStore(request.Memo.Visibility),
 	}
 

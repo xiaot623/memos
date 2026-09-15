@@ -1,7 +1,9 @@
 package parser
 
 import (
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -208,6 +210,34 @@ func TestTagParser(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSanitizeTagName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{name: "plain", input: "Telegram", expected: "Telegram"},
+		{name: "spaces to hyphen", input: "Telegram bot", expected: "Telegram-bot"},
+		{name: "trim and collapse spaces", input: "  iOS  Shortcuts  ", expected: "iOS-Shortcuts"},
+		{name: "cjk", input: "微信", expected: "微信"},
+		{name: "drop punctuation", input: "hello.world", expected: "helloworld"},
+		{name: "empty after sanitizing", input: "...", expected: ""},
+		{name: "blank", input: "   ", expected: ""},
+		{name: "allowed separators", input: "science&tech/v2", expected: "science&tech/v2"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, SanitizeTagName(tt.input))
+		})
+	}
+
+	t.Run("truncates to max length", func(t *testing.T) {
+		long := strings.Repeat("a", MaxTagLength+10)
+		got := SanitizeTagName(long)
+		assert.Equal(t, MaxTagLength, utf8.RuneCountInString(got))
+	})
 }
 
 func TestTagParser_Trigger(t *testing.T) {

@@ -35,6 +35,7 @@ describe("CreateAccessTokenDialog", () => {
     render(<CreateAccessTokenDialog open onOpenChange={vi.fn()} onSuccess={vi.fn()} />);
 
     expect(screen.getByRole("radio", { name: "setting.access-token.create-dialog.duration-never" })).toBeChecked();
+    expect(screen.getByText("setting.access-token.create-dialog.description-as-tag")).toBeInTheDocument();
     fireEvent.change(screen.getByRole("textbox"), { target: { value: "CLI token" } });
     fireEvent.click(screen.getByRole("button", { name: "common.create" }));
 

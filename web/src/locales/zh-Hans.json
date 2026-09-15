@@ -655,6 +655,7 @@
         "create-access-token": "创建令牌",
         "created-at": "创建时间",
         "description": "描述",
+        "description-as-tag": "使用此令牌创建的笔记会自动加上以该描述为名的标签。",
         "duration-1m": "1 个月",
         "duration-8h": "8 小时",
         "duration-never": "从不",

@@ -6,6 +6,7 @@ import (
 
 	"github.com/usememos/memos/internal/markdown"
 	"github.com/usememos/memos/internal/profile"
+	storepb "github.com/usememos/memos/proto/gen/store"
 	"github.com/usememos/memos/server/auth"
 	apiv1 "github.com/usememos/memos/server/router/api/v1"
 	"github.com/usememos/memos/store"
@@ -88,4 +89,15 @@ func (ts *TestService) CreateRegularUser(ctx context.Context, username string) (
 func (*TestService) CreateUserContext(ctx context.Context, userID int32) context.Context {
 	// Use the context key from the auth package
 	return context.WithValue(ctx, auth.UserIDContextKey, userID)
+}
+
+// CreatePATContext creates a context authenticated as user via a personal access token
+// with the given description.
+func (*TestService) CreatePATContext(ctx context.Context, user *store.User, description string) context.Context {
+	return auth.ApplyToContext(ctx, &auth.AuthResult{
+		User: user,
+		PAT: &storepb.PersonalAccessTokensUserSetting_PersonalAccessToken{
+			Description: description,
+		},
+	})
 }
