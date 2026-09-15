@@ -41,7 +41,7 @@ export function createMarkdownRuntime({
       [Crepe.Feature.TopBar]: false,
       [Crepe.Feature.AI]: false,
       [Crepe.Feature.Placeholder]: !readonly,
-      [Crepe.Feature.BlockEdit]: !readonly,
+      [Crepe.Feature.BlockEdit]: false,
       [Crepe.Feature.Cursor]: !readonly,
       [Crepe.Feature.LinkTooltip]: !readonly,
       [Crepe.Feature.ImageBlock]: true,

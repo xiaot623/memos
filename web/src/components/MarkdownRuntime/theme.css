@@ -261,11 +261,6 @@
   display: none !important;
 }
 
-/* Compact editors have no Typora gutter; the plus/drag handle overflows the card. */
-.markdown-runtime.memo-editor-content:not([data-focus-mode]) .milkdown-block-handle {
-  display: none !important;
-}
-
 .markdown-runtime span[data-type="html"][hidden] {
   display: none !important;
 }

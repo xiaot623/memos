@@ -21,4 +21,14 @@ describe("WYSIWYG editor surface", () => {
     expect(placeholder).not.toBeNull();
     expect(placeholder).toHaveAttribute("data-placeholder", "此刻的想法...");
   });
+
+  it("does not mount the slash menu or block handle", async () => {
+    const runtime = await mountRuntime("", "edit");
+    runtimes.push(runtime);
+
+    expect(runtime.root.querySelector(".milkdown-slash-menu")).toBeNull();
+    expect(runtime.root.querySelector(".milkdown-block-handle")).toBeNull();
+    expect(document.querySelector(".milkdown-slash-menu")).toBeNull();
+    expect(document.querySelector(".milkdown-block-handle")).toBeNull();
+  });
 });
