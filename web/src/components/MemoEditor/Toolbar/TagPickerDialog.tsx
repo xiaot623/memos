@@ -53,7 +53,7 @@ export function TagPickerDialog({ open, content, onOpenChange, onContentChange }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
       <DialogContent size="sm" showCloseButton={false} className="p-2! sm:p-2! md:p-2! gap-0">
         <VisuallyHidden>
           <DialogTitle>{t("editor.insert-menu.add-tag")}</DialogTitle>
