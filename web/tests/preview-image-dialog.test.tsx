@@ -115,4 +115,25 @@ describe("<PreviewImageDialog>", () => {
     expect(screen.getByRole("button", { name: /previous item/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /next item/i })).toBeInTheDocument();
   });
+
+  it("restores the window scroll position when the preview closes", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    Object.defineProperty(window, "scrollX", { value: 0, configurable: true });
+    Object.defineProperty(window, "scrollY", { value: 500, configurable: true });
+
+    try {
+      const items = [{ id: "image-1", kind: "image", sourceUrl: "/image.jpg", posterUrl: "/image.jpg", filename: "image.jpg" } as const];
+      const { rerender } = render(<PreviewImageDialog open onOpenChange={vi.fn()} items={[...items]} />);
+
+      // Simulate the page jumping back to the top while the preview is open.
+      Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+      rerender(<PreviewImageDialog open={false} onOpenChange={vi.fn()} items={[...items]} />);
+
+      expect(scrollTo).toHaveBeenCalledWith(0, 500);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(scrollTo).toHaveBeenCalledWith(0, 500);
+    } finally {
+      scrollTo.mockRestore();
+    }
+  });
 });
