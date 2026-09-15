@@ -265,6 +265,20 @@
   display: none !important;
 }
 
+.markdown-runtime .milkdown .ProseMirror span[data-tag] {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+  border-radius: 9999px;
+  border-width: 1px;
+  cursor: pointer;
+}
+
 .markdown-runtime iframe {
   max-width: 100%;
   border-radius: 0.5rem;

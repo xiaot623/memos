@@ -9,7 +9,7 @@ import { createFileHandlerPlugin, createSubmitKeymap } from "./plugins/handlers"
 import { createHeadingIdPlugin } from "./plugins/headingIds";
 import { configureTrustedHtml } from "./plugins/html";
 import { createLinkCardPlugin } from "./plugins/linkCard";
-import { tagMentionPlugins } from "./plugins/tagMention";
+import { configureTagMarkdown, tagMentionPlugins } from "./plugins/tagMention";
 
 export type MarkdownRuntimeMode = "edit" | "view";
 
@@ -79,6 +79,7 @@ export function createMarkdownRuntime({
   crepe.editor.config((ctx) => {
     configureTrustedHtml(ctx);
     configureFootnoteDom(ctx);
+    configureTagMarkdown(ctx);
     // Crepe's default uploader inserts blob: image nodes. Files belong on
     // memo attachments, so never turn a paste/drop into document images.
     ctx.update(uploadConfig.key, (prev) => ({

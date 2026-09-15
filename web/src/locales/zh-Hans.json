@@ -173,8 +173,14 @@
     "saving": "保存中...",
     "insert-menu": {
       "add-location": "添加位置",
+      "add-tag": "添加标签",
       "link-memo": "链接备忘录",
       "upload-file": "上传文件"
+    },
+    "tag-picker": {
+      "create": "创建「{{tag}}」",
+      "empty": "还没有标签",
+      "search-placeholder": "输入标签名称"
     },
     "audio-recorder": {
       "attachment-label": "录音",

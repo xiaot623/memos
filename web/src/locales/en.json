@@ -211,8 +211,14 @@
     },
     "insert-menu": {
       "add-location": "Add location",
+      "add-tag": "Add tag",
       "link-memo": "Link memo",
       "upload-file": "Upload file"
+    },
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     },
     "no-changes-detected": "No changes detected",
     "save": "Save",

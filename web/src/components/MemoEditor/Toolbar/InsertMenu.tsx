@@ -10,6 +10,7 @@ import {
   Maximize2Icon,
   MicIcon,
   PlusIcon,
+  TagIcon,
   TypeIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -31,11 +32,13 @@ import { useFileUpload, useLinkMemo, useLocation } from "../hooks";
 import { useEditorContext, useEditorSelector } from "../state";
 import type { InsertMenuProps } from "../types";
 import type { LocalFile } from "../types/attachment";
+import { TagPickerDialog } from "./TagPickerDialog";
 
 const InsertMenu = (props: InsertMenuProps) => {
   const t = useTranslate();
   const { actions, dispatch } = useEditorContext();
   const relations = useEditorSelector((s) => s.metadata.relations);
+  const content = useEditorSelector((s) => s.content);
   const {
     location: initialLocation,
     onLocationChange,
@@ -49,6 +52,7 @@ const InsertMenu = (props: InsertMenuProps) => {
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [tagPickerOpen, setTagPickerOpen] = useState(false);
 
   const { fileInputRef, selectingFlag, handleFileInputChange, handleUploadClick } = useFileUpload((newFiles: LocalFile[]) => {
     newFiles.forEach((file) => dispatch(actions.addLocalFile(file)));
@@ -143,6 +147,7 @@ const InsertMenu = (props: InsertMenuProps) => {
     { key: "file", label: t("common.file"), icon: FileIcon, onClick: handleFileUploadClick },
     { key: "link", label: t("editor.insert-menu.link-memo"), icon: LinkIcon, onClick: handleOpenLinkDialog },
     { key: "location", label: t("editor.insert-menu.add-location"), icon: MapPinIcon, onClick: handleLocationClick },
+    { key: "tag", label: t("editor.insert-menu.add-tag"), icon: TagIcon, onClick: () => setTagPickerOpen(true) },
   ];
 
   return (
@@ -210,6 +215,13 @@ const InsertMenu = (props: InsertMenuProps) => {
         onPlaceholderChange={setPlaceholder}
         onCancel={handleLocationCancel}
         onConfirm={handleLocationConfirm}
+      />
+
+      <TagPickerDialog
+        open={tagPickerOpen}
+        content={content}
+        onOpenChange={setTagPickerOpen}
+        onContentChange={(next) => dispatch(actions.updateContent(next))}
       />
     </>
   );

@@ -1,5 +1,7 @@
+import { remarkStringifyOptionsCtx } from "@milkdown/kit/core";
+import type { Ctx } from "@milkdown/kit/ctx";
 import { InputRule } from "@milkdown/kit/prose/inputrules";
-import { $inputRule, $markSchema, $remark } from "@milkdown/kit/utils";
+import { $inputRule, $markSchema, $nodeSchema, $remark } from "@milkdown/kit/utils";
 import { mentionStyles, tagStyles } from "@/lib/markdownStyles";
 import { MENTION_RUN } from "@/utils/mention-grammar";
 import { remarkMention } from "@/utils/remark-plugins/remark-mention";
@@ -9,11 +11,17 @@ import { TAG_RUN } from "@/utils/tag-grammar";
 export const remarkTagPlugin = $remark("remark-tag", () => remarkTag);
 export const remarkMentionPlugin = $remark("remark-mention", () => remarkMention);
 
-export const tagSchema = $markSchema("tag", () => ({
+export const tagSchema = $nodeSchema("tag", () => ({
+  inline: true,
+  group: "inline",
+  atom: true,
+  selectable: true,
+  draggable: true,
+  marks: "",
   attrs: {
     tag: { default: "" },
   },
-  inclusive: false,
+  leafText: (node) => `#${node.attrs.tag}`,
   parseDOM: [
     {
       tag: "span[data-tag]",
@@ -25,27 +33,25 @@ export const tagSchema = $markSchema("tag", () => ({
       },
     },
   ],
-  toDOM: (mark) => [
+  toDOM: (node) => [
     "span",
     {
-      "data-tag": mark.attrs.tag,
-      class: `${tagStyles.base} ${tagStyles.defaultColor} cursor-pointer`,
+      "data-tag": node.attrs.tag,
+      class: tagStyles.defaultColor,
     },
-    0,
+    `#${node.attrs.tag}`,
   ],
   parseMarkdown: {
     match: (node) => node.type === "tagNode",
-    runner: (state, node, markType) => {
-      const tag = String(node.value ?? "");
-      state.openMark(markType, { tag });
-      state.addText(`#${tag}`);
-      state.closeMark(markType);
+    runner: (state, node, nodeType) => {
+      state.addNode(nodeType, { tag: String(node.value ?? node.tag ?? "") });
     },
   },
   toMarkdown: {
-    match: (mark) => mark.type.name === "tag",
-    runner: () => {
-      // Text already contains `#tag`.
+    match: (node) => node.type.name === "tag",
+    runner: (state, node) => {
+      const tag = String(node.attrs.tag ?? "");
+      state.addNode("tagNode", undefined, tag, { tag, value: tag });
     },
   },
 }));
@@ -101,8 +107,7 @@ export const tagInputRule = $inputRule((ctx) => {
     if (!tag) {
       return null;
     }
-    const mark = type.create({ tag });
-    return state.tr.addMark(start, end - 1, mark);
+    return state.tr.replaceWith(start, end - 1, type.create({ tag }));
   });
 });
 
@@ -119,3 +124,14 @@ export const mentionInputRule = $inputRule((ctx) => {
 });
 
 export const tagMentionPlugins = [remarkTagPlugin, remarkMentionPlugin, tagSchema, mentionSchema, tagInputRule, mentionInputRule];
+
+/** Write `#tag` as a literal so a tag-only memo is not saved as `\#tag`. */
+export function configureTagMarkdown(ctx: Ctx): void {
+  ctx.update(remarkStringifyOptionsCtx, (prev) => ({
+    ...prev,
+    handlers: {
+      ...prev.handlers,
+      tagNode: (node: { tag?: unknown; value?: unknown }) => `#${String(node.tag ?? node.value ?? "")}`,
+    },
+  }));
+}
