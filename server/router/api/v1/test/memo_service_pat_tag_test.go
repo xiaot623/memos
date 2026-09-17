@@ -26,7 +26,7 @@ func TestCreateMemoAppendsPATDescriptionTag(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, "Hello from the bot\n#Telegram", memo.Content)
+		require.Equal(t, "Hello from the bot\n\n#Telegram", memo.Content)
 		require.Equal(t, []string{"Telegram"}, memo.Tags)
 	})
 
@@ -65,7 +65,7 @@ func TestCreateMemoAppendsPATDescriptionTag(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		require.Equal(t, "Incoming\n#Telegram-bot", memo.Content)
+		require.Equal(t, "Incoming\n\n#Telegram-bot", memo.Content)
 		require.Equal(t, []string{"Telegram-bot"}, memo.Tags)
 	})
 

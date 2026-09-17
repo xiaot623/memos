@@ -64,7 +64,7 @@ func (s *APIV1Service) applyPATSourceTag(ctx context.Context, content string) st
 	if strings.TrimSpace(content) == "" {
 		return "#" + tag
 	}
-	return strings.TrimRight(content, " \t") + "\n#" + tag
+	return strings.TrimRight(content, " \t\r\n") + "\n\n#" + tag
 }
 
 func (s *APIV1Service) checkMemoReadAccess(ctx context.Context, memo *store.Memo) error {
