@@ -1,5 +1,6 @@
 import { type ComponentType, memo, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
 import { useResolvedUser } from "@/components/MemoContent/MentionResolutionContext";
 import { loadMemoEditor } from "@/components/MemoEditor/loader";
 import type { MemoEditorProps } from "@/components/MemoEditor/types";
@@ -48,9 +49,13 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const isInMemoDetailPage = location.pathname.startsWith(`/${memoData.name}`) || location.pathname.startsWith("/memos/shares/");
   const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
   const isEditing = showEditor && isInMemoDetailPage;
+  const [caretPoint, setCaretPoint] = useState<MarkdownCaretPoint | null>(null);
   const draftRef = useRef(memoData.content);
 
-  const closeEditor = useCallback(() => setShowEditor(false), []);
+  const closeEditor = useCallback(() => {
+    setCaretPoint(null);
+    setShowEditor(false);
+  }, []);
   const openEditor = useCallback(() => {
     if (showEditor) return;
     if (isInMemoDetailPage) {
@@ -77,7 +82,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     updateMemo(
       { update: { name: memoData.name, content: draftRef.current }, updateMask: ["content", "update_time"] },
       {
-        onSuccess: () => setShowEditor(false),
+        onSuccess: () => closeEditor(),
         onSettled: () => setIsBackgroundSaving(false),
       },
     );
@@ -90,20 +95,12 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     (e: React.MouseEvent) => {
       if (!canEdit || showEditor) return;
       if (isInteractiveMemoClickTarget(e.target)) return;
+      if (isInMemoDetailPage) {
+        setCaretPoint({ x: e.clientX, y: e.clientY });
+      }
       openEditor();
     },
-    [canEdit, openEditor, showEditor],
-  );
-
-  const handleCardKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!canEdit || showEditor) return;
-      if (e.key !== "Enter" && e.key !== " ") return;
-      if (e.target !== e.currentTarget) return;
-      e.preventDefault();
-      openEditor();
-    },
-    [canEdit, openEditor, showEditor],
+    [canEdit, isInMemoDetailPage, openEditor, showEditor],
   );
 
   useEffect(() => {
@@ -166,6 +163,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       showBlurredContent,
       blurred,
       isEditing,
+      caretPoint,
       openEditor,
       saveEditor,
       onDraftChange,
@@ -184,6 +182,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       showBlurredContent,
       blurred,
       isEditing,
+      caretPoint,
       openEditor,
       saveEditor,
       onDraftChange,
@@ -202,10 +201,8 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
         className,
       )}
       ref={cardRef}
-      tabIndex={canEdit ? 0 : -1}
       aria-busy={isBackgroundSaving || undefined}
       onClick={canEdit ? handleCardClick : undefined}
-      onKeyDown={canEdit ? handleCardKeyDown : undefined}
     >
       <MemoHeader showCreator={showCreator} showVisibility={showVisibility} showPinned={showPinned} />
 

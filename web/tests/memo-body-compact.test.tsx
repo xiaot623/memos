@@ -48,9 +48,17 @@ vi.mock("@/components/MemoView/MemoViewContext", () => ({
     showBlurredContent: false,
     blurred: false,
     readonly: false,
+    isEditing: false,
+    caretPoint: null,
+    onDraftChange: vi.fn(),
+    saveEditor: vi.fn(),
     openEditor: vi.fn(),
     openPreview: vi.fn(),
     toggleBlurVisibility: vi.fn(),
+  }),
+  useMemoViewDerived: () => ({
+    isInMemoDetailPage: false,
+    isArchived: false,
   }),
 }));
 

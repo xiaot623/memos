@@ -6,7 +6,7 @@ import { useTranslate } from "@/utils/i18n";
 import MemoContent from "../../MemoContent";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
-import { useMemoViewContext } from "../MemoViewContext";
+import { useMemoViewContext, useMemoViewDerived } from "../MemoViewContext";
 import type { MemoBodyProps } from "../types";
 
 const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
@@ -21,8 +21,21 @@ const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 };
 
 const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
-  const { memo, parentPage, showBlurredContent, blurred, openPreview, toggleBlurVisibility, isEditing, onDraftChange, saveEditor } =
-    useMemoViewContext();
+  const {
+    memo,
+    parentPage,
+    showBlurredContent,
+    blurred,
+    openPreview,
+    toggleBlurVisibility,
+    isEditing,
+    caretPoint,
+    onDraftChange,
+    saveEditor,
+    readonly,
+  } = useMemoViewContext();
+  const { isInMemoDetailPage, isArchived } = useMemoViewDerived();
+  const inPlace = isInMemoDetailPage && !readonly && !isArchived;
 
   const { handleMemoContentClick } = useMemoHandlers({ openPreview });
 
@@ -45,7 +58,8 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
             onClick={handleMemoContentClick}
             compact={Boolean(compact)}
             editable={isEditing}
-            autoFocus={isEditing}
+            inPlace={inPlace}
+            caretPoint={caretPoint}
             onContentChange={onDraftChange}
             onSubmit={saveEditor}
             onBlur={saveEditor}

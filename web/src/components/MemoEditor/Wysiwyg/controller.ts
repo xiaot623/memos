@@ -17,7 +17,7 @@ export function createWysiwygController(getCrepe: () => Crepe | undefined, forma
   return {
     focus: () => {
       withView((ctx) => {
-        ctx.get(editorViewCtx).focus();
+        ctx.get(editorViewCtx).dom.focus({ preventScroll: true });
       });
     },
     hasFocus: () => {
@@ -50,7 +50,7 @@ export function createWysiwygController(getCrepe: () => Crepe | undefined, forma
       }
       withView((ctx) => {
         insert(markdown)(ctx);
-        ctx.get(editorViewCtx).focus();
+        ctx.get(editorViewCtx).dom.focus({ preventScroll: true });
       });
     },
     scrollToCursor: () => {

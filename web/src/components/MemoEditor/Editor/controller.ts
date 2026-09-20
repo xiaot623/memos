@@ -13,7 +13,9 @@ function blockPad(before: string, after: string): { prefix: string; suffix: stri
 
 export function createController(view: EditorView, formatting: FormattingController): EditorController {
   return {
-    focus: () => view.focus(),
+    focus: () => {
+      view.contentDOM.focus({ preventScroll: true });
+    },
     hasFocus: () => view.hasFocus,
     isEmpty: () => isEmptyDoc(view.state),
     getMarkdown: () => view.state.doc.toString(),

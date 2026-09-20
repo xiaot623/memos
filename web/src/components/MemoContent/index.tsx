@@ -19,7 +19,8 @@ const MemoContent = (props: MemoContentProps) => {
           memoName={props.memoName}
           eager={!props.compact}
           editable={props.editable}
-          autoFocus={props.autoFocus}
+          inPlace={props.inPlace}
+          caretPoint={props.caretPoint}
           onContentChange={props.onContentChange}
           onSubmit={props.onSubmit}
           onBlur={props.editable ? props.onBlur : undefined}

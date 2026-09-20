@@ -1,5 +1,4 @@
 import type { Crepe } from "@milkdown/crepe";
-import { editorViewCtx } from "@milkdown/kit/core";
 import { replaceAll } from "@milkdown/kit/utils";
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
 import { type FocusEvent, useEffect, useRef, useState } from "react";
@@ -8,7 +7,8 @@ import { useNearViewport } from "@/hooks/useNearViewport";
 import { cn } from "@/lib/utils";
 import { getThemeWithFallback } from "@/utils/theme";
 import { createMarkdownRuntime } from "./createRuntime";
-import { applyTagColors, suppressReadonlyEditorFocus, useMarkdownViewClicks } from "./interaction";
+import { applyMarkdownEditable, type MarkdownCaretPoint } from "./focus";
+import { applyTagColors, useMarkdownViewClicks } from "./interaction";
 import { LinkPreviewHost } from "./LinkPreviewHost";
 import "./theme.css";
 
@@ -20,7 +20,9 @@ interface MarkdownViewProps {
   eager?: boolean;
   /** When true, the same reading surface becomes a WYSIWYG editor. */
   editable?: boolean;
-  autoFocus?: boolean;
+  /** Create with edit plugins and flip readonly in place instead of remounting. */
+  inPlace?: boolean;
+  caretPoint?: MarkdownCaretPoint | null;
   onContentChange?: (content: string) => void;
   onSubmit?: () => void;
   onBlur?: () => void;
@@ -29,13 +31,15 @@ interface MarkdownViewProps {
 const MarkdownViewInner = ({
   content,
   editable,
-  autoFocus,
+  inPlace,
+  caretPoint,
   onContentChange,
   onSubmit,
 }: {
   content: string;
   editable: boolean;
-  autoFocus: boolean;
+  inPlace: boolean;
+  caretPoint?: MarkdownCaretPoint | null;
   onContentChange?: (content: string) => void;
   onSubmit?: () => void;
 }) => {
@@ -48,26 +52,41 @@ const MarkdownViewInner = ({
   onChangeRef.current = onContentChange;
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
+  const editableRef = useRef(editable);
+  editableRef.current = editable;
+  const caretPointRef = useRef(caretPoint);
+  caretPointRef.current = caretPoint;
 
   const { loading } = useEditor((root) => {
     const crepe = createMarkdownRuntime({
       root,
       defaultValue: contentRef.current,
-      mode: editable ? "edit" : "view",
-      onMarkdownUpdated: editable ? (markdown) => onChangeRef.current?.(markdown) : undefined,
-      onSubmit: editable ? () => onSubmitRef.current?.() : undefined,
+      mode: inPlace ? "edit" : "view",
+      onMarkdownUpdated: inPlace
+        ? (markdown) => {
+            if (!editableRef.current) {
+              return;
+            }
+            onChangeRef.current?.(markdown);
+          }
+        : undefined,
+      onSubmit: inPlace ? () => onSubmitRef.current?.() : undefined,
       getTheme: () => getThemeWithFallback(userGeneralSetting?.theme),
     });
     crepeRef.current = crepe;
-    if (autoFocus) {
-      crepe.on((listener) => {
-        listener.mounted((ctx) => {
-          ctx.get(editorViewCtx).focus();
-        });
-      });
+    if (inPlace) {
+      crepe.setReadonly(true);
     }
     return crepe;
   }, []);
+
+  useEffect(() => {
+    const crepe = crepeRef.current;
+    if (!crepe || loading || !inPlace) {
+      return;
+    }
+    applyMarkdownEditable(crepe, editable, editable ? caretPointRef.current : null);
+  }, [editable, inPlace, loading]);
 
   useEffect(() => {
     if (editable) {
@@ -107,7 +126,8 @@ export function MarkdownView({
   memoName,
   eager = false,
   editable = false,
-  autoFocus = false,
+  inPlace = false,
+  caretPoint,
   onContentChange,
   onSubmit,
   onBlur,
@@ -132,16 +152,15 @@ export function MarkdownView({
       className={cn("markdown-runtime w-full", className)}
       data-readonly={editable ? undefined : ""}
       onClick={editable ? undefined : onClick}
-      onMouseDown={editable ? undefined : suppressReadonlyEditorFocus}
-      onFocusCapture={editable ? undefined : suppressReadonlyEditorFocus}
       onBlur={handleBlur}
     >
       {shouldMount ? (
-        <MilkdownProvider key={editable ? "edit" : "view"}>
+        <MilkdownProvider>
           <MarkdownViewInner
             content={content}
             editable={editable}
-            autoFocus={autoFocus}
+            inPlace={inPlace}
+            caretPoint={caretPoint}
             onContentChange={onContentChange}
             onSubmit={onSubmit}
           />

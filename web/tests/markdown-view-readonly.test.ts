@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { isReadonlyEditorSurface, suppressReadonlyEditorFocus } from "@/components/MarkdownRuntime/interaction";
+import { editorViewCtx } from "@milkdown/kit/core";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { applyMarkdownEditable } from "@/components/MarkdownRuntime/focus";
 import { mountRuntime } from "./markdown-runtime-harness";
 
 describe("markdown view readonly surface", () => {
@@ -17,7 +18,6 @@ describe("markdown view readonly surface", () => {
     expect(prose).not.toBeNull();
     expect(runtime.crepe.readonly).toBe(true);
     expect(prose).toHaveAttribute("contenteditable", "false");
-    expect(prose).toHaveAttribute("tabindex", "-1");
   });
 
   it("keeps the editor surface editable in edit mode", async () => {
@@ -29,39 +29,29 @@ describe("markdown view readonly surface", () => {
     expect(runtime.crepe.readonly).toBe(false);
     expect(prose).toHaveAttribute("contenteditable", "true");
   });
-});
 
-describe("isReadonlyEditorSurface", () => {
-  it("treats ProseMirror and CodeMirror as editor surfaces", () => {
-    const root = document.createElement("div");
-    root.innerHTML = '<div class="ProseMirror"><div class="cm-editor"><div class="cm-content">code</div></div><p>text</p></div>';
-    document.body.append(root);
-    expect(isReadonlyEditorSurface(root.querySelector("p"))).toBe(true);
-    expect(isReadonlyEditorSurface(root.querySelector(".cm-content"))).toBe(true);
-    root.remove();
+  it("flips readonly on the same editor instance", async () => {
+    const runtime = await mountRuntime("hello world", "edit");
+    runtimes.push(runtime);
+    applyMarkdownEditable(runtime.crepe, false);
+    expect(runtime.root.querySelector(".ProseMirror")).toHaveAttribute("contenteditable", "false");
+
+    applyMarkdownEditable(runtime.crepe, true);
+    expect(runtime.root.querySelector(".ProseMirror")).toHaveAttribute("contenteditable", "true");
   });
 
-  it("leaves real widgets focusable", () => {
-    const root = document.createElement("div");
-    root.innerHTML = '<div class="ProseMirror"><button type="button">Copy</button><a href="/x">link</a></div>';
-    document.body.append(root);
-    expect(isReadonlyEditorSurface(root.querySelector("button"))).toBe(false);
-    expect(isReadonlyEditorSurface(root.querySelector("a"))).toBe(false);
-    root.remove();
-  });
+  it("places the caret from screen coordinates without remounting", async () => {
+    const runtime = await mountRuntime("hello world", "edit");
+    runtimes.push(runtime);
 
-  it("prevents default when the view surface would take focus", () => {
-    const root = document.createElement("div");
-    root.innerHTML = '<div class="ProseMirror"><p>text</p></div>';
-    document.body.append(root);
-    let prevented = false;
-    suppressReadonlyEditorFocus({
-      target: root.querySelector("p"),
-      preventDefault: () => {
-        prevented = true;
-      },
+    runtime.crepe.editor.action((ctx) => {
+      const view = ctx.get(editorViewCtx);
+      const posAtCoords = vi.spyOn(view, "posAtCoords").mockReturnValue({ pos: 6, inside: 1 });
+      const focus = vi.spyOn(view.dom, "focus");
+      applyMarkdownEditable(runtime.crepe, true, { x: 12, y: 40 });
+      expect(posAtCoords).toHaveBeenCalledWith({ left: 12, top: 40 });
+      expect(view.state.selection.head).toBe(6);
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
     });
-    expect(prevented).toBe(true);
-    root.remove();
   });
 });

@@ -1,7 +1,6 @@
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { Crepe } from "@milkdown/crepe";
-import { editorViewOptionsCtx } from "@milkdown/kit/core";
 import { uploadConfig } from "@milkdown/kit/plugin/upload";
 import { createMermaidPreviewRenderer } from "./mermaidPreview";
 import { configureFootnoteDom } from "./plugins/footnotes";
@@ -69,11 +68,6 @@ export function createMarkdownRuntime({
 
   if (readonly) {
     crepe.setReadonly(true);
-    crepe.on((listener) => {
-      listener.mounted(() => {
-        crepe.setReadonly(true);
-      });
-    });
   }
 
   crepe.editor.config((ctx) => {
@@ -86,24 +80,13 @@ export function createMarkdownRuntime({
       ...prev,
       uploader: async () => [],
     }));
-    if (readonly) {
-      ctx.update(editorViewOptionsCtx, (prev) => ({
-        ...prev,
-        attributes: {
-          ...(typeof prev.attributes === "object" && prev.attributes ? prev.attributes : {}),
-          tabindex: "-1",
-        },
-      }));
-    }
   });
 
   for (const plugin of tagMentionPlugins) {
     crepe.editor.use(plugin);
   }
   crepe.editor.use(createHeadingIdPlugin());
-  if (readonly) {
-    crepe.editor.use(createLinkCardPlugin());
-  }
+  crepe.editor.use(createLinkCardPlugin(() => crepe.readonly));
   if (onSubmit) {
     crepe.editor.use(createSubmitKeymap(onSubmit));
   }

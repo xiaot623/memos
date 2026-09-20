@@ -1,4 +1,4 @@
-import { type FocusEvent as ReactFocusEvent, type MouseEvent as ReactMouseEvent, useContext } from "react";
+import { type MouseEvent as ReactMouseEvent, useContext } from "react";
 import { type MemoFilter, stringifyFilters, useOptionalMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -7,28 +7,6 @@ import { findTagMetadata } from "@/lib/tag";
 import { Routes } from "@/router";
 import { toggleTaskAtIndex } from "@/utils/markdown-manipulation";
 import { MemoViewContext } from "../MemoView/MemoViewContext";
-
-const VIEW_WIDGET_SELECTOR = "a, button, input, textarea, select, [data-slot='checkbox']";
-
-/** True when a view-mode click landed on Milkdown/CodeMirror rather than a real control. */
-export function isReadonlyEditorSurface(target: EventTarget | null): boolean {
-  const element = target instanceof Element ? target : null;
-  if (!element || element.closest(VIEW_WIDGET_SELECTOR)) {
-    return false;
-  }
-  return Boolean(element.closest(".ProseMirror, .cm-editor"));
-}
-
-/** Keep card/detail views from taking editor focus. Widgets (copy, tags, tasks) still work. */
-export function suppressReadonlyEditorFocus(event: Pick<ReactMouseEvent | ReactFocusEvent, "target" | "preventDefault">): void {
-  if (!isReadonlyEditorSurface(event.target)) {
-    return;
-  }
-  event.preventDefault();
-  if (event.target instanceof HTMLElement) {
-    event.target.blur();
-  }
-}
 
 export function applyTagColors(root: HTMLElement, tagsSetting: Parameters<typeof findTagMetadata>[1] | undefined): void {
   if (!tagsSetting) {

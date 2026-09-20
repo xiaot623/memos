@@ -22,12 +22,15 @@ export function exclusiveLinkHref(node: Node): string | undefined {
   return href;
 }
 
-export function createLinkCardPlugin() {
+export function createLinkCardPlugin(isReadonly: () => boolean) {
   return $prose(
     () =>
       new Plugin({
         props: {
           decorations(state) {
+            if (!isReadonly()) {
+              return DecorationSet.empty;
+            }
             const decorations: Decoration[] = [];
             state.doc.forEach((node, offset) => {
               const href = exclusiveLinkHref(node);

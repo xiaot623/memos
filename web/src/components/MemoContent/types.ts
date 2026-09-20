@@ -1,4 +1,5 @@
 import type React from "react";
+import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
 
 export interface MemoContentProps {
   content: string;
@@ -11,7 +12,8 @@ export interface MemoContentProps {
   onClick?: (e: React.MouseEvent) => void;
   onDoubleClick?: (e: React.MouseEvent) => void;
   editable?: boolean;
-  autoFocus?: boolean;
+  inPlace?: boolean;
+  caretPoint?: MarkdownCaretPoint | null;
   onContentChange?: (content: string) => void;
   onSubmit?: () => void;
   onBlur?: () => void;

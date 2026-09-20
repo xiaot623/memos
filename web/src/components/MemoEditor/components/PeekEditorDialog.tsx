@@ -24,6 +24,7 @@ interface PeekEditorDialogProps {
 export function PeekEditorDialog({ isFocusMode, title, onDismiss, children, open: openProp, onOpenChange }: PeekEditorDialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(true);
   const dismissedRef = useRef(false);
+  const popupRef = useRef<HTMLDivElement>(null);
   const isControlled = openProp !== undefined;
   const open = isControlled ? openProp : uncontrolledOpen;
   const shellRef = usePeekSizeMorph(isFocusMode);
@@ -51,7 +52,15 @@ export function PeekEditorDialog({ isFocusMode, title, onDismiss, children, open
     >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop data-slot="memo-peek-backdrop" className={PEEK_MODE_STYLES.backdrop} />
-        <DialogPrimitive.Popup data-slot="memo-peek-editor" className={cn("z-overlay outline-none", PEEK_MODE_STYLES.popup)} initialFocus>
+        <DialogPrimitive.Popup
+          ref={popupRef}
+          data-slot="memo-peek-editor"
+          className={cn("z-overlay outline-none", PEEK_MODE_STYLES.popup)}
+          initialFocus={() => {
+            popupRef.current?.focus({ preventScroll: true });
+            return false;
+          }}
+        >
           <VisuallyHidden>
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
           </VisuallyHidden>

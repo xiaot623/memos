@@ -140,16 +140,6 @@ describe("<MemoView> peek editor", () => {
     expect(mocks.loadMemoEditor).not.toHaveBeenCalled();
   });
 
-  it("opens the editor from the keyboard when the card is focused", async () => {
-    renderMemo();
-
-    const card = screen.getByRole("article");
-    card.focus();
-    fireEvent.keyDown(card, { key: "Enter" });
-
-    await waitFor(() => expect(screen.getByTestId("peek-editor")).toBeInTheDocument());
-  });
-
   it("marks the card busy while a background save is in flight", async () => {
     renderMemo();
     fireEvent.click(screen.getByText("note body"));

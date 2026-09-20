@@ -1,5 +1,6 @@
 import { editorViewCtx } from "@milkdown/kit/core";
 import { afterEach, describe, expect, it } from "vitest";
+import { applyMarkdownEditable } from "@/components/MarkdownRuntime/focus";
 import { exclusiveLinkHref } from "@/components/MarkdownRuntime/plugins/linkCard";
 import { mountRuntime } from "./markdown-runtime-harness";
 
@@ -25,5 +26,14 @@ describe("link preview gating", () => {
     });
     expect(hrefs).toContain("https://example.com");
     expect(runtime.root.querySelector("[data-link-card]")).not.toBeNull();
+  });
+
+  it("hides link cards while the same editor is writable", async () => {
+    const runtime = await mountRuntime("https://example.com", "edit");
+    runtimes.push(runtime);
+    applyMarkdownEditable(runtime.crepe, false);
+    expect(runtime.root.querySelector("[data-link-card]")).not.toBeNull();
+    applyMarkdownEditable(runtime.crepe, true);
+    expect(runtime.root.querySelector("[data-link-card]")).toBeNull();
   });
 });
