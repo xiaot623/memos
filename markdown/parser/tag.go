@@ -1,9 +1,17 @@
 package parser
 
 import (
+	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/yuin/goldmark/util"
+)
+
+const (
+	// MaxSanitizedTagLength is the maximum number of runes kept when turning
+	// free-form text (for example a PAT description) into a tag name.
+	MaxSanitizedTagLength = 100
 )
 
 //go:generate go run ./tagdata -output tag_unicode_tables.go
@@ -50,6 +58,57 @@ func isDefaultIgnorable(r rune) bool {
 
 func isCombiningMark(r rune) bool {
 	return containsCodePoint(unicode17CombiningMarks[:], r)
+}
+
+func isSanitizedTagRune(r rune) bool {
+	return r == '/' || isSegmentStarter(r) || isSegmentContinuation(r)
+}
+
+// SanitizeTagName converts free-form text into a valid tag name.
+// Whitespace runs become a single hyphen, invalid tag runes are dropped, and the
+// result is truncated to MaxSanitizedTagLength runes. Returns an empty string if nothing remains.
+func SanitizeTagName(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ""
+	}
+
+	var b strings.Builder
+	b.Grow(len(s))
+	runeCount := 0
+	pendingHyphen := false
+	started := false
+
+	for _, r := range s {
+		if unicode.IsSpace(r) {
+			if started {
+				pendingHyphen = true
+			}
+			continue
+		}
+		if !isSanitizedTagRune(r) {
+			continue
+		}
+		if pendingHyphen {
+			if runeCount >= MaxSanitizedTagLength {
+				break
+			}
+			b.WriteRune('-')
+			runeCount++
+			pendingHyphen = false
+			if runeCount >= MaxSanitizedTagLength {
+				break
+			}
+		}
+		if runeCount >= MaxSanitizedTagLength {
+			break
+		}
+		b.WriteRune(r)
+		runeCount++
+		started = true
+	}
+
+	return b.String()
 }
 
 func isSegmentStarter(r rune) bool {

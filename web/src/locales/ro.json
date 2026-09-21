@@ -173,7 +173,8 @@
     "resize-panel": "Redimensionați panoul",
     "resize-sidebar": "Redimensionați bara laterală",
     "sign-in-to-memos": "Conectați-vă la Memos",
-    "view-all": "Vizualizați tot"
+    "view-all": "Vizualizați tot",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "Limba nu a fost găsită? Trimiteți feedback"
@@ -193,7 +194,8 @@
       "insert-image": "Inserare imagine",
       "keep-as-attachments": "Păstrare ca atașamente",
       "uploading-inline-image": "Se încarcă în conținut",
-      "uploading-images": "Se încarcă imagini {{completed}}/{{total}}"
+      "uploading-images": "Se încarcă imagini {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "no-changes-detected": "Nu au fost detectate modificări",
     "save": "Salva",
@@ -242,6 +244,14 @@
       "save-in-progress": "Salvare în curs",
       "unsupported-attachment-image-url": "Adresa URL a imaginii atașate neacceptată: {{url}}",
       "wait-for-upload": "Așteptați finalizarea încărcării"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -400,7 +410,8 @@
         "duration-never": "Nu",
         "expiration": "Expirare",
         "some-description": "Cateva descriere...",
-        "duration-90d": "90 de zile"
+        "duration-90d": "90 de zile",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "O listă cu toate jetoanele de acces pentru contul dvs.",
       "title": "Jetoane de acces",
@@ -419,7 +430,8 @@
       "last-used": "Ultima utilizare",
       "never-used": "Niciodată utilizat",
       "no-expiration": "Fără expirare",
-      "web-clipper-title": "Utilizați un token cu Memos Web Clipper"
+      "web-clipper-title": "Utilizați un token cu Memos Web Clipper",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "Schimbaţi parola",

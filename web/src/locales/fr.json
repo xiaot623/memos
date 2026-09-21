@@ -135,7 +135,8 @@
     "resize-panel": "Redimensionner le panneau",
     "resize-sidebar": "Redimensionner la barre latérale",
     "sign-in-to-memos": "Se connecter à Memos",
-    "view-all": "Tout afficher"
+    "view-all": "Tout afficher",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "Langue introuvable ? Soumettre des commentaires"
@@ -155,7 +156,8 @@
       "insert-image": "Insérer une image",
       "keep-as-attachments": "Conserver en pièces jointes",
       "uploading-inline-image": "Chargement du contenu",
-      "uploading-images": "Chargement des images {{completed}}/{{total}}"
+      "uploading-images": "Chargement des images {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "no-changes-detected": "Aucun changement détecté",
     "save": "Enregistrer",
@@ -204,6 +206,14 @@
       "save-in-progress": "Enregistrement en cours",
       "unsupported-attachment-image-url": "URL d'image de pièce jointe non prise en charge : {{url}}",
       "wait-for-upload": "Veuillez patienter jusqu'à la fin du chargement"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -362,7 +372,8 @@
         "duration-never": "Jamais",
         "expiration": "Expiration",
         "some-description": "Une description...",
-        "duration-90d": "90 jours"
+        "duration-90d": "90 jours",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "Liste de tous les jetons d'accès de votre compte.",
       "title": "Jetons d'accès",
@@ -381,7 +392,8 @@
       "last-used": "Dernière utilisation",
       "never-used": "Jamais utilisé",
       "no-expiration": "Aucune expiration",
-      "web-clipper-title": "Utiliser un jeton avec Memos Web Clipper"
+      "web-clipper-title": "Utiliser un jeton avec Memos Web Clipper",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "Changer le mot de passe",

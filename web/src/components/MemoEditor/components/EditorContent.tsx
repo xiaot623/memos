@@ -3,43 +3,60 @@ import Editor from "../Editor";
 import { useEditorContext, useEditorSelector } from "../state";
 import type { EditorContentProps } from "../types";
 import type { EditorController } from "../types/editorController";
-
-// Imported eagerly (not React.lazy): the editor is the always-present compose
-// box on the home route, which is already code-split — so deferring the
-// CodeMirror bundle separately bought nothing and made the editor paint empty
-// for a beat before its placeholder appeared (a visible flicker on load).
+import WysiwygEditor from "../Wysiwyg";
 
 /**
- * Hosts the CodeMirror Editor behind the EditorController contract. The
- * editor serializes into state.content on every change and exposes its
- * formatting capability for the focus-mode toolbar.
+ * Hosts the active editor (WYSIWYG by default, CodeMirror in raw mode) behind
+ * the EditorController contract.
  */
 export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder, onSubmit, onFiles }, ref) => {
   const { actions, dispatch } = useEditorContext();
   const content = useEditorSelector((s) => s.content);
   const contentSource = useEditorSelector((s) => s.contentSource);
   const isFocusMode = useEditorSelector((s) => s.ui.isFocusMode);
+  const isRawMode = useEditorSelector((s) => s.ui.isRawMode);
 
-  const handleContentChange = (content: string) => {
-    dispatch(actions.updateContent(content));
+  const handleContentChange = (next: string) => {
+    dispatch(actions.updateContent(next));
   };
 
-  const handleExternalContentApplied = (content: string) => {
-    dispatch(actions.setContent(content));
+  const handleExternalContentApplied = (next: string) => {
+    dispatch(actions.setContent(next));
   };
+
+  const handleWysiwygFiles = (files: File[]) => {
+    onFiles(files, { source: "paste" });
+  };
+
+  if (isRawMode) {
+    return (
+      <div className="flex w-full min-h-0 min-w-0 flex-1 flex-col">
+        <Editor
+          ref={ref}
+          className="memo-editor-content"
+          initialContent={content}
+          contentIsExternal={contentSource === "external"}
+          placeholder={placeholder || ""}
+          isFocusMode={isFocusMode}
+          onContentChange={handleContentChange}
+          onExternalContentApplied={handleExternalContentApplied}
+          onFiles={onFiles}
+          onSubmit={onSubmit}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full flex flex-col flex-1">
-      <Editor
+    <div className="flex w-full min-h-0 min-w-0 flex-1 flex-col">
+      <WysiwygEditor
         ref={ref}
         className="memo-editor-content"
         initialContent={content}
-        contentIsExternal={contentSource === "external"}
         placeholder={placeholder || ""}
         isFocusMode={isFocusMode}
         onContentChange={handleContentChange}
-        onExternalContentApplied={handleExternalContentApplied}
-        onFiles={onFiles}
+        onFiles={handleWysiwygFiles}
         onSubmit={onSubmit}
       />
     </div>

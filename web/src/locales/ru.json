@@ -135,7 +135,8 @@
     "collapse-panel": "Свернуть панель",
     "expand-panel": "Развернуть панель",
     "resize-panel": "Изменить размер панели",
-    "view-all": "Просмотреть все"
+    "view-all": "Просмотреть все",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "Язык не найден? Отправить отзыв"
@@ -155,7 +156,8 @@
       "keep-as-attachments": "Сохранить как вложения",
       "retry-image-upload": "Повторить",
       "uploading-inline-image": "Загрузка в содержимое",
-      "uploading-images": "Загрузка изображений: {{completed}}/{{total}}"
+      "uploading-images": "Загрузка изображений: {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "no-changes-detected": "Изменений не обнаружено",
     "save": "Сохранить",
@@ -204,7 +206,15 @@
     },
     "comment": "Комментарий",
     "new-memo": "Новая заметка",
-    "saved": "Сохранено"
+    "saved": "Сохранено",
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
+    }
   },
   "inbox": {
     "failed-to-load": "Не удалось загрузить элемент уведомления",
@@ -362,7 +372,8 @@
         "duration-90d": "90 дней",
         "duration-never": "Никогда",
         "expiration": "Срок действия",
-        "some-description": "Введите описание..."
+        "some-description": "Введите описание...",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "Список всех токенов доступа для вашей учетной записи.",
       "title": "Токены доступа",
@@ -381,7 +392,8 @@
       "last-used": "Последнее использование",
       "never-used": "Не использовался",
       "no-expiration": "Без срока действия",
-      "web-clipper-title": "Использование токена с Memos Web Clipper"
+      "web-clipper-title": "Использование токена с Memos Web Clipper",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "Изменить пароль",

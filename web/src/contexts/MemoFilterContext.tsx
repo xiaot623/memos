@@ -189,6 +189,11 @@ export function useMemoFilterContext() {
   return context;
 }
 
+/** Safe outside a provider (share previews, Milkdown, tests). */
+export function useOptionalMemoFilterContext() {
+  return useContext(MemoFilterContext);
+}
+
 // Alias for backwards compatibility during migration
 export const useMemoFilter = useMemoFilterContext;
 

@@ -259,6 +259,13 @@ func TestAuthenticatorPAT(t *testing.T) {
 		assert.NotNil(t, pat)
 		assert.Equal(t, user.ID, authenticatedUser.ID)
 		assert.Equal(t, tokenID, pat.TokenId)
+
+		result := authenticator.Authenticate(ctx, "Bearer "+token)
+		require.NotNil(t, result)
+		require.NotNil(t, result.PAT)
+		assert.Equal(t, tokenID, result.PAT.TokenId)
+		assert.Equal(t, "Test PAT", result.PAT.Description)
+		assert.Equal(t, tokenID, auth.GetPAT(auth.ApplyToContext(ctx, result)).TokenId)
 	})
 
 	t.Run("records last used time for user authentication", func(t *testing.T) {

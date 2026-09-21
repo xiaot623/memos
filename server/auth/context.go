@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 
+	storepb "github.com/usememos/memos/proto/gen/store"
 	"github.com/usememos/memos/store"
 )
 
@@ -25,6 +26,10 @@ const (
 
 	// RefreshTokenIDContextKey stores the refresh token ID.
 	RefreshTokenIDContextKey
+
+	// PATContextKey stores the personal access token used for this request.
+	// Only set when authenticated via PAT.
+	PATContextKey
 )
 
 // GetUserID retrieves the authenticated user's ID from the context.
@@ -82,6 +87,15 @@ func SetUserClaimsInContext(ctx context.Context, claims *UserClaims) context.Con
 	return context.WithValue(ctx, UserClaimsContextKey, claims)
 }
 
+// GetPAT retrieves the personal access token from the context.
+// Returns nil if the request was not authenticated via PAT.
+func GetPAT(ctx context.Context) *storepb.PersonalAccessTokensUserSetting_PersonalAccessToken {
+	if v, ok := ctx.Value(PATContextKey).(*storepb.PersonalAccessTokensUserSetting_PersonalAccessToken); ok {
+		return v
+	}
+	return nil
+}
+
 // ApplyToContext sets the authenticated identity from an AuthResult into the context.
 // This is the canonical way to propagate auth state after a successful Authenticate call.
 // Safe to call with a nil result (no-op).
@@ -94,6 +108,9 @@ func ApplyToContext(ctx context.Context, result *AuthResult) context.Context {
 		ctx = context.WithValue(ctx, UserIDContextKey, result.Claims.UserID)
 	} else if result.User != nil {
 		ctx = SetUserInContext(ctx, result.User, result.AccessToken)
+	}
+	if result.PAT != nil {
+		ctx = context.WithValue(ctx, PATContextKey, result.PAT)
 	}
 	return ctx
 }

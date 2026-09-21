@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 import { createInitialState, EditorProvider } from "@/components/MemoEditor/state";
@@ -9,6 +10,7 @@ vi.mock("@/utils/i18n", async (importOriginal) => ({
   useTranslate: () => (key: string) => key,
 }));
 vi.mock("@/hooks/useCurrentUser", () => ({ default: () => undefined }));
+vi.mock("@/hooks/useUserQueries", () => ({ useTagCounts: () => ({ data: {} }) }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ userGeneralSetting: undefined }) }));
 vi.mock("@/contexts/SpaceContext", () => ({ useSpaceContext: () => ({ selectedSpaceName: undefined }) }));
 vi.mock("@/components/map/useReverseGeocoding", () => ({ useReverseGeocoding: () => ({ data: undefined }) }));
@@ -29,15 +31,17 @@ const viewToggles = {
 /** `hosted` mirrors an editor whose presentation belongs to a host (the global composer). */
 const renderMenu = (onInsertImages = vi.fn(), isSaving = false, hosted = false) =>
   render(
-    <EditorProvider>
-      <InsertMenu
-        isSaving={isSaving}
-        onLocationChange={vi.fn()}
-        onInsertImages={onInsertImages}
-        onAudioRecorderClick={vi.fn()}
-        viewToggles={hosted ? undefined : viewToggles}
-      />
-    </EditorProvider>,
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <EditorProvider>
+        <InsertMenu
+          isSaving={isSaving}
+          onLocationChange={vi.fn()}
+          onInsertImages={onInsertImages}
+          onAudioRecorderClick={vi.fn()}
+          viewToggles={hosted ? undefined : viewToggles}
+        />
+      </EditorProvider>
+    </QueryClientProvider>,
   );
 
 describe("InsertMenu", () => {
@@ -54,6 +58,7 @@ describe("InsertMenu", () => {
       "editor.audio-recorder.trigger",
       "editor.insert-menu.link-memo",
       "editor.insert-menu.add-location",
+      "editor.insert-menu.add-tag",
       "editor.focus-mode",
       "editor.formatting-toolbar",
     ]);
@@ -102,9 +107,11 @@ describe("InsertMenu", () => {
     state.ui.pendingInlineImageInsertions = 1;
 
     render(
-      <EditorProvider initialEditorState={state}>
-        <EditorToolbar onSave={vi.fn()} onAudioRecorderClick={vi.fn()} viewToggles={viewToggles} onInsertImages={vi.fn()} />
-      </EditorProvider>,
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <EditorProvider initialEditorState={state}>
+          <EditorToolbar onSave={vi.fn()} onAudioRecorderClick={vi.fn()} viewToggles={viewToggles} onInsertImages={vi.fn()} />
+        </EditorProvider>
+      </QueryClientProvider>,
     );
 
     expect(screen.getByRole("button", { name: "editor.save" })).toBeDisabled();

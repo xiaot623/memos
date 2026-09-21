@@ -1,6 +1,7 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { createContext, useContext } from "react";
 import { useLocation } from "react-router-dom";
+import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
 import { useView } from "@/contexts/ViewContext";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
@@ -19,7 +20,12 @@ export interface MemoViewContextValue {
   readonly: boolean;
   showBlurredContent: boolean;
   blurred: boolean;
+  isEditing: boolean;
+  caretPoint: MarkdownCaretPoint | null;
   openEditor: () => void;
+  saveEditor: () => void;
+  onDraftChange: (content: string) => void;
+  isSaving: boolean;
   toggleBlurVisibility: () => void;
   openPreview: (items: string | string[] | PreviewMediaItem[], index?: number) => void;
 }

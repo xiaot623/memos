@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, InfoIcon, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import MediaMetadataDetails from "@/components/MediaMetadataDetails";
 import MotionPhotoPreview from "@/components/MotionPhotoPreview";
 import { Button } from "@/components/ui/button";
@@ -25,9 +25,35 @@ const DOUBLE_TAP_ZOOM = 2;
 
 const clampZoom = (scale: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scale));
 
+/** Keep the page where it was. Modal scroll-lock on overlay scrollbars (macOS) zeros html.scrollTop. */
+function usePreserveWindowScroll(open: boolean) {
+  const positionRef = useRef({ left: 0, top: 0 });
+
+  const restore = useCallback(() => {
+    const { left, top } = positionRef.current;
+    if (window.scrollX !== left || window.scrollY !== top) {
+      window.scrollTo(left, top);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      return;
+    }
+    positionRef.current = { left: window.scrollX, top: window.scrollY };
+    return () => {
+      restore();
+      window.setTimeout(restore, 0);
+    };
+  }, [open, restore]);
+
+  return restore;
+}
+
 function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIndex = 0 }: Props) {
   const t = useTranslate();
   const sm = useMediaQuery("sm");
+  usePreserveWindowScroll(open);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [zoomScale, setZoomScale] = useState(MIN_ZOOM);
   const [showDetails, setShowDetails] = useState(false);

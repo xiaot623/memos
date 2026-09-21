@@ -96,7 +96,7 @@ func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store
 		return nil, errors.Wrap(err, "failed to register gRPC gateway")
 	}
 
-	mcpService, err := mcp.NewMCPService(profile, echoServer)
+	mcpService, err := mcp.NewMCPService(profile, echoServer, mcp.WithStore(store, secret))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create MCP service")
 	}

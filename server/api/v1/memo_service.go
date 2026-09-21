@@ -4,6 +4,7 @@ import (
 	"context"
 	stderrors "errors"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -15,12 +16,39 @@ import (
 	"github.com/usememos/memos/core/access"
 	"github.com/usememos/memos/core/memopayload"
 	"github.com/usememos/memos/internal/ratelimit"
+	mdparser "github.com/usememos/memos/markdown/parser"
 	v1pb "github.com/usememos/memos/proto/gen/api/v1"
 	storepb "github.com/usememos/memos/proto/gen/store"
+	"github.com/usememos/memos/server/auth"
 	"github.com/usememos/memos/store"
 )
 
 const maxBatchGetLinkMetadata = 10
+
+// applyPATSourceTag appends a #tag derived from the current personal access token's
+// description. JWT sessions and comments (which go through CreateMemoComment) are left unchanged.
+func (s *APIV1Service) applyPATSourceTag(ctx context.Context, content string) string {
+	pat := auth.GetPAT(ctx)
+	if pat == nil {
+		return content
+	}
+	tag := mdparser.SanitizeTagName(pat.Description)
+	if tag == "" {
+		return content
+	}
+	existing, err := s.MarkdownService.ExtractTags([]byte(content))
+	if err == nil {
+		for _, existingTag := range existing {
+			if strings.EqualFold(existingTag, tag) {
+				return content
+			}
+		}
+	}
+	if strings.TrimSpace(content) == "" {
+		return "#" + tag
+	}
+	return strings.TrimRight(content, " \t\r\n") + "\n\n#" + tag
+}
 
 func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoRequest) (*v1pb.Memo, error) {
 	user, err := s.fetchCurrentUser(ctx)
@@ -36,6 +64,7 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 	if request.Memo == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "memo is required")
 	}
+	request.Memo.Content = s.applyPATSourceTag(ctx, request.Memo.Content)
 
 	memoUID, err := ValidateAndGenerateUID(request.MemoId)
 	if err != nil {

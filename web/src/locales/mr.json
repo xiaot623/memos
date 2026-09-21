@@ -135,7 +135,8 @@
     "sign-in-to-memos": "Memos मध्ये साइन इन करा",
     "tasks": "कार्ये",
     "unlink": "अनलिंक करा",
-    "view-all": "सर्व पहा"
+    "view-all": "सर्व पहा",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "भाषा सापडली नाही? अभिप्राय सबमिट करा"
@@ -157,7 +158,8 @@
       "uploading-inline-image": "सामग्रीवर अपलोड करत आहे",
       "uploading-images": "प्रतिमा अपलोड करत आहे {{completed}}/{{total}}",
       "add-attachment": "जोडपत्र जोडा",
-      "image-upload-failed": "काही प्रतिमा अपलोड होऊ शकल्या नाहीत. पुन्हा प्रयत्न करा किंवा अपलोड केलेल्या फाइल्स जोडपत्रे म्हणून ठेवा."
+      "image-upload-failed": "काही प्रतिमा अपलोड होऊ शकल्या नाहीत. पुन्हा प्रयत्न करा किंवा अपलोड केलेल्या फाइल्स जोडपत्रे म्हणून ठेवा.",
+      "add-tag": "Add tag"
     },
     "audio-recorder": {
       "attachment-label": "ऑडिओ रेकॉर्डिंग",
@@ -204,6 +206,14 @@
       "save-in-progress": "जतन करण्याची प्रक्रिया सुरू आहे",
       "unsupported-attachment-image-url": "असमर्थित संलग्नक प्रतिमेचा URL: {{url}}",
       "wait-for-upload": "अपलोड पूर्ण होण्याची प्रतीक्षा करा"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -521,7 +531,8 @@
         "duration-never": "कधीच नाही",
         "expiration": "कालबाह्यता",
         "some-description": "काही वर्णन...",
-        "duration-90d": "९० दिवस"
+        "duration-90d": "९० दिवस",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "तुमच्या खात्यातील सर्व ऍक्सेस टोकन्सची यादी.",
       "title": "ऍक्सेस टोकन्स",
@@ -540,7 +551,8 @@
       "last-used": "शेवटचा वापर",
       "never-used": "कधीही वापरले नाही",
       "no-expiration": "मुदत नाही",
-      "web-clipper-title": "Memos वेब क्लिपरसह टोकन वापरा"
+      "web-clipper-title": "Memos वेब क्लिपरसह टोकन वापरा",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "पासवर्ड बदला",

@@ -18,9 +18,8 @@ import SettingSection from "./SettingSection";
 
 const EXPIRING_SOON_MS = 30 * 24 * 60 * 60 * 1000;
 
-const ApiUsageExample = () => {
+const UsageExample = ({ example }: { example: string }) => {
   const t = useTranslate();
-  const example = `curl ${window.location.origin}/api/v1/memos \\\n  -H "Authorization: Bearer memos_pat_..."`;
 
   const handleCopy = () => {
     copy(example);
@@ -37,6 +36,14 @@ const ApiUsageExample = () => {
       </Button>
     </div>
   );
+};
+
+const ApiUsageExample = () => {
+  return <UsageExample example={`curl ${window.location.origin}/api/v1/memos \\\n  -H "Authorization: Bearer memos_pat_..."`} />;
+};
+
+const McpUsageExample = () => {
+  return <UsageExample example={`${window.location.origin}/mcp/s/memos_pat_...`} />;
 };
 
 type TokenStatus = "active" | "expiring" | "idle";
@@ -86,6 +93,8 @@ const HowToUseDisclosure = () => {
           <div className="flex min-w-0 flex-col gap-2.5">
             <p className="text-xs leading-5 text-muted-foreground">{t("setting.access-token.about-description")}</p>
             <ApiUsageExample />
+            <p className="text-xs leading-5 text-muted-foreground">{t("setting.access-token.mcp-description")}</p>
+            <McpUsageExample />
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
               <a
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"

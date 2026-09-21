@@ -11,7 +11,7 @@ import { filterInlineManagedAttachments } from "@/utils/managed-attachment";
 import MemoContent from "../../MemoContent";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
-import { useMemoViewContext } from "../MemoViewContext";
+import { useMemoViewContext, useMemoViewDerived } from "../MemoViewContext";
 import type { MemoBodyProps } from "../types";
 
 const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
@@ -27,9 +27,23 @@ const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 };
 
 const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
-  const { memo, parentPage, showBlurredContent, blurred, readonly, openEditor, openPreview, toggleBlurVisibility } = useMemoViewContext();
+  const {
+    memo,
+    parentPage,
+    showBlurredContent,
+    blurred,
+    openPreview,
+    toggleBlurVisibility,
+    isEditing,
+    caretPoint,
+    onDraftChange,
+    saveEditor,
+    readonly,
+  } = useMemoViewContext();
+  const { isInMemoDetailPage, isArchived } = useMemoViewDerived();
+  const inPlace = isInMemoDetailPage && !readonly && !isArchived;
 
-  const { handleMemoContentClick, handleMemoContentDoubleClick } = useMemoHandlers({ readonly, openEditor, openPreview });
+  const { handleMemoContentClick } = useMemoHandlers({ openPreview });
 
   const referencedMemos = memo.relations.filter(isReferenceRelation);
   // Memoized so AttachmentListView's own useMemo chain keeps its cache across body renders.
@@ -57,8 +71,13 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
               content={memo.content}
               attachments={memo.attachments}
               onClick={handleMemoContentClick}
-              onDoubleClick={handleMemoContentDoubleClick}
               compact={Boolean(compact)}
+              editable={isEditing}
+              inPlace={inPlace}
+              caretPoint={caretPoint}
+              onContentChange={onDraftChange}
+              onSubmit={saveEditor}
+              onBlur={saveEditor}
             />
             <AttachmentGallery visual={visual} onImagePreview={openPreview} />
             <MemoMetadataRows

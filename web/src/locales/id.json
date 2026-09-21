@@ -135,7 +135,8 @@
     "sign-in-to-memos": "Masuk ke Memos",
     "tasks": "Tugas",
     "unlink": "Putuskan tautan",
-    "view-all": "Lihat semua"
+    "view-all": "Lihat semua",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "Bahasa tidak ditemukan? Kirim masukan"
@@ -157,7 +158,8 @@
       "keep-as-attachments": "Simpan sebagai lampiran",
       "retry-image-upload": "Coba lagi",
       "uploading-inline-image": "Mengunggah ke konten",
-      "uploading-images": "Mengunggah gambar {{completed}}/{{total}}"
+      "uploading-images": "Mengunggah gambar {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "audio-recorder": {
       "attachment-label": "Rekaman audio",
@@ -204,6 +206,14 @@
       "save-in-progress": "Penyimpanan sedang berlangsung",
       "unsupported-attachment-image-url": "URL gambar lampiran tidak didukung: {{url}}",
       "wait-for-upload": "Tunggu hingga unggahan selesai"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -521,7 +531,8 @@
         "duration-never": "Tidak Pernah",
         "expiration": "Kedaluwarsa",
         "some-description": "Beberapa deskripsi...",
-        "duration-90d": "90 Hari"
+        "duration-90d": "90 Hari",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "Daftar semua token akses untuk akun Anda.",
       "title": "Token Akses",
@@ -540,7 +551,8 @@
       "last-used": "Terakhir digunakan",
       "never-used": "Belum pernah digunakan",
       "no-expiration": "Tidak ada masa berlaku",
-      "web-clipper-title": "Gunakan token dengan Memos Web Clipper"
+      "web-clipper-title": "Gunakan token dengan Memos Web Clipper",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "Ubah kata sandi",

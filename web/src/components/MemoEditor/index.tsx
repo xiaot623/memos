@@ -1,5 +1,8 @@
+import { Maximize2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { needsRawMarkdown } from "@/components/MarkdownRuntime/unsupportedSyntax";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { useLocalStorage } from "@/hooks";
@@ -8,8 +11,8 @@ import { cn } from "@/lib/utils";
 import { InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { convertVisibilityFromString } from "@/utils/memo";
-import { AudioRecorderPanel, EditorContent, EditorMetadata, FocusModeOverlay, TimestampPopover } from "./components";
-import { FOCUS_MODE_STYLES, FORMATTING_TOOLBAR_STORAGE_KEY } from "./constants";
+import { AudioRecorderPanel, EditorContent, EditorMetadata, FocusModeOverlay, PeekEditorDialog, TimestampPopover } from "./components";
+import { FOCUS_MODE_STYLES, FORMATTING_TOOLBAR_STORAGE_KEY, PEEK_MODE_STYLES } from "./constants";
 import type { EditorFileOrigin } from "./Editor/extensions";
 import {
   splitInlineLocalFiles,
@@ -52,6 +55,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   onConfirm,
   onCancel,
   onSavingChange,
+  presentation = "inline",
 }) => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
@@ -61,11 +65,12 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   // typing (which changes content) does not re-render the editor shell and its
   // toolbar/metadata children.
   const isFocusMode = useEditorSelector((s) => s.ui.isFocusMode);
+  const isRawMode = useEditorSelector((s) => s.ui.isRawMode);
+  const isSaving = useEditorSelector((s) => s.ui.isLoading.saving);
   // Report focus-mode changes so a host can react; inline hosts pass nothing.
   useEffect(() => {
     onFocusModeChange?.(isFocusMode);
   }, [isFocusMode, onFocusModeChange]);
-  const isSaving = useEditorSelector((s) => s.ui.isLoading.saving);
   const hasTimestamp = useEditorSelector((s) => Boolean(s.timestamps.createTime));
   const { userGeneralSetting } = useAuth();
   const { aiSetting, fetchSetting } = useInstance();
@@ -79,6 +84,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const [isFormattingToolbarVisible, setFormattingToolbarVisible] = useLocalStorage(FORMATTING_TOOLBAR_STORAGE_KEY, false);
 
   const memoName = memo?.name;
+  const isPeek = presentation === "peek";
   // Existing resources own their placement. New replies are not placed
   // independently; only a new top-level memo inherits its host's target.
   const editorSpace = memo ? memo.space : parentMemoName ? undefined : defaultSpace;
@@ -106,13 +112,24 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const isDraftCacheEnabled = !memo;
 
   useEffect(() => {
+    if (!isInitialized) {
+      return;
+    }
+    if (!needsRawMarkdown(getState().content)) {
+      return;
+    }
+    dispatch(actions.setRawMode(true));
+    toast(t("editor.unsupported-syntax-raw-mode"));
+  }, [isInitialized, actions, dispatch, getState, t]);
+
+  useEffect(() => {
     onSavingChange?.(isSaving);
   }, [isSaving, onSavingChange]);
 
   // Auto-save content to localStorage (subscribes to the store internally).
   const { discardDraft } = useAutoSave(currentUser?.name ?? "", cacheKey, isInitialized && isDraftCacheEnabled);
 
-  const { containerRef: editorContainerRef, placeholderHeight } = useFocusMode(isFocusMode);
+  const { containerRef: editorContainerRef, placeholderHeight } = useFocusMode(isFocusMode && !isPeek);
 
   // Live-sync the draft's createTime/updateTime to the calendar-derived prop.
   // Only applies in create mode; edit mode owns its own timestamps. Runs after
@@ -242,6 +259,10 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     setFormattingToolbarVisible((visible) => !visible);
   }, [setFormattingToolbarVisible]);
 
+  const handleToggleRawMode = useCallback(() => {
+    dispatch(actions.setRawMode(!isRawMode));
+  }, [actions, dispatch, isRawMode]);
+
   const handleStartAudioRecording = async () => {
     setIsAudioRecorderOpen(true);
     await audioRecorder.startRecording();
@@ -314,7 +335,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         onToggleFormattingToolbar: handleToggleFormattingToolbar,
       };
 
-  const handleSave = useMemoSave({
+  const saveMemo = useMemoSave({
     memoName,
     parentMemoName,
     defaultSpace,
@@ -323,83 +344,134 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     discardDraft,
     onConfirm,
     onCancel: onCancel ? handleCancel : undefined,
+    onSavingChange,
   });
+  const [peekOpen, setPeekOpen] = useState(true);
+  const peekCanceledRef = useRef(false);
+
+  const closePeek = useCallback((canceled = false) => {
+    if (canceled) {
+      peekCanceledRef.current = true;
+    }
+    setPeekOpen(false);
+  }, []);
+
+  const handlePeekExited = useCallback(() => {
+    if (peekCanceledRef.current) {
+      onCancel?.();
+      return;
+    }
+    void saveMemo({ closeIfUnchanged: true, closeImmediately: true });
+  }, [onCancel, saveMemo]);
+
+  const handleSave = useCallback(() => {
+    if (isPeek) {
+      closePeek();
+      return;
+    }
+    void saveMemo();
+  }, [closePeek, isPeek, saveMemo]);
+
+  const showTimestamp = Boolean(memoName || (!memo && hasTimestamp));
+  const showPeekMaximize = isPeek && !isFocusMode;
+
+  const editorCard = (
+    <div
+      ref={editorContainerRef}
+      className={cn(
+        "group relative w-full flex flex-col justify-between items-start bg-card px-4 py-3 rounded-lg border border-border/70 gap-2",
+        isPeek && PEEK_MODE_STYLES.container,
+        !isPeek && FOCUS_MODE_STYLES.transition,
+        !isPeek && isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
+        !isPeek && !isFocusMode && className,
+      )}
+    >
+      {(isFocusMode || isFormattingToolbarVisible) && (
+        <FormattingToolbar
+          controllerRef={editorRef}
+          exit={isFocusMode ? { action: onFocusModeExit ? "close" : "minimize", onExit: handleToggleFocusMode } : undefined}
+        />
+      )}
+
+      {(showTimestamp || showPeekMaximize) && (
+        <div className="flex h-6 w-full items-center justify-between gap-2">
+          {showTimestamp ? <TimestampPopover /> : <span />}
+          {showPeekMaximize && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0 opacity-60 hover:opacity-100"
+              onClick={handleToggleFocusMode}
+              title={t("editor.focus-mode")}
+              aria-label={t("editor.focus-mode")}
+            >
+              <Maximize2Icon className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      )}
+
+      <EditorContent ref={editorRef} placeholder={placeholder} onSubmit={handleSave} onFiles={handleEditorFiles} />
+
+      {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
+        <AudioRecorderPanel
+          audioRecorder={{ status: audioRecorder.status, elapsedSeconds: audioRecorder.elapsedSeconds }}
+          mediaStream={audioRecorder.recordingStream}
+          onStop={audioRecorder.stopRecording}
+          onCancel={handleCancelAudioRecording}
+          onTranscribe={handleTranscribeAudioRecording}
+          canTranscribe={canTranscribe}
+          isTranscribing={isTranscribingAudio}
+        />
+      )}
+
+      <div className="w-full flex flex-col gap-2">
+        <EditorMetadata
+          memoName={memoName}
+          uploadingLocalFileURLs={inlineImageUpload.uploadingLocalFileURLs}
+          onInsertAttachments={inlineImageUpload.insertRemoteImages}
+          onInsertLocalFiles={inlineImageUpload.insertLocalImages}
+        />
+        <EditorToolbar
+          onSave={handleSave}
+          onCancel={onCancel ? (isPeek ? () => closePeek(true) : handleCancel) : undefined}
+          memoName={memoName}
+          parentMemoName={parentMemoName}
+          space={editorSpace}
+          onAudioRecorderClick={handleAudioRecorderClick}
+          viewToggles={isPeek ? undefined : viewToggles}
+          onInsertImages={handleInsertImages}
+          isRawMode={isRawMode}
+          onToggleRawMode={handleToggleRawMode}
+        />
+      </div>
+    </div>
+  );
+
+  if (isPeek) {
+    return (
+      <PeekEditorDialog
+        open={peekOpen}
+        isFocusMode={isFocusMode}
+        title={t("common.edit")}
+        onOpenChange={(open) => {
+          if (!open) closePeek();
+        }}
+        onDismiss={handlePeekExited}
+      >
+        {editorCard}
+      </PeekEditorDialog>
+    );
+  }
 
   return (
     <>
       <FocusModeOverlay isActive={isFocusMode} onToggle={handleToggleFocusMode} />
-
-      {/*
-        Layout structure:
-        - Uses justify-between to push content to top and bottom
-        - In focus mode: becomes fixed with specific spacing, editor grows to fill space
-        - In normal mode: stays relative with max-height constraint
-      */}
       {isFocusMode && placeholderHeight > 0 && (
         <div aria-hidden className={cn("w-full", className)} style={{ height: placeholderHeight }} />
       )}
-
-      <div
-        ref={editorContainerRef}
-        className={cn(
-          "group relative w-full flex flex-col justify-between items-start bg-card px-4 py-3 rounded-lg border border-border/70 gap-2",
-          FOCUS_MODE_STYLES.transition,
-          isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
-          !isFocusMode && className,
-        )}
-      >
-        {/* Formatting toolbar. Always shown in focus mode (trailing the button
-            that leaves the current frame — minimize inline, close when hosted);
-            in normal mode it appears only when the user toggled it on via the
-            insert menu. */}
-        {(isFocusMode || isFormattingToolbarVisible) && (
-          <FormattingToolbar
-            controllerRef={editorRef}
-            exit={isFocusMode ? { action: onFocusModeExit ? "close" : "minimize", onExit: handleToggleFocusMode } : undefined}
-          />
-        )}
-
-        {(memoName || (!memo && hasTimestamp)) && (
-          <div className="flex h-6 w-full items-center">
-            <TimestampPopover />
-          </div>
-        )}
-
-        {/* Editor content grows to fill available space in focus mode */}
-        <EditorContent ref={editorRef} placeholder={placeholder} onSubmit={handleSave} onFiles={handleEditorFiles} />
-
-        {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
-          <AudioRecorderPanel
-            audioRecorder={{ status: audioRecorder.status, elapsedSeconds: audioRecorder.elapsedSeconds }}
-            mediaStream={audioRecorder.recordingStream}
-            onStop={audioRecorder.stopRecording}
-            onCancel={handleCancelAudioRecording}
-            onTranscribe={handleTranscribeAudioRecording}
-            canTranscribe={canTranscribe}
-            isTranscribing={isTranscribingAudio}
-          />
-        )}
-
-        {/* Metadata and toolbar grouped together at bottom */}
-        <div className="w-full flex flex-col gap-2">
-          <EditorMetadata
-            memoName={memoName}
-            uploadingLocalFileURLs={inlineImageUpload.uploadingLocalFileURLs}
-            onInsertAttachments={inlineImageUpload.insertRemoteImages}
-            onInsertLocalFiles={inlineImageUpload.insertLocalImages}
-          />
-          <EditorToolbar
-            onSave={handleSave}
-            onCancel={onCancel ? handleCancel : undefined}
-            memoName={memoName}
-            parentMemoName={parentMemoName}
-            space={editorSpace}
-            onAudioRecorderClick={handleAudioRecorderClick}
-            viewToggles={viewToggles}
-            onInsertImages={handleInsertImages}
-          />
-        </div>
-      </div>
+      {editorCard}
     </>
   );
 };

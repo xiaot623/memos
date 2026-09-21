@@ -141,6 +141,7 @@
     "restore": "恢复",
     "role": "身份",
     "save": "保存",
+    "saving": "正在保存",
     "search": "搜索",
     "settings": "设置",
     "share": "分享",
@@ -192,6 +193,11 @@
       "link": "链接",
       "more": "更多格式"
     },
+    "tag-picker": {
+      "create": "创建「{{tag}}」",
+      "empty": "还没有标签",
+      "search-placeholder": "输入标签名称"
+    },
     "new-memo": "新建备忘录",
     "no-changes-detected": "未检测到更改",
     "save": "保存",
@@ -205,8 +211,12 @@
       "unsupported-attachment-image-url": "不支持的附件图片地址：{{url}}",
       "wait-for-upload": "请等待上传完成"
     },
+    "wysiwyg-editor": "所见即所得编辑器",
+    "raw-markdown": "原始 Markdown",
+    "unsupported-syntax-raw-mode": "此备忘包含富文本编辑器无法安全编辑的语法，已切换到原始 Markdown 模式。",
     "insert-menu": {
       "add-attachment": "添加附件",
+      "add-tag": "添加标签",
       "add-location": "添加位置",
       "image-upload-failed": "部分图片上传失败，请重试或将已上传文件保留为附件。",
       "image-upload-stopped": "图片上传已暂停 {{completed}}/{{total}}",
@@ -590,6 +600,7 @@
         "access-token-created": "访问令牌 `{{description}}` 已创建",
         "create-access-token": "创建令牌",
         "description": "描述",
+        "description-as-tag": "使用此令牌创建的笔记会自动加上以该描述为名的标签。",
         "duration-1m": "1 个月",
         "duration-never": "从不",
         "expiration": "过期时间",
@@ -611,6 +622,7 @@
       "guideline-review": "定期检查最后使用时间，删除您不认识或不再需要的令牌。",
       "how-to-use": "如何使用令牌",
       "last-used": "上次使用时间",
+      "mcp-description": "无法设置请求头的 MCP 客户端（例如 Gemini Spark 自定义应用）可以把同一枚令牌放进 URL。将 memos_pat_... 替换为创建时显示的明文。知道此链接的人即可用你的身份访问；删除令牌后链接立即失效。",
       "never-used": "从未使用",
       "no-expiration": "无过期时间",
       "web-clipper-title": "将令牌与 Memos Web Clipper 配合使用"

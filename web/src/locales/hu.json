@@ -135,7 +135,8 @@
     "resize-panel": "Panel átméretezése",
     "resize-sidebar": "Oldalsáv átméretezése",
     "sign-in-to-memos": "Bejelentkezés a következőbe: Memos",
-    "view-all": "Összes megtekintése"
+    "view-all": "Összes megtekintése",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "Nem található a nyelv? Visszajelzés küldése"
@@ -155,7 +156,8 @@
       "insert-image": "Kép beszúrása",
       "keep-as-attachments": "Megtartás mellékletként",
       "uploading-inline-image": "Feltöltés a tartalomhoz",
-      "uploading-images": "Képek feltöltése {{completed}}/{{total}}"
+      "uploading-images": "Képek feltöltése {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "no-changes-detected": "Nincs változás",
     "save": "Mentés",
@@ -204,6 +206,14 @@
       "save-in-progress": "Mentés folyamatban",
       "unsupported-attachment-image-url": "Nem támogatott mellékletkép URL: {{url}}",
       "wait-for-upload": "Várja meg a feltöltés befejezését"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -362,7 +372,8 @@
         "duration-never": "Soha",
         "expiration": "Lejárat",
         "some-description": "Néhány leírás...",
-        "duration-90d": "90 nap"
+        "duration-90d": "90 nap",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "A fiókodhoz tartozó összes hozzáférési token listája.",
       "title": "Hozzáférési tokenek",
@@ -381,7 +392,8 @@
       "no-expiration": "Nincs lejárati idő",
       "web-clipper-title": "Token használata a Memos Web Clipperrel",
       "guideline-review": "Időnként ellenőrizd az utolsó használat idejét, és töröld azokat a tokeneket, amelyeket már nem ismersz fel vagy nem használsz.",
-      "how-to-use": "Token használata"
+      "how-to-use": "Token használata",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "Jelszó megváltoztatása",

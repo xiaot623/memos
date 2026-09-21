@@ -1,4 +1,5 @@
 import type React from "react";
+import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 
 export interface MemoContentProps {
@@ -15,4 +16,10 @@ export interface MemoContentProps {
   contentClassName?: string;
   onClick?: (e: React.MouseEvent) => void;
   onDoubleClick?: (e: React.MouseEvent) => void;
+  editable?: boolean;
+  inPlace?: boolean;
+  caretPoint?: MarkdownCaretPoint | null;
+  onContentChange?: (content: string) => void;
+  onSubmit?: () => void;
+  onBlur?: () => void;
 }

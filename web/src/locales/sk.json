@@ -173,7 +173,8 @@
     "resize-panel": "Zmeniť veľkosť panela",
     "resize-sidebar": "Zmeniť veľkosť bočného panela",
     "sign-in-to-memos": "Prihlásiť sa do Memos",
-    "view-all": "Zobraziť všetko"
+    "view-all": "Zobraziť všetko",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "Jazyk sa nenašiel? Odoslať spätnú väzbu"
@@ -193,7 +194,8 @@
       "insert-image": "Vložiť obrázok",
       "keep-as-attachments": "Ponechať ako prílohy",
       "uploading-inline-image": "Nahrávanie do obsahu",
-      "uploading-images": "Nahrávanie obrázkov {{completed}}/{{total}}"
+      "uploading-images": "Nahrávanie obrázkov {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "no-changes-detected": "Nezistili sa žiadne zmeny",
     "save": "Uložiť",
@@ -242,6 +244,14 @@
       "save-in-progress": "Prebieha ukladanie",
       "unsupported-attachment-image-url": "Nepodporovaná URL adresa obrázka prílohy: {{url}}",
       "wait-for-upload": "Počkajte na dokončenie nahrávania"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -400,7 +410,8 @@
         "duration-never": "Nikdy",
         "expiration": "Vypršanie platnosti",
         "some-description": "Nejaký popis...",
-        "duration-90d": "90 dní"
+        "duration-90d": "90 dní",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "Zoznam všetkých prístupových tokenov pre váš účet.",
       "title": "Prístupové tokeny",
@@ -419,7 +430,8 @@
       "last-used": "Naposledy použité",
       "never-used": "Nikdy nepoužité",
       "no-expiration": "Bez expirácie",
-      "web-clipper-title": "Použite token s Memos Web Clipper"
+      "web-clipper-title": "Použite token s Memos Web Clipper",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "Zmeniť heslo",

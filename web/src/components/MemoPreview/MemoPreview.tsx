@@ -34,7 +34,12 @@ const STUB_CONTEXT: MemoViewContextValue = {
   readonly: true,
   showBlurredContent: false,
   blurred: false,
+  isEditing: false,
+  caretPoint: null,
   openEditor: () => {},
+  saveEditor: () => {},
+  onDraftChange: () => {},
+  isSaving: false,
   toggleBlurVisibility: () => {},
   openPreview: () => {},
 };

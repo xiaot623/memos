@@ -38,22 +38,25 @@ const paste = (target: Element, files: File[]) => {
   return event;
 };
 
-const mount = () => {
+const mount = async () => {
   const client = new QueryClient();
   const result = render(
     <QueryClientProvider client={client}>
       <MemoEditor cacheKey="paste-test" />
     </QueryClientProvider>,
   );
-  const content = result.container.querySelector<HTMLElement>(".cm-content");
-  expect(content).not.toBeNull();
-  return { ...result, content: content! };
+  const content = await waitFor(() => {
+    const node = result.container.querySelector<HTMLElement>(".ProseMirror[contenteditable='true']");
+    expect(node).not.toBeNull();
+    return node!;
+  });
+  return { ...result, content };
 };
 
 describe("MemoEditor paste", () => {
   it("attaches pasted files instead of writing images into the text", async () => {
     const upload = vi.spyOn(uploadService, "uploadFile");
-    const { content, container } = mount();
+    const { content, container } = await mount();
     const pdf = new File(["%PDF"], "notes.pdf", { type: "application/pdf" });
     const image = new File(["png"], "image.png", { type: "image/png" });
 

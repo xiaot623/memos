@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { toast } from "react-hot-toast";
 import { useNewMemo } from "@/contexts/NewMemoContext";
 import { attachmentKeys } from "@/hooks/useAttachmentQueries";
@@ -23,6 +23,15 @@ interface UseMemoSaveOptions {
   discardDraft: () => void;
   onConfirm?: (memoName: string) => void;
   onCancel?: () => void;
+  /** Reports save activity so a list card can keep a spinner after the peek overlay closes. */
+  onSavingChange?: (isSaving: boolean) => void;
+}
+
+export interface SaveMemoOptions {
+  /** Peek/backdrop dismiss: close quietly when the document is unchanged. */
+  closeIfUnchanged?: boolean;
+  /** Close the host before the network round-trip. Used by the peek overlay. */
+  closeImmediately?: boolean;
 }
 
 /**
@@ -39,96 +48,122 @@ export function useMemoSave({
   discardDraft,
   onConfirm,
   onCancel,
-}: UseMemoSaveOptions): () => Promise<void> {
+  onSavingChange,
+}: UseMemoSaveOptions): (options?: SaveMemoOptions) => Promise<void> {
   const t = useTranslate();
   const queryClient = useQueryClient();
   const { markNewMemo } = useNewMemo();
   const { actions, dispatch, getState } = useEditorContext();
+  const closeImmediatelyStartedRef = useRef(false);
 
-  return useCallback(async () => {
-    const state = getState();
-    // A repeated shortcut during the saved confirmation is not an error worth
-    // a toast; the save already landed and the host is closing.
-    if (state.ui.justSaved) return;
-    const { valid, reason, detail } = validationService.canSave(state);
-    if (!valid) {
-      toast.error(reason ? t(reason, detail ? { url: detail } : undefined) : t("editor.validation.cannot-save"));
-      return;
-    }
-
-    dispatch(actions.setLoading("saving", true));
-
-    try {
-      const result = await memoService.save(state, { memoName, parentMemoName, space: defaultSpace });
-
-      if (!result.hasChanges) {
-        toast.error(t("editor.no-changes-detected"));
-        onCancel?.();
+  return useCallback(
+    async (options?: SaveMemoOptions) => {
+      const state = getState();
+      if (state.ui.justSaved) return;
+      const { valid, reason, detail } = validationService.canSave(state);
+      if (!valid) {
+        toast.error(reason ? t(reason, detail ? { url: detail } : undefined) : t("editor.validation.cannot-save"));
         return;
       }
 
-      // Prevent the autosave unmount flush from restoring the saved draft.
-      discardDraft();
+      const invalidateAfterSave = () => {
+        const invalidationPromises: Promise<unknown>[] = [
+          queryClient.invalidateQueries({ queryKey: memoKeys.lists() }),
+          queryClient.invalidateQueries({ queryKey: userKeys.stats() }),
+          queryClient.invalidateQueries({ queryKey: attachmentKeys.lists() }),
+        ];
+        if (memoName) {
+          invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(memoName) }));
+        }
+        if (parentMemoName) {
+          invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.comments(parentMemoName) }));
+          invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(parentMemoName) }));
+        }
+        return invalidationPromises;
+      };
 
-      const invalidationPromises: Promise<unknown>[] = [
-        queryClient.invalidateQueries({ queryKey: memoKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: userKeys.stats() }),
-        queryClient.invalidateQueries({ queryKey: attachmentKeys.lists() }),
-      ];
-      if (memoName) {
-        invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(memoName) }));
+      if (options?.closeImmediately) {
+        if (closeImmediatelyStartedRef.current) return;
+        closeImmediatelyStartedRef.current = true;
+        discardDraft();
+        onSavingChange?.(true);
+        onConfirm?.(memoName ?? "");
+        try {
+          const result = await memoService.save(state, { memoName, parentMemoName, space: defaultSpace });
+          if (!result.hasChanges) return;
+          await Promise.all(invalidateAfterSave());
+        } catch (error) {
+          handleError(error, toast.error, {
+            context: "Failed to save memo",
+            fallbackMessage: errorService.getErrorMessage(error),
+          });
+        } finally {
+          onSavingChange?.(false);
+        }
+        return;
       }
-      if (parentMemoName) {
-        invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.comments(parentMemoName) }));
-        invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(parentMemoName) }));
-      }
-      // Hosts that close after saving (edit, comment) hold a brief "Saved"
-      // confirmation on the toolbar while the caches refresh underneath. The
-      // in-place composer clears immediately, so it shows nothing.
-      if (memoName || parentMemoName) {
+
+      dispatch(actions.setLoading("saving", true));
+
+      try {
+        const result = await memoService.save(state, { memoName, parentMemoName, space: defaultSpace });
+
+        if (!result.hasChanges) {
+          if (!options?.closeIfUnchanged) {
+            toast.error(t("editor.no-changes-detected"));
+          }
+          onCancel?.();
+          return;
+        }
+
+        discardDraft();
+
+        const invalidationPromises = invalidateAfterSave();
+        if (memoName || parentMemoName) {
+          dispatch(actions.setLoading("saving", false));
+          dispatch(actions.setJustSaved(true));
+          invalidationPromises.push(new Promise((resolve) => setTimeout(resolve, SAVED_CONFIRMATION_MS)));
+        }
+        await Promise.all(invalidationPromises);
+
+        dispatch(actions.reset());
+        if (!memoName && defaultVisibility) {
+          dispatch(actions.setMetadata({ visibility: defaultVisibility }));
+        }
+        if (!memoName && defaultCreateTime) {
+          dispatch(actions.setTimestamps({ createTime: defaultCreateTime, updateTime: defaultCreateTime }));
+        }
+
+        if (!memoName && !parentMemoName) {
+          markNewMemo(result.memoName);
+        }
+        onConfirm?.(result.memoName);
+      } catch (error) {
+        handleError(error, toast.error, {
+          context: "Failed to save memo",
+          fallbackMessage: errorService.getErrorMessage(error),
+        });
+      } finally {
         dispatch(actions.setLoading("saving", false));
-        dispatch(actions.setJustSaved(true));
-        invalidationPromises.push(new Promise((resolve) => setTimeout(resolve, SAVED_CONFIRMATION_MS)));
+        dispatch(actions.setJustSaved(false));
       }
-      await Promise.all(invalidationPromises);
-
-      dispatch(actions.reset());
-      if (!memoName && defaultVisibility) {
-        dispatch(actions.setMetadata({ visibility: defaultVisibility }));
-      }
-      // Reset creates a fresh editor state, so restore calendar-derived values
-      // for the next memo created without remounting this composer.
-      if (!memoName && defaultCreateTime) {
-        dispatch(actions.setTimestamps({ createTime: defaultCreateTime, updateTime: defaultCreateTime }));
-      }
-
-      if (!memoName && !parentMemoName) {
-        markNewMemo(result.memoName);
-      }
-      onConfirm?.(result.memoName);
-    } catch (error) {
-      handleError(error, toast.error, {
-        context: "Failed to save memo",
-        fallbackMessage: errorService.getErrorMessage(error),
-      });
-    } finally {
-      dispatch(actions.setLoading("saving", false));
-      dispatch(actions.setJustSaved(false));
-    }
-  }, [
-    actions,
-    defaultCreateTime,
-    defaultSpace,
-    defaultVisibility,
-    discardDraft,
-    dispatch,
-    getState,
-    markNewMemo,
-    memoName,
-    onCancel,
-    onConfirm,
-    parentMemoName,
-    queryClient,
-    t,
-  ]);
+    },
+    [
+      actions,
+      defaultCreateTime,
+      defaultSpace,
+      defaultVisibility,
+      discardDraft,
+      dispatch,
+      getState,
+      markNewMemo,
+      memoName,
+      onCancel,
+      onConfirm,
+      onSavingChange,
+      parentMemoName,
+      queryClient,
+      t,
+    ],
+  );
 }

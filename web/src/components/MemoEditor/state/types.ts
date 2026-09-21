@@ -17,6 +17,8 @@ export interface EditorState {
   };
   ui: {
     isFocusMode: boolean;
+    /** Source (CodeMirror) mode instead of the WYSIWYG editor. */
+    isRawMode: boolean;
     pendingInlineImageInsertions: number;
     isLoading: {
       saving: boolean;
@@ -46,6 +48,7 @@ export type EditorAction =
   | { type: "REMOVE_LOCAL_FILE"; payload: string }
   | { type: "SET_LOCAL_FILES"; payload: LocalFile[] }
   | { type: "TOGGLE_FOCUS_MODE" }
+  | { type: "SET_RAW_MODE"; payload: boolean }
   | { type: "SET_LOADING"; payload: { key: LoadingKey; value: boolean } }
   | { type: "SET_PENDING_INLINE_IMAGE_INSERTIONS"; payload: number }
   | { type: "SET_TIMESTAMPS"; payload: Partial<EditorState["timestamps"]> }
@@ -65,6 +68,7 @@ const defaultState: EditorState = {
   },
   ui: {
     isFocusMode: false,
+    isRawMode: false,
     pendingInlineImageInsertions: 0,
     isLoading: {
       saving: false,

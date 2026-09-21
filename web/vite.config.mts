@@ -35,6 +35,10 @@ export default defineConfig({
         target: devProxyServer,
         xfwd: true,
       },
+      "^/mcp": {
+        target: devProxyServer,
+        xfwd: true,
+      },
     },
   },
   resolve: {

@@ -213,7 +213,8 @@
     "collapse-panel": "折疊面板",
     "expand-panel": "展開面板",
     "resize-panel": "調整面板大小",
-    "view-all": "查看全部"
+    "view-all": "查看全部",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "未找到語言？ 提交回饋"
@@ -250,7 +251,8 @@
       "link-memo": "連結備忘錄",
       "retry-image-upload": "重試",
       "uploading-inline-image": "正在上傳到正文",
-      "uploading-images": "正在上傳圖片 {{completed}}/{{total}}"
+      "uploading-images": "正在上傳圖片 {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "new-memo": "新增備忘錄",
     "no-changes-detected": "未發現變更",
@@ -282,7 +284,15 @@
       "trigger": "錄製音訊"
     },
     "comment": "評論",
-    "saved": "已儲存"
+    "saved": "已儲存",
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
+    }
   },
   "inbox": {
     "failed-to-load": "載入失敗",
@@ -440,7 +450,8 @@
         "duration-90d": "90 天",
         "duration-never": "永不過期",
         "expiration": "過期時間",
-        "some-description": "請輸入說明..."
+        "some-description": "請輸入說明...",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "create-first": "建立第一個存取令牌",
       "description": "此處列出您帳號的所有存取令牌。",
@@ -459,7 +470,8 @@
       "no-expiration": "永不過期",
       "title": "存取令牌",
       "token": "令牌",
-      "web-clipper-title": "搭配 Memos 網頁剪藏器使用令牌"
+      "web-clipper-title": "搭配 Memos 網頁剪藏器使用令牌",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "attachment-storage": "附件佔用空間",

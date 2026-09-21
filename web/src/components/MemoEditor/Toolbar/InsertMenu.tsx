@@ -1,6 +1,7 @@
 import { uniqBy } from "lodash-es";
 import {
   CheckIcon,
+  FileTextIcon,
   ImageIcon,
   LinkIcon,
   LoaderIcon,
@@ -9,6 +10,7 @@ import {
   MicIcon,
   PaperclipIcon,
   PlusIcon,
+  TagIcon,
   TypeIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,15 +32,18 @@ import { useFileUpload, useLinkMemo, useLocation } from "../hooks";
 import { useEditorContext, useEditorSelector } from "../state";
 import type { InsertMenuProps } from "../types";
 import type { LocalFile } from "../types/attachment";
+import { TagPickerDialog } from "./TagPickerDialog";
 
 const InsertMenu = (props: InsertMenuProps) => {
   const t = useTranslate();
   const { actions, dispatch, getState } = useEditorContext();
   const relations = useEditorSelector((s) => s.metadata.relations);
-  const { location: initialLocation, onLocationChange, viewToggles, isUploading: isUploadingProp } = props;
+  const { location: initialLocation, onLocationChange, viewToggles, isUploading: isUploadingProp, isRawMode, onToggleRawMode } = props;
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [tagPickerOpen, setTagPickerOpen] = useState(false);
+  const content = useEditorSelector((s) => s.content);
   const inlineImageInputRef = useRef<HTMLInputElement>(null);
 
   const { fileInputRef, selectingFlag, handleFileInputChange, handleUploadClick } = useFileUpload((newFiles: LocalFile[]) => {
@@ -147,6 +152,7 @@ const InsertMenu = (props: InsertMenuProps) => {
     { key: "audio", label: t("editor.audio-recorder.trigger"), icon: MicIcon, onClick: props.onAudioRecorderClick },
     { key: "link", label: t("editor.insert-menu.link-memo"), icon: LinkIcon, onClick: handleOpenLinkDialog },
     { key: "location", label: t("editor.insert-menu.add-location"), icon: MapPinIcon, onClick: handleLocationClick },
+    { key: "tag", label: t("editor.insert-menu.add-tag"), icon: TagIcon, onClick: () => setTagPickerOpen(true) },
   ];
 
   return (
@@ -181,6 +187,16 @@ const InsertMenu = (props: InsertMenuProps) => {
                 <TypeIcon />
                 {t("editor.formatting-toolbar")}
                 {viewToggles.isFormattingToolbarVisible && <CheckIcon className="ms-auto size-3.5" />}
+              </DropdownMenuItem>
+            </>
+          )}
+          {onToggleRawMode && (
+            <>
+              {viewToggles ? null : <DropdownMenuSeparator />}
+              <DropdownMenuItem onClick={onToggleRawMode}>
+                <FileTextIcon />
+                {isRawMode ? t("editor.wysiwyg-editor") : t("editor.raw-markdown")}
+                {isRawMode && <CheckIcon className="ms-auto size-3.5" />}
               </DropdownMenuItem>
             </>
           )}
@@ -228,6 +244,13 @@ const InsertMenu = (props: InsertMenuProps) => {
         onPlaceholderChange={setPlaceholder}
         onCancel={handleLocationCancel}
         onConfirm={handleLocationConfirm}
+      />
+
+      <TagPickerDialog
+        open={tagPickerOpen}
+        content={content}
+        onOpenChange={setTagPickerOpen}
+        onContentChange={(next) => dispatch(actions.updateContent(next))}
       />
     </>
   );

@@ -206,7 +206,8 @@
     "collapse-panel": "כווץ את הפאנל",
     "expand-panel": "הרחב את הפאנל",
     "resize-panel": "שינוי גודל הפאנל",
-    "view-all": "הצג הכל"
+    "view-all": "הצג הכל",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "לא מצאתם את השפה? שלחו משוב"
@@ -243,7 +244,8 @@
       "link-memo": "קשר פתק",
       "retry-image-upload": "נסה שוב",
       "uploading-inline-image": "מעלה לתוכן",
-      "uploading-images": "מעלה תמונות {{completed}}/{{total}}"
+      "uploading-images": "מעלה תמונות {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "no-changes-detected": "לא זוהו שינויים",
     "save": "שמור",
@@ -275,7 +277,15 @@
     },
     "comment": "תגובה",
     "new-memo": "תזכיר חדש",
-    "saved": "נשמר"
+    "saved": "נשמר",
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
+    }
   },
   "inbox": {
     "failed-to-load": "טעינת פריט מתיבת הדואר הנכנס נכשלה",
@@ -433,7 +443,8 @@
         "duration-90d": "90 ימים",
         "duration-never": "לעולם לא",
         "expiration": "תפוגה",
-        "some-description": "תיאור כלשהו..."
+        "some-description": "תיאור כלשהו...",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "create-first": "צרו את האסימון הראשון שלכם",
       "description": "רשימת כל אסימוני הגישה לחשבון שלכם.",
@@ -452,7 +463,8 @@
       "no-expiration": "ללא תפוגה",
       "title": "אסימוני גישה",
       "token": "אסימון",
-      "web-clipper-title": "השתמשו באסימון עם Web Clipper של Memos"
+      "web-clipper-title": "השתמשו באסימון עם Web Clipper של Memos",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "שנה סיסמה",

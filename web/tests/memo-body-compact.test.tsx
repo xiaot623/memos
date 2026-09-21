@@ -17,7 +17,8 @@ const mockState = vi.hoisted(() => ({
   reactionClick: vi.fn(),
 }));
 
-vi.mock("@/utils/i18n", () => ({
+vi.mock("@/utils/i18n", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/utils/i18n")>()),
   useTranslate: () => (key: string) => key,
 }));
 
@@ -25,8 +26,8 @@ vi.mock("@/components/MemoContent/MentionResolutionContext", () => ({
   useResolvedMentionUsernames: () => new Set<string>(),
 }));
 
-vi.mock("@/components/MemoContent/MemoMarkdownRenderer", () => ({
-  MemoMarkdownRenderer: ({ content }: { content: string }) => <div>{content}</div>,
+vi.mock("@/components/MarkdownRuntime/MarkdownView", () => ({
+  MarkdownView: ({ content }: { content: string }) => <div>{content}</div>,
 }));
 
 vi.mock("@/components/MemoMetadata", () => ({
@@ -57,10 +58,16 @@ vi.mock("@/components/MemoView/MemoViewContext", () => ({
     showBlurredContent: mockState.showBlurredContent,
     blurred: mockState.blurred,
     readonly: false,
+    isEditing: false,
+    caretPoint: null,
+    saveEditor: vi.fn(),
+    onDraftChange: vi.fn(),
+    isSaving: false,
     openEditor: vi.fn(),
     openPreview: vi.fn(),
     toggleBlurVisibility: mockState.toggleBlurVisibility,
   }),
+  useMemoViewDerived: () => ({ isInMemoDetailPage: false, isArchived: false }),
 }));
 
 const createMemo = (content: string, reactions: Array<{ reactionType: string; creator: string }> = []) => ({

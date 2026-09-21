@@ -373,14 +373,15 @@ describe("App sidebar logo", () => {
     expect(screen.queryByRole("link", { name: /^common\.inbox/ })).not.toBeInTheDocument();
   });
 
-  it("keeps Attachments active after route normalization", () => {
+  it("keeps Attachments content after route normalization without a nav pill", () => {
     render(
       <MemoryRouter initialEntries={["/Attachments/"]}>
         <AppSidebar />
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("link", { name: "common.attachments" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "common.attachments", level: 2 })).toBeInTheDocument();
   });
 
   it("hides the instance-level unused attachment collection in a Space", () => {
@@ -459,9 +460,9 @@ describe("App sidebar logo", () => {
     expect(screen.getByRole("button", { name: "space.switch: common.memos" })).toBeInTheDocument();
     const navigation = within(screen.getByRole("navigation", { name: "Primary" }));
     expectDefaultNavPill(navigation.getByRole("button", { name: "common.home" }), "common.home");
-    const attachments = navigation.getByRole("link", { name: "common.attachments" });
-    expect(attachments).toHaveAttribute("href", "/attachments");
-    expectCollapsedNavPill(attachments, "common.attachments");
+    expect(screen.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expect(navigation.getByRole("link", { name: "common.calendar" })).toHaveAttribute("href", "/calendar");
+    expectCollapsedNavPill(navigation.getByRole("link", { name: "common.calendar" }), "common.calendar");
     expect(screen.queryByRole("link", { name: "common.inbox" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "common.home" })).not.toBeInTheDocument();
     expect(screen.getByText("User menu").closest("footer")).not.toBeNull();
@@ -481,7 +482,8 @@ describe("App sidebar logo", () => {
     const scopeTrigger = navigation.getByRole("button", { name: "common.home" });
     expectDefaultNavPill(scopeTrigger, "common.home");
     expect(scopeTrigger.querySelector(".lucide-chevron-down")).not.toBeInTheDocument();
-    expectCollapsedNavPill(navigation.getByRole("link", { name: "common.attachments" }), "common.attachments");
+    expect(navigation.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expectCollapsedNavPill(navigation.getByRole("link", { name: "common.calendar" }), "common.calendar");
   });
 
   it("uses a visitor sidebar for a guest on a route without contextual content", () => {
@@ -545,7 +547,8 @@ describe("App sidebar logo", () => {
     expectActiveNavPill(scopeTrigger, "common.home");
     expect(scopeTrigger.querySelector(".lucide-chevron-down")).toBeInTheDocument();
     expect(scopeTrigger.querySelector(".lucide-chevrons-up-down")).not.toBeInTheDocument();
-    expectCollapsedNavPill(screen.getByRole("link", { name: "common.attachments" }), "common.attachments");
+    expect(screen.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expectCollapsedNavPill(screen.getByRole("link", { name: "common.calendar" }), "common.calendar");
     fireEvent.click(scopeTrigger);
     expect(await screen.findByRole("menuitem", { name: "common.home" })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "common.explore" })).toBeInTheDocument();
@@ -580,13 +583,13 @@ describe("App sidebar logo", () => {
     );
 
     const scopeTrigger = screen.getByRole("button", { name: "common.home" });
-    expectCollapsedNavPill(scopeTrigger, "common.home");
+    expectDefaultNavPill(scopeTrigger, "common.home");
 
     expect(screen.getByRole("button", { name: "User menu" }).closest("footer")).not.toBeNull();
     expect(screen.queryByRole("link", { name: "common.inbox" })).not.toBeInTheDocument();
 
-    const attachments = screen.getByRole("link", { name: "common.attachments" });
-    expectActiveNavPill(attachments, "common.attachments");
+    expect(screen.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "common.attachments", level: 2 })).toBeInTheDocument();
 
     fireEvent.click(scopeTrigger);
     expect(await screen.findByText("Calendar")).toBeInTheDocument();
@@ -620,7 +623,8 @@ describe("App sidebar logo", () => {
     const scopeTrigger = screen.getByRole("button", { name: "common.explore" });
     expectDefaultNavPill(scopeTrigger, "common.explore");
     expect(scopeTrigger.querySelector(".lucide-chevron-down")).not.toBeInTheDocument();
-    expectCollapsedNavPill(screen.getByRole("link", { name: "common.attachments" }), "common.attachments");
+    expect(screen.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expectCollapsedNavPill(screen.getByRole("link", { name: "common.calendar" }), "common.calendar");
 
     fireEvent.click(scopeTrigger);
     expectActiveNavPill(await screen.findByRole("button", { name: "common.explore", current: "page" }), "common.explore");
@@ -637,7 +641,8 @@ describe("App sidebar logo", () => {
     const scopeTrigger = screen.getByRole("button", { name: "common.explore" });
     expectDefaultNavPill(scopeTrigger, "common.explore");
     expect(scopeTrigger.querySelector(".lucide-chevron-down")).not.toBeInTheDocument();
-    expectCollapsedNavPill(screen.getByRole("link", { name: "common.attachments" }), "common.attachments");
+    expect(screen.queryByRole("link", { name: "common.attachments" })).not.toBeInTheDocument();
+    expectCollapsedNavPill(screen.getByRole("link", { name: "common.calendar" }), "common.calendar");
 
     fireEvent.click(scopeTrigger);
     expectActiveNavPill(await screen.findByRole("button", { name: "common.explore", current: "page" }), "common.explore");

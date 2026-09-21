@@ -16,7 +16,6 @@ import {
   type LucideIcon,
   MapIcon,
   MenuIcon,
-  PaperclipIcon,
   SearchIcon,
   SquarePenIcon,
   Trash2Icon,
@@ -392,13 +391,6 @@ const GlobalNavigation = () => {
           path: collectionPathForLocation(ROUTES.MAP, location.pathname),
           icon: MapIcon,
           active: routeKind === "map",
-        },
-        {
-          id: "attachments",
-          label: t("common.attachments"),
-          path: collectionPathForLocation(ROUTES.ATTACHMENTS, location.pathname),
-          icon: PaperclipIcon,
-          active: routeKind === "attachments",
         },
       ]
     : [

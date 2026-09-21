@@ -40,8 +40,12 @@ export interface MemoEditorProps {
   defaultCreateTime?: Date;
   onConfirm?: (memoName: string) => void;
   onCancel?: () => void;
-  /** Reports save activity so external presentations can prevent dismissal mid-transaction. */
+  /** Reports save activity so a list card can keep a spinner after the peek overlay closes. */
   onSavingChange?: (isSaving: boolean) => void;
+  /**
+   * `peek` is the Keep-style overlay for editing an existing memo from a list card.
+   */
+  presentation?: "inline" | "peek";
 }
 
 export interface EditorContentProps {
@@ -74,6 +78,8 @@ export interface EditorToolbarProps {
   onAudioRecorderClick: () => void;
   viewToggles?: EditorViewToggles;
   onInsertImages: (files: File[]) => void;
+  isRawMode?: boolean;
+  onToggleRawMode?: () => void;
 }
 
 export interface EditorMetadataProps {
@@ -114,6 +120,8 @@ export interface InsertMenuProps {
   onAudioRecorderClick?: () => void;
   viewToggles?: EditorViewToggles;
   onInsertImages: (files: File[]) => void;
+  isRawMode?: boolean;
+  onToggleRawMode?: () => void;
 }
 
 export interface VisibilitySelectorProps {

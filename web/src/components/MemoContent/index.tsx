@@ -1,19 +1,12 @@
 import { memo, useRef } from "react";
+import { MarkdownView } from "@/components/MarkdownRuntime/MarkdownView";
 import { useContentSearchTerms } from "@/contexts/MemoFilterContext";
 import { cn } from "@/lib/utils";
-import { MemoMarkdownRenderer } from "./MemoMarkdownRenderer";
-import { useResolvedMentionUsernames } from "./MentionResolutionContext";
 import type { MemoContentProps } from "./types";
 import { useSearchMatchHighlight } from "./useSearchMatchHighlight";
 
-// Stateless markdown renderer. Truncation is not this component's concern — compact cards
-// are bounded by ClampedSection around the whole memo body; `compact` here only informs
-// the renderer (e.g. footnote links navigate to the detail page instead of scrolling,
-// since a collapsed card may hide the target).
 const MemoContent = (props: MemoContentProps) => {
-  const { className, contentClassName, content, attachments, onClick, onDoubleClick } = props;
-  const resolvedMentionUsernames = useResolvedMentionUsernames(content);
-  // Whatever the page's search matched is painted here, without altering the rendered tree.
+  const { className, contentClassName, content } = props;
   const contentRef = useRef<HTMLDivElement>(null);
   useSearchMatchHighlight(contentRef, useContentSearchTerms());
 
@@ -29,24 +22,26 @@ const MemoContent = (props: MemoContentProps) => {
           "[&_.katex-display]:max-w-full",
           "[&_.katex-display]:overflow-x-auto",
           "[&_.katex-display]:overflow-y-hidden",
-          // Footnotes: quiet GitHub-style footer — thin separator, smaller muted text, unobtrusive links.
           "[&_.footnotes]:mt-4 [&_.footnotes]:border-t [&_.footnotes]:border-border [&_.footnotes]:pt-2",
           "[&_.footnotes]:text-sm [&_.footnotes]:text-muted-foreground",
-          // GitHub renders footnote ref/backref links without an underline (underline on hover only).
           "[&_[data-footnote-ref]]:no-underline [&_[data-footnote-ref]:hover]:underline",
           "[&_.data-footnote-backref]:no-underline [&_.data-footnote-backref:hover]:underline",
           contentClassName,
         )}
-        onMouseUp={onClick}
-        onDoubleClick={onDoubleClick}
+        onMouseUp={props.editable ? undefined : props.onClick}
+        onDoubleClick={props.editable ? undefined : props.onDoubleClick}
       >
-        <MemoMarkdownRenderer
+        <MarkdownView
           content={content}
-          attachments={attachments}
-          resolvedMentionUsernames={resolvedMentionUsernames}
-          memoName={props.memoName}
-          parentPage={props.parentPage}
           compact={Boolean(props.compact)}
+          memoName={props.memoName}
+          eager={!props.compact}
+          editable={props.editable}
+          inPlace={props.inPlace}
+          caretPoint={props.caretPoint}
+          onContentChange={props.onContentChange}
+          onSubmit={props.onSubmit}
+          onBlur={props.editable ? props.onBlur : undefined}
         />
       </div>
     </div>

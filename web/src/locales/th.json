@@ -135,7 +135,8 @@
     "sign-in-to-memos": "เข้าสู่ระบบ Memos",
     "tasks": "งาน",
     "unlink": "ยกเลิกการเชื่อมโยง",
-    "view-all": "ดูทั้งหมด"
+    "view-all": "ดูทั้งหมด",
+    "saving": "Saving"
   },
   "locale-picker": {
     "no-language-feedback": "ไม่พบภาษา? ส่งข้อเสนอแนะ"
@@ -157,7 +158,8 @@
       "keep-as-attachments": "เก็บเป็นไฟล์แนบ",
       "retry-image-upload": "ลองใหม่",
       "uploading-inline-image": "กำลังอัปโหลดไปยังเนื้อหา",
-      "uploading-images": "กำลังอัปโหลดรูปภาพ {{completed}}/{{total}}"
+      "uploading-images": "กำลังอัปโหลดรูปภาพ {{completed}}/{{total}}",
+      "add-tag": "Add tag"
     },
     "audio-recorder": {
       "attachment-label": "การบันทึกเสียง",
@@ -204,6 +206,14 @@
       "save-in-progress": "กำลังบันทึก",
       "unsupported-attachment-image-url": "URL รูปภาพไฟล์แนบไม่รองรับ: {{url}}",
       "wait-for-upload": "รอจนกว่าการอัปโหลดจะเสร็จสมบูรณ์"
+    },
+    "wysiwyg-editor": "WYSIWYG editor",
+    "raw-markdown": "Raw Markdown",
+    "unsupported-syntax-raw-mode": "This memo has syntax the rich editor cannot safely edit, so it switched to raw Markdown.",
+    "tag-picker": {
+      "create": "Create \"{{tag}}\"",
+      "empty": "No tags yet",
+      "search-placeholder": "Enter a tag name"
     }
   },
   "inbox": {
@@ -521,7 +531,8 @@
         "duration-never": "ไม่หมดอายุ",
         "expiration": "วันหมดอายุ",
         "some-description": "คำอธิบาย...",
-        "duration-90d": "90 วัน"
+        "duration-90d": "90 วัน",
+        "description-as-tag": "Memos created with this token are tagged with this description."
       },
       "description": "รายการโทเค็นการเข้าถึงทั้งหมดสำหรับบัญชีของคุณ",
       "title": "โทเค็นการเข้าถึง",
@@ -540,7 +551,8 @@
       "last-used": "ใช้ครั้งล่าสุด",
       "never-used": "ไม่เคยใช้",
       "no-expiration": "ไม่มีวันหมดอายุ",
-      "web-clipper-title": "ใช้โทเค็นกับ Memos Web Clipper"
+      "web-clipper-title": "ใช้โทเค็นกับ Memos Web Clipper",
+      "mcp-description": "MCP clients that cannot set headers (for example Gemini Spark custom apps) can put the same token in the URL. Replace memos_pat_... with the token shown when you create it. Anyone with this URL can act as you; revoke the token to disable it."
     },
     "account": {
       "change-password": "เปลี่ยนรหัสผ่าน",

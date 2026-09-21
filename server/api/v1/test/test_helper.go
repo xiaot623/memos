@@ -131,3 +131,14 @@ func (*TestService) CreateUserContext(ctx context.Context, userID int32) context
 	// Use the context key from the auth package
 	return context.WithValue(ctx, auth.UserIDContextKey, userID)
 }
+
+// CreatePATContext creates a context authenticated as user via a personal access token
+// with the given description.
+func (*TestService) CreatePATContext(ctx context.Context, user *store.User, description string) context.Context {
+	return auth.ApplyToContext(ctx, &auth.AuthResult{
+		User: user,
+		PAT: &storepb.PersonalAccessTokensUserSetting_PersonalAccessToken{
+			Description: description,
+		},
+	})
+}

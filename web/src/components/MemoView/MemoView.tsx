@@ -12,12 +12,13 @@ import {
   useState,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { useColumnGridUntrapped } from "@/components/ColumnGrid/ColumnGridContext";
+import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
 import { useResolvedUser } from "@/components/MemoContent/MentionResolutionContext";
 import { loadMemoEditor } from "@/components/MemoEditor/loader";
 import type { MemoEditorProps } from "@/components/MemoEditor/types";
 import { useAuth } from "@/contexts/AuthContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import { isMemoBlurred } from "@/lib/tag";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
@@ -26,6 +27,7 @@ import { canManageMemo } from "@/utils/user";
 import { MemoBody, MemoCommentListView, MemoHeader } from "./components";
 import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
+import { isInteractiveMemoClickTarget } from "./isInteractiveMemoClickTarget";
 import { computeCommentAmount, MemoViewContext } from "./MemoViewContext";
 import { isMemoDetailPath, resolveMemoParentPage } from "./navigation";
 import type { MemoViewHandle, MemoViewProps } from "./types";
@@ -45,16 +47,20 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
     showPinned,
     showSpace,
   } = props;
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [EditorComponent, setEditorComponent] = useState<ComponentType<MemoEditorProps>>();
   const [cardWidth, setCardWidth] = useState(0);
+  const [isBackgroundSaving, setIsBackgroundSaving] = useState(false);
+  const [caretPoint, setCaretPoint] = useState<MarkdownCaretPoint | null>(null);
+  const draftRef = useRef(memoData.content);
 
   const currentUser = useCurrentUser();
   const { userTagsSetting } = useAuth();
   const creator = useResolvedUser(memoData.creator, { enabled: Boolean(showCreator || props.shareImageDialogOpen) });
   const isArchived = memoData.state === State.ARCHIVED;
   const readonly = !canManageMemo(memoData, currentUser);
+  const canEdit = !readonly && !isArchived;
   const location = useLocation();
   const parentPage = resolveMemoParentPage({
     explicitParentPage: parentPageProp,
@@ -62,6 +68,9 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
     search: location.search,
     memoName: memoData.name,
   });
+  const isInMemoDetailPage = isMemoDetailPath(location.pathname, memoData.name);
+  const isEditing = showEditor && isInMemoDetailPage;
+  const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
 
   // Blur content when any tag has blur_content enabled in the current user's tag settings.
   const [showBlurredContent, setShowBlurredContent] = useState(false);
@@ -69,17 +78,19 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
   const toggleBlurVisibility = useCallback(() => setShowBlurredContent((prev) => !prev), []);
 
   const { previewState, openPreview, setPreviewOpen } = useImagePreview();
-  const editorHostRef = useRef<HTMLDivElement>(null);
+  const { mutate: updateMemo } = useUpdateMemo();
 
-  const focusMountedEditor = useCallback(() => {
-    const codeMirrorContent = editorHostRef.current?.querySelector<HTMLElement>('.cm-content[contenteditable="true"]');
-    const fallbackInput = editorHostRef.current?.querySelector<HTMLElement>("textarea, input");
-    (codeMirrorContent ?? fallbackInput)?.focus();
+  const closeEditor = useCallback(() => {
+    setCaretPoint(null);
+    setShowEditor(false);
   }, []);
-
   const openEditor = useCallback(() => {
-    if (showEditor && EditorComponent) {
-      focusMountedEditor();
+    if (showEditor) {
+      return;
+    }
+    if (isInMemoDetailPage) {
+      draftRef.current = memoData.content;
+      setShowEditor(true);
       return;
     }
     void loadMemoEditor()
@@ -88,35 +99,56 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
         setShowEditor(true);
       })
       .catch(() => undefined);
-  }, [EditorComponent, focusMountedEditor, showEditor]);
-  const closeEditor = useCallback(() => setShowEditor(false), []);
-
-  // The grid keys tiles by memo name (see getMemoKey), so the focused editor
-  // identifies its own tile by name and untraps it for the duration.
-  const { setUntrappedKey, clearUntrappedKey } = useColumnGridUntrapped();
-  const handleFocusModeChange = useCallback(
-    (isFocusMode: boolean) => {
-      if (isFocusMode) {
-        setUntrappedKey(memoData.name);
-      } else {
-        clearUntrappedKey(memoData.name);
-      }
-    },
-    [memoData.name, setUntrappedKey, clearUntrappedKey],
-  );
-  // Release the slot when the editor closes or this card unmounts. Both calls
-  // are ownership-scoped, so mounting cards never clobber another card's slot.
-  useEffect(() => {
-    if (!showEditor) {
-      clearUntrappedKey(memoData.name);
+  }, [isInMemoDetailPage, memoData.content, showEditor]);
+  const saveEditor = useCallback(() => {
+    if (!isInMemoDetailPage) {
+      return;
     }
-  }, [showEditor, memoData.name, clearUntrappedKey]);
-  useEffect(() => () => clearUntrappedKey(memoData.name), [memoData.name, clearUntrappedKey]);
+    if (draftRef.current === memoData.content) {
+      closeEditor();
+      return;
+    }
+    setIsBackgroundSaving(true);
+    updateMemo(
+      { update: { name: memoData.name, content: draftRef.current }, updateMask: ["content", "update_time"] },
+      {
+        onSuccess: () => closeEditor(),
+        onSettled: () => setIsBackgroundSaving(false),
+      },
+    );
+  }, [closeEditor, isInMemoDetailPage, memoData.content, memoData.name, updateMemo]);
+  const onDraftChange = useCallback((content: string) => {
+    draftRef.current = content;
+  }, []);
+
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!canEdit || showEditor) return;
+      if (isInteractiveMemoClickTarget(e.target)) return;
+      if (isInMemoDetailPage) {
+        setCaretPoint({ x: e.clientX, y: e.clientY });
+      }
+      openEditor();
+    },
+    [canEdit, isInMemoDetailPage, openEditor, showEditor],
+  );
+
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") {
+        return;
+      }
+      event.preventDefault();
+      saveEditor();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isEditing, saveEditor]);
 
   useImperativeHandle(ref, () => ({ openEditor }), [openEditor]);
-
-  const isInMemoDetailPage = isMemoDetailPath(location.pathname, memoData.name);
-  const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
 
   // The card width is only needed by the share-image dialog. Keep feed cards
   // free of a permanent ResizeObserver and measure only while that dialog is open.
@@ -162,7 +194,12 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
       readonly,
       showBlurredContent,
       blurred,
+      isEditing,
+      caretPoint,
       openEditor,
+      saveEditor,
+      onDraftChange,
+      isSaving: isBackgroundSaving,
       toggleBlurVisibility,
       openPreview,
     }),
@@ -176,7 +213,12 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
       readonly,
       showBlurredContent,
       blurred,
+      isEditing,
+      caretPoint,
       openEditor,
+      saveEditor,
+      onDraftChange,
+      isBackgroundSaving,
       toggleBlurVisibility,
       openPreview,
     ],
@@ -184,9 +226,16 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
 
   const article = (
     <article
-      className={cn(MEMO_CARD_BASE_CLASSES, showCommentPreview ? "mb-0 rounded-b-none" : "mb-2", className)}
+      className={cn(
+        MEMO_CARD_BASE_CLASSES,
+        canEdit && (isEditing ? "cursor-text" : "cursor-pointer"),
+        showCommentPreview ? "mb-0 rounded-b-none" : "mb-2",
+        className,
+      )}
       ref={cardRef}
       tabIndex={readonly ? -1 : 0}
+      aria-busy={isBackgroundSaving || undefined}
+      onClick={canEdit ? handleCardClick : undefined}
     >
       <MemoHeader
         timeDisplay={timeDisplay}
@@ -228,21 +277,18 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
 
   return (
     <MemoViewContext.Provider value={contextValue}>
-      {showEditor && EditorComponent ? (
-        <div ref={editorHostRef} className="w-full">
-          <EditorComponent
-            autoFocus
-            className="mb-2"
-            cacheKey={`inline-memo-editor-${memoData.name}`}
-            memo={memoData}
-            parentMemoName={memoData.parent || undefined}
-            onConfirm={closeEditor}
-            onCancel={closeEditor}
-            onFocusModeChange={handleFocusModeChange}
-          />
-        </div>
-      ) : (
-        memoDisplay
+      {memoDisplay}
+      {showEditor && !isInMemoDetailPage && EditorComponent && (
+        <EditorComponent
+          autoFocus
+          presentation="peek"
+          cacheKey={`inline-memo-editor-${memoData.name}`}
+          memo={memoData}
+          parentMemoName={memoData.parent || undefined}
+          onConfirm={closeEditor}
+          onCancel={closeEditor}
+          onSavingChange={setIsBackgroundSaving}
+        />
       )}
     </MemoViewContext.Provider>
   );
