@@ -84,6 +84,7 @@ func NewServer(ctx context.Context, profile *profile.Profile, store *store.Store
 	frontend.NewFrontendService(profile, store).Serve(ctx, echoServer)
 
 	apiV1Service := apiv1.NewAPIV1Service(s.Secret, profile, store)
+	apiV1Service.StartSemanticIndex(ctx)
 	s.apiV1Service = apiV1Service
 
 	// Register HTTP file server routes BEFORE gRPC-Gateway to ensure proper range request handling for Safari.
@@ -149,6 +150,7 @@ func (s *Server) Shutdown(ctx context.Context) {
 
 	s.closeLongLivedConnections()
 	s.shutdownHTTPServer(ctx)
+	s.apiV1Service.StopSemanticIndex()
 	s.apiV1Service.CloseUploads()
 
 	// Close database connection.

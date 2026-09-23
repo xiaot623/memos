@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { tabsTriggerVariants } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppSidebar } from "@/contexts/AppSidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getFilterSearch, isSearchFilter, type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useSpaceContext } from "@/contexts/SpaceContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -14,14 +15,16 @@ import { useMemoViews } from "@/hooks/useUserQueries";
 import { BUILTIN_TASKS_VIEW_ID, getMemoViewId, isMemoCollectionRoute } from "@/lib/memo-views";
 import { extractSpaceUidFromName, formatSpaceUidForDisplay } from "@/lib/space-display";
 import { cn } from "@/lib/utils";
+import { UserSetting_SemanticIndexState } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { getRouteActionPolicy, getSidebarRouteKind } from "./routes";
 
-export type QuickFindMode = "text" | "cel";
+export type QuickFindMode = "text" | "cel" | "semantic";
 
 const buildSearchFilters = (query: string, mode: QuickFindMode): MemoFilter[] => {
   const trimmed = query.trim();
   if (mode === "cel") return trimmed ? [{ factor: "celSearch", value: trimmed }] : [];
+  if (mode === "semantic") return trimmed ? [{ factor: "semanticSearch", value: trimmed }] : [];
   return Array.from(new Set(trimmed.split(/\s+/).filter(Boolean))).map((value) => ({ factor: "contentSearch", value }));
 };
 
@@ -37,6 +40,8 @@ export const buildQuickFindFilters = (
 
 /** The inverse of buildQuickFindFilters: the query and mode that the active filters were submitted with. */
 export const readQuickFindQuery = (filters: MemoFilter[]): { query: string; mode: QuickFindMode } => {
+  const semanticSearch = filters.find((filter) => filter.factor === "semanticSearch");
+  if (semanticSearch) return { query: semanticSearch.value, mode: "semantic" };
   const celSearch = filters.find((filter) => filter.factor === "celSearch");
   if (celSearch) return { query: celSearch.value, mode: "cel" };
   return {
@@ -67,6 +72,12 @@ export const resolveQuickFindSubmission = (
   };
 };
 
+const searchModeLabel = (mode: QuickFindMode, t: ReturnType<typeof useTranslate>) => {
+  if (mode === "cel") return t("search.expression-mode");
+  if (mode === "semantic") return t("search.fuzzy");
+  return t("search.text");
+};
+
 const getScopeLabel = (pathname: string, t: ReturnType<typeof useTranslate>) => {
   const routeKind = getSidebarRouteKind(pathname);
   if (routeKind === "archived") return t("common.archived");
@@ -81,6 +92,8 @@ const QuickFindDialog = () => {
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
   const { data: memoViews = [] } = useMemoViews(currentUser?.name);
+  const { userGeneralSetting, isUserSettingsInitialized } = useAuth();
+  const semanticReady = isUserSettingsInitialized && userGeneralSetting?.semanticIndexState === UserSetting_SemanticIndexState.READY;
   const { filters, setFilters, setMemoView, memoView } = useMemoFilterContext();
   const { duplicateSpaceTitles, selectedSpace, selectedSpaceName } = useSpaceContext();
   const { quickFindOpen, setQuickFindOpen } = useAppSidebar();
@@ -106,9 +119,13 @@ const QuickFindDialog = () => {
   useEffect(() => {
     if (!quickFindOpen) return;
     const active = readQuickFindQuery(filters);
-    setMode(active.mode);
-    setQuery(active.query);
-  }, [filters, quickFindOpen]);
+    setMode(!semanticReady && active.mode === "semantic" ? "text" : active.mode);
+    setQuery(!semanticReady && active.mode === "semantic" ? "" : active.query);
+  }, [filters, quickFindOpen, semanticReady]);
+
+  useEffect(() => {
+    if (!semanticReady && mode === "semantic") setMode("text");
+  }, [mode, semanticReady]);
 
   const submitQuery = () => {
     const submission = resolveQuickFindSubmission(location.pathname, query, filters, mode);
@@ -161,7 +178,7 @@ const QuickFindDialog = () => {
               {compactScopeLabel}
             </span>
             <div role="tablist" aria-label={t("search.mode")} className="flex shrink-0 items-center gap-0.5 rounded-md bg-muted/60 p-0.5">
-              {(["text", "cel"] as const).map((value) => (
+              {(["text", "cel", ...(semanticReady ? (["semantic"] as const) : [])] as const).map((value) => (
                 <button
                   key={value}
                   type="button"
@@ -170,7 +187,7 @@ const QuickFindDialog = () => {
                   onClick={() => setMode(value)}
                   className={cn(tabsTriggerVariants({ variant: "segmented", active: mode === value }), "h-6 px-2 py-0 text-xs")}
                 >
-                  {value === "cel" ? t("search.expression-mode") : t("search.text")}
+                  {searchModeLabel(value, t)}
                 </button>
               ))}
             </div>

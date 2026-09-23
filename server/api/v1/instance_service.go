@@ -63,14 +63,15 @@ func (s *APIV1Service) GetInstanceProfile(ctx context.Context, _ *v1pb.GetInstan
 	}
 
 	instanceProfile := &v1pb.InstanceProfile{
-		Version:     s.Profile.Version,
-		Demo:        s.Profile.Demo,
-		InstanceUrl: s.Profile.InstanceURL,
-		Admin:       admin, // for display only; may be nil even on a populated instance
-		Commit:      s.Profile.Commit,
-		NeedsSetup:  len(users) == 0,
-		AccessMode:  convertInstanceAccessModeFromStore(accessSetting.AccessMode),
-		Challenge:   s.challengeProfile(),
+		Version:                 s.Profile.Version,
+		Demo:                    s.Profile.Demo,
+		InstanceUrl:             s.Profile.InstanceURL,
+		Admin:                   admin, // for display only; may be nil even on a populated instance
+		Commit:                  s.Profile.Commit,
+		NeedsSetup:              len(users) == 0,
+		AccessMode:              convertInstanceAccessModeFromStore(accessSetting.AccessMode),
+		Challenge:               s.challengeProfile(),
+		SemanticSearchAvailable: s.semanticSearchAvailable(ctx),
 	}
 	return instanceProfile, nil
 }
@@ -174,6 +175,13 @@ func (s *APIV1Service) getInstanceSettingByName(ctx context.Context, name string
 	}
 
 	result := convertInstanceSettingFromStore(instanceSetting)
+	if instanceSetting.Key == storepb.InstanceSettingKey_AI {
+		if ai := result.GetAiSetting(); ai != nil && ai.Embedding != nil && !isAdminCaller {
+			ai.Embedding.ProviderId = ""
+			ai.Embedding.Model = ""
+			ai.Embedding.Dimensions = 0
+		}
+	}
 	if instanceSetting.Key == storepb.InstanceSettingKey_AI && !isAdminCaller {
 		// Non-admin callers only need transcription.provider_id to gate the
 		// editor's Transcribe button. Model / language / prompt are
@@ -267,6 +275,17 @@ func (s *APIV1Service) UpdateInstanceSetting(ctx context.Context, request *v1pb.
 	}
 
 	return convertInstanceSettingFromStore(instanceSetting), nil
+}
+
+func (s *APIV1Service) semanticSearchAvailable(ctx context.Context) bool {
+	if s.Store.Vector() == nil {
+		return false
+	}
+	setting, err := s.Store.GetInstanceAISetting(ctx)
+	if err != nil || setting.GetEmbedding().GetProviderId() == "" || setting.GetEmbedding().GetModel() == "" {
+		return false
+	}
+	return true
 }
 
 // challengeProfile describes the configured challenge so the web app can

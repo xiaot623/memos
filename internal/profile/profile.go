@@ -28,6 +28,10 @@ type Profile struct {
 	DSN string
 	// Driver is the database driver: sqlite, mysql, postgres, or d1.
 	Driver string
+	// VectorDriver is the vector database driver. Empty disables vector search.
+	VectorDriver string
+	// VectorDSN is the vector database connection string.
+	VectorDSN string
 	// Version is the current version of server
 	Version string
 	// Commit is the current build commit of server
@@ -111,6 +115,14 @@ func (p *Profile) Validate() error {
 	}
 
 	p.Data = dataDir
+	p.VectorDriver = strings.TrimSpace(p.VectorDriver)
+	p.VectorDSN = strings.TrimSpace(p.VectorDSN)
+	if p.VectorDriver != "" && p.VectorDriver != "qdrant" {
+		return errors.Errorf("unknown vector driver %q", p.VectorDriver)
+	}
+	if p.VectorDriver != "" && p.VectorDSN == "" {
+		return errors.New("vector DSN is required when a vector driver is set")
+	}
 	if p.Driver == "sqlite" && p.DSN == "" {
 		mode := "prod"
 		if p.Demo {

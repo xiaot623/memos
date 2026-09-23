@@ -38,6 +38,8 @@ const (
 	MemoServiceCreateMemoProcedure = "/memos.api.v1.MemoService/CreateMemo"
 	// MemoServiceListMemosProcedure is the fully-qualified name of the MemoService's ListMemos RPC.
 	MemoServiceListMemosProcedure = "/memos.api.v1.MemoService/ListMemos"
+	// MemoServiceSearchMemosProcedure is the fully-qualified name of the MemoService's SearchMemos RPC.
+	MemoServiceSearchMemosProcedure = "/memos.api.v1.MemoService/SearchMemos"
 	// MemoServiceGetMemoProcedure is the fully-qualified name of the MemoService's GetMemo RPC.
 	MemoServiceGetMemoProcedure = "/memos.api.v1.MemoService/GetMemo"
 	// MemoServiceUpdateMemoProcedure is the fully-qualified name of the MemoService's UpdateMemo RPC.
@@ -100,6 +102,8 @@ type MemoServiceClient interface {
 	CreateMemo(context.Context, *connect.Request[v1.CreateMemoRequest]) (*connect.Response[v1.Memo], error)
 	// ListMemos lists readable non-comment memos with pagination and filter.
 	ListMemos(context.Context, *connect.Request[v1.ListMemosRequest]) (*connect.Response[v1.ListMemosResponse], error)
+	// SearchMemos ranks readable memos by embedding similarity.
+	SearchMemos(context.Context, *connect.Request[v1.SearchMemosRequest]) (*connect.Response[v1.SearchMemosResponse], error)
 	// GetMemo gets a memo.
 	GetMemo(context.Context, *connect.Request[v1.GetMemoRequest]) (*connect.Response[v1.Memo], error)
 	// UpdateMemo updates a memo.
@@ -167,6 +171,12 @@ func NewMemoServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			httpClient,
 			baseURL+MemoServiceListMemosProcedure,
 			connect.WithSchema(memoServiceMethods.ByName("ListMemos")),
+			connect.WithClientOptions(opts...),
+		),
+		searchMemos: connect.NewClient[v1.SearchMemosRequest, v1.SearchMemosResponse](
+			httpClient,
+			baseURL+MemoServiceSearchMemosProcedure,
+			connect.WithSchema(memoServiceMethods.ByName("SearchMemos")),
 			connect.WithClientOptions(opts...),
 		),
 		getMemo: connect.NewClient[v1.GetMemoRequest, v1.Memo](
@@ -284,6 +294,7 @@ func NewMemoServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 type memoServiceClient struct {
 	createMemo           *connect.Client[v1.CreateMemoRequest, v1.Memo]
 	listMemos            *connect.Client[v1.ListMemosRequest, v1.ListMemosResponse]
+	searchMemos          *connect.Client[v1.SearchMemosRequest, v1.SearchMemosResponse]
 	getMemo              *connect.Client[v1.GetMemoRequest, v1.Memo]
 	updateMemo           *connect.Client[v1.UpdateMemoRequest, v1.Memo]
 	deleteMemo           *connect.Client[v1.DeleteMemoRequest, emptypb.Empty]
@@ -312,6 +323,11 @@ func (c *memoServiceClient) CreateMemo(ctx context.Context, req *connect.Request
 // ListMemos calls memos.api.v1.MemoService.ListMemos.
 func (c *memoServiceClient) ListMemos(ctx context.Context, req *connect.Request[v1.ListMemosRequest]) (*connect.Response[v1.ListMemosResponse], error) {
 	return c.listMemos.CallUnary(ctx, req)
+}
+
+// SearchMemos calls memos.api.v1.MemoService.SearchMemos.
+func (c *memoServiceClient) SearchMemos(ctx context.Context, req *connect.Request[v1.SearchMemosRequest]) (*connect.Response[v1.SearchMemosResponse], error) {
+	return c.searchMemos.CallUnary(ctx, req)
 }
 
 // GetMemo calls memos.api.v1.MemoService.GetMemo.
@@ -413,6 +429,8 @@ type MemoServiceHandler interface {
 	CreateMemo(context.Context, *connect.Request[v1.CreateMemoRequest]) (*connect.Response[v1.Memo], error)
 	// ListMemos lists readable non-comment memos with pagination and filter.
 	ListMemos(context.Context, *connect.Request[v1.ListMemosRequest]) (*connect.Response[v1.ListMemosResponse], error)
+	// SearchMemos ranks readable memos by embedding similarity.
+	SearchMemos(context.Context, *connect.Request[v1.SearchMemosRequest]) (*connect.Response[v1.SearchMemosResponse], error)
 	// GetMemo gets a memo.
 	GetMemo(context.Context, *connect.Request[v1.GetMemoRequest]) (*connect.Response[v1.Memo], error)
 	// UpdateMemo updates a memo.
@@ -476,6 +494,12 @@ func NewMemoServiceHandler(svc MemoServiceHandler, opts ...connect.HandlerOption
 		MemoServiceListMemosProcedure,
 		svc.ListMemos,
 		connect.WithSchema(memoServiceMethods.ByName("ListMemos")),
+		connect.WithHandlerOptions(opts...),
+	)
+	memoServiceSearchMemosHandler := connect.NewUnaryHandler(
+		MemoServiceSearchMemosProcedure,
+		svc.SearchMemos,
+		connect.WithSchema(memoServiceMethods.ByName("SearchMemos")),
 		connect.WithHandlerOptions(opts...),
 	)
 	memoServiceGetMemoHandler := connect.NewUnaryHandler(
@@ -592,6 +616,8 @@ func NewMemoServiceHandler(svc MemoServiceHandler, opts ...connect.HandlerOption
 			memoServiceCreateMemoHandler.ServeHTTP(w, r)
 		case MemoServiceListMemosProcedure:
 			memoServiceListMemosHandler.ServeHTTP(w, r)
+		case MemoServiceSearchMemosProcedure:
+			memoServiceSearchMemosHandler.ServeHTTP(w, r)
 		case MemoServiceGetMemoProcedure:
 			memoServiceGetMemoHandler.ServeHTTP(w, r)
 		case MemoServiceUpdateMemoProcedure:
@@ -643,6 +669,10 @@ func (UnimplementedMemoServiceHandler) CreateMemo(context.Context, *connect.Requ
 
 func (UnimplementedMemoServiceHandler) ListMemos(context.Context, *connect.Request[v1.ListMemosRequest]) (*connect.Response[v1.ListMemosResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.MemoService.ListMemos is not implemented"))
+}
+
+func (UnimplementedMemoServiceHandler) SearchMemos(context.Context, *connect.Request[v1.SearchMemosRequest]) (*connect.Response[v1.SearchMemosResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.MemoService.SearchMemos is not implemented"))
 }
 
 func (UnimplementedMemoServiceHandler) GetMemo(context.Context, *connect.Request[v1.GetMemoRequest]) (*connect.Response[v1.Memo], error) {

@@ -489,7 +489,19 @@
       "transcription-prompt": "Промпт хинтс",
       "transcription-provider": "Провајдер",
       "transcription-title": "Транскрипција",
-      "transcription-warning-no-key": "Изабрани провајдер нема скуп кључева API. Уредите горњу интеграцију да бисте је додали."
+      "transcription-warning-no-key": "Изабрани провајдер нема скуп кључева API. Уредите горњу интеграцију да бисте је додали.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "instance": {
       "access-description": "Контролишите регистрацију, аутентификацију, уређивање профила и подразумеване вредности календара за ову инстанцу.",
@@ -599,7 +611,15 @@
       "save-media-metadata": "Сачувајте метаподатке медија",
       "save-media-metadata-description": "За будућа отпремања, сачувајте доступну камеру, време снимања, локацију, димензије слике и основне детаље видеа. Свако ко може да види прилог може да прими ове метаподатке. Постојећи прилози се не мењају.",
       "uploads-privacy-description": "Контролишите информације које су осетљиве на приватност и које се достављају уз отпремљене медије.",
-      "uploads-privacy-title": "Отпремања и приватност"
+      "uploads-privacy-title": "Отпремања и приватност",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Да ли сте сигурни да желите да избришете приказ `{{title}}`?",
@@ -960,7 +980,8 @@
     "load-error": "Није могуће учитати белешке",
     "mode": "Режим претраге",
     "syntax-help": "Синтакса претраге",
-    "text": "Текст"
+    "text": "Текст",
+    "fuzzy": "Fuzzy"
   },
   "map": {
     "selection": "Изабране белешке",

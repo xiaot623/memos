@@ -104,6 +104,7 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 	s.SSEHub.publishMemoChanged()
 
 	s.dispatchMemoMentionNotificationsBestEffort(ctx, memo, nil, "")
+	s.enqueueSemanticMemo(memo.ID)
 
 	return memoMessage, nil
 }
@@ -512,6 +513,7 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 		s.dispatchMemoMentionNotificationsBestEffort(ctx, memo, commentContext, previousContent)
 	}
 	s.dispatchMemoUpdatedSideEffects(ctx, memoMessage)
+	s.enqueueSemanticMemo(memo.ID)
 
 	return memoMessage, nil
 }
@@ -585,6 +587,7 @@ func (s *APIV1Service) DeleteMemo(ctx context.Context, request *v1pb.DeleteMemoR
 	if err := s.cleanupDeletedAttachmentStorage(ctx, deleteResult.Attachments); err != nil {
 		return nil, status.Errorf(codes.Internal, "memo was deleted but attachment storage cleanup failed: %v", err)
 	}
+	s.enqueueSemanticMemo(memo.ID)
 
 	return &emptypb.Empty{}, nil
 }

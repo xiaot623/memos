@@ -151,6 +151,7 @@ const PagedMemoList = (props: Props) => {
   // pages don't each repeat the policy.
   const effectiveCompact = compactMode || useGrid;
 
+  const semanticQuery = filters.find((filter) => filter.factor === "semanticSearch")?.value.trim() ?? "";
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, error, isFetchNextPageError, refetch } =
     useInfiniteMemos(
       {
@@ -159,7 +160,7 @@ const PagedMemoList = (props: Props) => {
         filter: combineCELFilters(props.contextFilter, props.filter),
         pageSize: props.pageSize || DEFAULT_LIST_MEMOS_PAGE_SIZE,
       },
-      { enabled: props.enabled ?? true },
+      { enabled: props.enabled ?? true, semanticQuery },
     );
 
   // Tag settings decide whether sensitive memo content must be blurred. Keep that
@@ -178,9 +179,10 @@ const PagedMemoList = (props: Props) => {
   // a freshly created memo to the very top so it stays visible above pins.
   const { newMemoName } = useNewMemo();
   const sortedMemoList = useMemo(() => {
+    if (semanticQuery) return memos;
     const sorted = props.listSort ? props.listSort(memos) : memos;
     return hoistMemoToFront(sorted, newMemoName);
-  }, [memos, props.listSort, newMemoName]);
+  }, [memos, newMemoName, props.listSort, semanticQuery]);
 
   // Auto-fetch hook: fetches more content when page isn't scrollable
   useAutoFetchWhenNotScrollable({

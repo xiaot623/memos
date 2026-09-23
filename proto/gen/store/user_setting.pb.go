@@ -23,6 +23,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SemanticIndexState int32
+
+const (
+	SemanticIndexState_SEMANTIC_INDEX_STATE_UNSPECIFIED  SemanticIndexState = 0
+	SemanticIndexState_SEMANTIC_INDEX_STATE_OFF          SemanticIndexState = 1
+	SemanticIndexState_SEMANTIC_INDEX_STATE_INITIALIZING SemanticIndexState = 2
+	SemanticIndexState_SEMANTIC_INDEX_STATE_READY        SemanticIndexState = 3
+)
+
+// Enum value maps for SemanticIndexState.
+var (
+	SemanticIndexState_name = map[int32]string{
+		0: "SEMANTIC_INDEX_STATE_UNSPECIFIED",
+		1: "SEMANTIC_INDEX_STATE_OFF",
+		2: "SEMANTIC_INDEX_STATE_INITIALIZING",
+		3: "SEMANTIC_INDEX_STATE_READY",
+	}
+	SemanticIndexState_value = map[string]int32{
+		"SEMANTIC_INDEX_STATE_UNSPECIFIED":  0,
+		"SEMANTIC_INDEX_STATE_OFF":          1,
+		"SEMANTIC_INDEX_STATE_INITIALIZING": 2,
+		"SEMANTIC_INDEX_STATE_READY":        3,
+	}
+)
+
+func (x SemanticIndexState) Enum() *SemanticIndexState {
+	p := new(SemanticIndexState)
+	*p = x
+	return p
+}
+
+func (x SemanticIndexState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SemanticIndexState) Descriptor() protoreflect.EnumDescriptor {
+	return file_store_user_setting_proto_enumTypes[0].Descriptor()
+}
+
+func (SemanticIndexState) Type() protoreflect.EnumType {
+	return &file_store_user_setting_proto_enumTypes[0]
+}
+
+func (x SemanticIndexState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SemanticIndexState.Descriptor instead.
+func (SemanticIndexState) EnumDescriptor() ([]byte, []int) {
+	return file_store_user_setting_proto_rawDescGZIP(), []int{0}
+}
+
 type UserSetting_Key int32
 
 const (
@@ -74,11 +126,11 @@ func (x UserSetting_Key) String() string {
 }
 
 func (UserSetting_Key) Descriptor() protoreflect.EnumDescriptor {
-	return file_store_user_setting_proto_enumTypes[0].Descriptor()
+	return file_store_user_setting_proto_enumTypes[1].Descriptor()
 }
 
 func (UserSetting_Key) Type() protoreflect.EnumType {
-	return &file_store_user_setting_proto_enumTypes[0]
+	return &file_store_user_setting_proto_enumTypes[1]
 }
 
 func (x UserSetting_Key) Number() protoreflect.EnumNumber {
@@ -263,8 +315,13 @@ type GeneralUserSetting struct {
 	Theme string `protobuf:"bytes,3,opt,name=theme,proto3" json:"theme,omitempty"`
 	// Whether the official client should save metadata from future media uploads.
 	SaveMediaMetadata bool `protobuf:"varint,4,opt,name=save_media_metadata,json=saveMediaMetadata,proto3" json:"save_media_metadata,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// semantic_index_state is the user's semantic-search index lifecycle.
+	SemanticIndexState SemanticIndexState `protobuf:"varint,5,opt,name=semantic_index_state,json=semanticIndexState,proto3,enum=memos.store.SemanticIndexState" json:"semantic_index_state,omitempty"`
+	// semantic_score_threshold is the minimum cosine similarity for fuzzy search.
+	// Unset uses 0.5. Valid range is 0 to 1. Higher values are stricter.
+	SemanticScoreThreshold *float32 `protobuf:"fixed32,6,opt,name=semantic_score_threshold,json=semanticScoreThreshold,proto3,oneof" json:"semantic_score_threshold,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *GeneralUserSetting) Reset() {
@@ -323,6 +380,20 @@ func (x *GeneralUserSetting) GetSaveMediaMetadata() bool {
 		return x.SaveMediaMetadata
 	}
 	return false
+}
+
+func (x *GeneralUserSetting) GetSemanticIndexState() SemanticIndexState {
+	if x != nil {
+		return x.SemanticIndexState
+	}
+	return SemanticIndexState_SEMANTIC_INDEX_STATE_UNSPECIFIED
+}
+
+func (x *GeneralUserSetting) GetSemanticScoreThreshold() float32 {
+	if x != nil && x.SemanticScoreThreshold != nil {
+		return *x.SemanticScoreThreshold
+	}
+	return 0
 }
 
 type UserTagMetadata struct {
@@ -1105,12 +1176,15 @@ const file_store_user_setting_proto_rawDesc = "" +
 	"\x0eREFRESH_TOKENS\x10\x06\x12\x1a\n" +
 	"\x16PERSONAL_ACCESS_TOKENS\x10\a\x12\b\n" +
 	"\x04TAGS\x10\bB\a\n" +
-	"\x05value\"\x9b\x01\n" +
+	"\x05value\"\xca\x02\n" +
 	"\x12GeneralUserSetting\x12\x16\n" +
 	"\x06locale\x18\x01 \x01(\tR\x06locale\x12'\n" +
 	"\x0fmemo_visibility\x18\x02 \x01(\tR\x0ememoVisibility\x12\x14\n" +
 	"\x05theme\x18\x03 \x01(\tR\x05theme\x12.\n" +
-	"\x13save_media_metadata\x18\x04 \x01(\bR\x11saveMediaMetadata\"s\n" +
+	"\x13save_media_metadata\x18\x04 \x01(\bR\x11saveMediaMetadata\x12Q\n" +
+	"\x14semantic_index_state\x18\x05 \x01(\x0e2\x1f.memos.store.SemanticIndexStateR\x12semanticIndexState\x12=\n" +
+	"\x18semantic_score_threshold\x18\x06 \x01(\x02H\x00R\x16semanticScoreThreshold\x88\x01\x01B\x1b\n" +
+	"\x19_semantic_score_threshold\"s\n" +
 	"\x0fUserTagMetadata\x12=\n" +
 	"\x10background_color\x18\x01 \x01(\v2\x12.google.type.ColorR\x0fbackgroundColor\x12!\n" +
 	"\fblur_content\x18\x02 \x01(\bR\vblurContent\"\xa4\x01\n" +
@@ -1171,7 +1245,12 @@ const file_store_user_setting_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x10\n" +
 	"\x03url\x18\x03 \x01(\tR\x03url\x12%\n" +
-	"\x0esigning_secret\x18\x04 \x01(\tR\rsigningSecretB\x9b\x01\n" +
+	"\x0esigning_secret\x18\x04 \x01(\tR\rsigningSecret*\x9f\x01\n" +
+	"\x12SemanticIndexState\x12$\n" +
+	" SEMANTIC_INDEX_STATE_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18SEMANTIC_INDEX_STATE_OFF\x10\x01\x12%\n" +
+	"!SEMANTIC_INDEX_STATE_INITIALIZING\x10\x02\x12\x1e\n" +
+	"\x1aSEMANTIC_INDEX_STATE_READY\x10\x03B\x9b\x01\n" +
 	"\x0fcom.memos.storeB\x10UserSettingProtoP\x01Z)github.com/usememos/memos/proto/gen/store\xa2\x02\x03MSX\xaa\x02\vMemos.Store\xca\x02\vMemos\\Store\xe2\x02\x17Memos\\Store\\GPBMetadata\xea\x02\fMemos::Storeb\x06proto3"
 
 var (
@@ -1186,55 +1265,57 @@ func file_store_user_setting_proto_rawDescGZIP() []byte {
 	return file_store_user_setting_proto_rawDescData
 }
 
-var file_store_user_setting_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_store_user_setting_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_store_user_setting_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_store_user_setting_proto_goTypes = []any{
-	(UserSetting_Key)(0),                          // 0: memos.store.UserSetting.Key
-	(*UserSetting)(nil),                           // 1: memos.store.UserSetting
-	(*GeneralUserSetting)(nil),                    // 2: memos.store.GeneralUserSetting
-	(*UserTagMetadata)(nil),                       // 3: memos.store.UserTagMetadata
-	(*TagsUserSetting)(nil),                       // 4: memos.store.TagsUserSetting
-	(*RefreshTokensUserSetting)(nil),              // 5: memos.store.RefreshTokensUserSetting
-	(*PersonalAccessTokensUserSetting)(nil),       // 6: memos.store.PersonalAccessTokensUserSetting
-	(*MemoViewsUserSetting)(nil),                  // 7: memos.store.MemoViewsUserSetting
-	(*WebhooksUserSetting)(nil),                   // 8: memos.store.WebhooksUserSetting
-	nil,                                           // 9: memos.store.TagsUserSetting.TagsEntry
-	(*RefreshTokensUserSetting_RefreshToken)(nil), // 10: memos.store.RefreshTokensUserSetting.RefreshToken
-	(*RefreshTokensUserSetting_ClientInfo)(nil),   // 11: memos.store.RefreshTokensUserSetting.ClientInfo
-	(*PersonalAccessTokensUserSetting_PersonalAccessToken)(nil), // 12: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken
-	(*MemoViewsUserSetting_MemoView)(nil),                       // 13: memos.store.MemoViewsUserSetting.MemoView
-	(*MemoViewsUserSetting_MemoView_Icon)(nil),                  // 14: memos.store.MemoViewsUserSetting.MemoView.Icon
-	(*WebhooksUserSetting_Webhook)(nil),                         // 15: memos.store.WebhooksUserSetting.Webhook
-	(*color.Color)(nil),                                         // 16: google.type.Color
-	(*timestamppb.Timestamp)(nil),                               // 17: google.protobuf.Timestamp
+	(SemanticIndexState)(0),                       // 0: memos.store.SemanticIndexState
+	(UserSetting_Key)(0),                          // 1: memos.store.UserSetting.Key
+	(*UserSetting)(nil),                           // 2: memos.store.UserSetting
+	(*GeneralUserSetting)(nil),                    // 3: memos.store.GeneralUserSetting
+	(*UserTagMetadata)(nil),                       // 4: memos.store.UserTagMetadata
+	(*TagsUserSetting)(nil),                       // 5: memos.store.TagsUserSetting
+	(*RefreshTokensUserSetting)(nil),              // 6: memos.store.RefreshTokensUserSetting
+	(*PersonalAccessTokensUserSetting)(nil),       // 7: memos.store.PersonalAccessTokensUserSetting
+	(*MemoViewsUserSetting)(nil),                  // 8: memos.store.MemoViewsUserSetting
+	(*WebhooksUserSetting)(nil),                   // 9: memos.store.WebhooksUserSetting
+	nil,                                           // 10: memos.store.TagsUserSetting.TagsEntry
+	(*RefreshTokensUserSetting_RefreshToken)(nil), // 11: memos.store.RefreshTokensUserSetting.RefreshToken
+	(*RefreshTokensUserSetting_ClientInfo)(nil),   // 12: memos.store.RefreshTokensUserSetting.ClientInfo
+	(*PersonalAccessTokensUserSetting_PersonalAccessToken)(nil), // 13: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken
+	(*MemoViewsUserSetting_MemoView)(nil),                       // 14: memos.store.MemoViewsUserSetting.MemoView
+	(*MemoViewsUserSetting_MemoView_Icon)(nil),                  // 15: memos.store.MemoViewsUserSetting.MemoView.Icon
+	(*WebhooksUserSetting_Webhook)(nil),                         // 16: memos.store.WebhooksUserSetting.Webhook
+	(*color.Color)(nil),                                         // 17: google.type.Color
+	(*timestamppb.Timestamp)(nil),                               // 18: google.protobuf.Timestamp
 }
 var file_store_user_setting_proto_depIdxs = []int32{
-	0,  // 0: memos.store.UserSetting.key:type_name -> memos.store.UserSetting.Key
-	2,  // 1: memos.store.UserSetting.general:type_name -> memos.store.GeneralUserSetting
-	7,  // 2: memos.store.UserSetting.memo_views:type_name -> memos.store.MemoViewsUserSetting
-	8,  // 3: memos.store.UserSetting.webhooks:type_name -> memos.store.WebhooksUserSetting
-	5,  // 4: memos.store.UserSetting.refresh_tokens:type_name -> memos.store.RefreshTokensUserSetting
-	6,  // 5: memos.store.UserSetting.personal_access_tokens:type_name -> memos.store.PersonalAccessTokensUserSetting
-	4,  // 6: memos.store.UserSetting.tags:type_name -> memos.store.TagsUserSetting
-	16, // 7: memos.store.UserTagMetadata.background_color:type_name -> google.type.Color
-	9,  // 8: memos.store.TagsUserSetting.tags:type_name -> memos.store.TagsUserSetting.TagsEntry
-	10, // 9: memos.store.RefreshTokensUserSetting.refresh_tokens:type_name -> memos.store.RefreshTokensUserSetting.RefreshToken
-	12, // 10: memos.store.PersonalAccessTokensUserSetting.tokens:type_name -> memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken
-	13, // 11: memos.store.MemoViewsUserSetting.memo_views:type_name -> memos.store.MemoViewsUserSetting.MemoView
-	15, // 12: memos.store.WebhooksUserSetting.webhooks:type_name -> memos.store.WebhooksUserSetting.Webhook
-	3,  // 13: memos.store.TagsUserSetting.TagsEntry.value:type_name -> memos.store.UserTagMetadata
-	17, // 14: memos.store.RefreshTokensUserSetting.RefreshToken.expires_at:type_name -> google.protobuf.Timestamp
-	17, // 15: memos.store.RefreshTokensUserSetting.RefreshToken.created_at:type_name -> google.protobuf.Timestamp
-	11, // 16: memos.store.RefreshTokensUserSetting.RefreshToken.client_info:type_name -> memos.store.RefreshTokensUserSetting.ClientInfo
-	17, // 17: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken.expires_at:type_name -> google.protobuf.Timestamp
-	17, // 18: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken.created_at:type_name -> google.protobuf.Timestamp
-	17, // 19: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken.last_used_at:type_name -> google.protobuf.Timestamp
-	14, // 20: memos.store.MemoViewsUserSetting.MemoView.icon:type_name -> memos.store.MemoViewsUserSetting.MemoView.Icon
-	21, // [21:21] is the sub-list for method output_type
-	21, // [21:21] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	1,  // 0: memos.store.UserSetting.key:type_name -> memos.store.UserSetting.Key
+	3,  // 1: memos.store.UserSetting.general:type_name -> memos.store.GeneralUserSetting
+	8,  // 2: memos.store.UserSetting.memo_views:type_name -> memos.store.MemoViewsUserSetting
+	9,  // 3: memos.store.UserSetting.webhooks:type_name -> memos.store.WebhooksUserSetting
+	6,  // 4: memos.store.UserSetting.refresh_tokens:type_name -> memos.store.RefreshTokensUserSetting
+	7,  // 5: memos.store.UserSetting.personal_access_tokens:type_name -> memos.store.PersonalAccessTokensUserSetting
+	5,  // 6: memos.store.UserSetting.tags:type_name -> memos.store.TagsUserSetting
+	0,  // 7: memos.store.GeneralUserSetting.semantic_index_state:type_name -> memos.store.SemanticIndexState
+	17, // 8: memos.store.UserTagMetadata.background_color:type_name -> google.type.Color
+	10, // 9: memos.store.TagsUserSetting.tags:type_name -> memos.store.TagsUserSetting.TagsEntry
+	11, // 10: memos.store.RefreshTokensUserSetting.refresh_tokens:type_name -> memos.store.RefreshTokensUserSetting.RefreshToken
+	13, // 11: memos.store.PersonalAccessTokensUserSetting.tokens:type_name -> memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken
+	14, // 12: memos.store.MemoViewsUserSetting.memo_views:type_name -> memos.store.MemoViewsUserSetting.MemoView
+	16, // 13: memos.store.WebhooksUserSetting.webhooks:type_name -> memos.store.WebhooksUserSetting.Webhook
+	4,  // 14: memos.store.TagsUserSetting.TagsEntry.value:type_name -> memos.store.UserTagMetadata
+	18, // 15: memos.store.RefreshTokensUserSetting.RefreshToken.expires_at:type_name -> google.protobuf.Timestamp
+	18, // 16: memos.store.RefreshTokensUserSetting.RefreshToken.created_at:type_name -> google.protobuf.Timestamp
+	12, // 17: memos.store.RefreshTokensUserSetting.RefreshToken.client_info:type_name -> memos.store.RefreshTokensUserSetting.ClientInfo
+	18, // 18: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken.expires_at:type_name -> google.protobuf.Timestamp
+	18, // 19: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken.created_at:type_name -> google.protobuf.Timestamp
+	18, // 20: memos.store.PersonalAccessTokensUserSetting.PersonalAccessToken.last_used_at:type_name -> google.protobuf.Timestamp
+	15, // 21: memos.store.MemoViewsUserSetting.MemoView.icon:type_name -> memos.store.MemoViewsUserSetting.MemoView.Icon
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_store_user_setting_proto_init() }
@@ -1250,6 +1331,7 @@ func file_store_user_setting_proto_init() {
 		(*UserSetting_PersonalAccessTokens)(nil),
 		(*UserSetting_Tags)(nil),
 	}
+	file_store_user_setting_proto_msgTypes[1].OneofWrappers = []any{}
 	file_store_user_setting_proto_msgTypes[13].OneofWrappers = []any{
 		(*MemoViewsUserSetting_MemoView_Icon_Emoji)(nil),
 		(*MemoViewsUserSetting_MemoView_Icon_Lucide)(nil),
@@ -1259,7 +1341,7 @@ func file_store_user_setting_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_store_user_setting_proto_rawDesc), len(file_store_user_setting_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      2,
 			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,

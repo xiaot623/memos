@@ -8,6 +8,8 @@ const (
 	ProviderOpenAI ProviderType = "OPENAI"
 	// ProviderGemini is Google's Gemini API.
 	ProviderGemini ProviderType = "GEMINI"
+	// ProviderOpenRouter is OpenRouter's OpenAI-compatible API.
+	ProviderOpenRouter ProviderType = "OPENROUTER"
 )
 
 // ProviderConfig configures a callable AI provider connection.

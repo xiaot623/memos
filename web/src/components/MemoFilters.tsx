@@ -53,6 +53,11 @@ const FILTER_CONFIGS: Record<FilterFactor, FilterConfig> = {
     getLabel: (value) => value,
     editableQuery: true,
   },
+  semanticSearch: {
+    icon: SearchIcon,
+    getLabel: (value) => value,
+    editableQuery: true,
+  },
   displayTime: {
     icon: CalendarIcon,
     getLabel: (value) => {

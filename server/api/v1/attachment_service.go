@@ -450,6 +450,9 @@ func (s *APIV1Service) DeleteAttachment(ctx context.Context, request *v1pb.Delet
 	if err := s.deleteAttachmentsAtomically(ctx, user, attachments); err != nil {
 		return nil, err
 	}
+	if attachment.MemoID != nil {
+		s.enqueueSemanticMemo(*attachment.MemoID)
+	}
 	return &emptypb.Empty{}, nil
 }
 

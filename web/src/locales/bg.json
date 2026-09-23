@@ -489,7 +489,19 @@
       "transcription-prompt": "Бързи съвети",
       "transcription-provider": "Доставчик",
       "transcription-title": "Транскрипция",
-      "transcription-warning-no-key": "Избраният доставчик няма набор ключове API. Редактирайте горната интеграция, за да добавите такава."
+      "transcription-warning-no-key": "Избраният доставчик няма набор ключове API. Редактирайте горната интеграция, за да добавите такава.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "instance": {
       "access-description": "Контролирайте регистрацията, удостоверяването, редактирането на профил и настройките по подразбиране за този екземпляр.",
@@ -599,7 +611,15 @@
       "save-media-metadata": "Запазване на медийни метаданни",
       "save-media-metadata-description": "За бъдещи качвания, запазете наличната камера, времето на заснемане, местоположението, размерите на изображението и основните подробности за видеото. Всеки, който може да преглежда прикачения файл, може да получи тези метаданни. Съществуващите прикачени файлове остават непроменени.",
       "uploads-privacy-description": "Контролирайте поверителната информация, изпратена с качените медийни файлове.",
-      "uploads-privacy-title": "Качвания и поверителност"
+      "uploads-privacy-title": "Качвания и поверителност",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Сигурни ли сте, че искате да изтриете изгледа `{{title}}`?",
@@ -960,7 +980,8 @@
     "load-error": "Не можаха да се заредят бележките",
     "mode": "Режим на търсене",
     "syntax-help": "Синтаксис на търсенето",
-    "text": "Текст"
+    "text": "Текст",
+    "fuzzy": "Fuzzy"
   },
   "map": {
     "selection": "Избрани бележки",

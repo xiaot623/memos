@@ -31,6 +31,13 @@ service MemoService {
     option (google.api.http) = {get: "/api/v1/memos"};
     option (google.api.method_signature) = "";
   }
+  // SearchMemos ranks readable memos by embedding similarity.
+  rpc SearchMemos(SearchMemosRequest) returns (SearchMemosResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/memos:search"
+      body: "*"
+    };
+  }
   // GetMemo gets a memo.
   rpc GetMemo(GetMemoRequest) returns (Memo) {
     option (google.api.http) = {get: "/api/v1/{name=memos/*}"};
@@ -368,6 +375,31 @@ message ListMemosResponse {
 
   // A token that can be sent as `page_token` to retrieve the next page.
   // If this field is omitted, there are no subsequent pages.
+  string next_page_token = 2;
+}
+
+message SearchMemosRequest {
+  // Required. The natural-language query to embed and compare.
+  string query = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Optional. The maximum number of memos to return.
+  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional. A page token from a previous SearchMemos call.
+  string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional. The state of the memos to search. Defaults to NORMAL.
+  State state = 4 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional. A CEL expression using the same grammar as ListMemos.
+  string filter = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message SearchMemosResponse {
+  // Memos ordered by similarity, highest first.
+  repeated Memo memos = 1;
+
+  // A token that can be sent as `page_token` to retrieve the next page.
   string next_page_token = 2;
 }
 

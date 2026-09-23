@@ -483,7 +483,15 @@
       "save-media-metadata": "Salva i metadati dei media",
       "save-media-metadata-description": "Per i caricamenti futuri, salva la fotocamera disponibile, l'ora di acquisizione, la posizione, le dimensioni dell'immagine e i dettagli video di base. Chiunque possa visualizzare l'allegato può ricevere questi metadati. Gli allegati esistenti rimangono invariati.",
       "uploads-privacy-description": "Controlla le informazioni sensibili alla privacy inviate con i media caricati.",
-      "uploads-privacy-title": "Caricamenti e privacy"
+      "uploads-privacy-title": "Caricamenti e privacy",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Confermi di voler eliminare la vista `{{title}}`?",
@@ -696,7 +704,19 @@
       "transcription-prompt": "Suggerimenti tempestivi",
       "transcription-provider": "Fornitrice",
       "transcription-title": "Trascrizione",
-      "transcription-warning-no-key": "Il provider selezionato non ha un set di chiavi API. Modifica l'integrazione sopra per aggiungerne una."
+      "transcription-warning-no-key": "Il provider selezionato non ha un set di chiavi API. Modifica l'integrazione sopra per aggiungerne una.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "notification": {
       "email-description": "Invia copie via email per commenti e menzioni. Gmail funziona con smtp.gmail.com, porta 587, STARTTLS e una password per l'app.",
@@ -960,7 +980,8 @@
     "load-error": "Impossibile caricare i promemoria",
     "mode": "Modalità di ricerca",
     "syntax-help": "Sintassi di ricerca",
-    "text": "Testo"
+    "text": "Testo",
+    "fuzzy": "Fuzzy"
   },
   "map": {
     "selection": "Note selezionate",

@@ -17,8 +17,10 @@ import (
 	"github.com/usememos/memos/provider/ai"
 	"github.com/usememos/memos/provider/ai/audiollm"
 	audiollmgemini "github.com/usememos/memos/provider/ai/audiollm/gemini"
+	"github.com/usememos/memos/provider/ai/embed"
 	"github.com/usememos/memos/provider/ai/stt"
 	sttopenai "github.com/usememos/memos/provider/ai/stt/openai"
+	"github.com/usememos/memos/store"
 )
 
 const (
@@ -122,6 +124,44 @@ func (s *APIV1Service) Transcribe(ctx context.Context, request *v1pb.TranscribeR
 		return nil, status.Errorf(codes.Internal, "failed to transcribe audio: %v", err)
 	}
 	return &v1pb.TranscribeResponse{Text: text}, nil
+}
+
+// ListEmbeddingModels returns embedding models for one configured provider.
+func (s *APIV1Service) ListEmbeddingModels(ctx context.Context, request *v1pb.ListEmbeddingModelsRequest) (*v1pb.ListEmbeddingModelsResponse, error) {
+	user, err := s.fetchCurrentUser(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get current user: %v", err)
+	}
+	if user == nil {
+		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
+	}
+	if user.Role != store.RoleAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+	providerID := strings.TrimSpace(request.ProviderId)
+	if providerID == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "provider_id is required")
+	}
+	setting, err := s.Store.GetInstanceAISetting(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get AI setting: %v", err)
+	}
+	provider, err := s.resolveAIProvider(setting, providerID)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "provider is not configured")
+	}
+	if provider.Type != ai.ProviderOpenAI && provider.Type != ai.ProviderOpenRouter {
+		return nil, status.Errorf(codes.InvalidArgument, "provider type %q does not support embedding model lists", provider.Type)
+	}
+	models, err := (&embed.Client{Endpoint: provider.Endpoint, APIKey: provider.APIKey}).ListEmbeddingModels(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to list embedding models: %v", err)
+	}
+	response := &v1pb.ListEmbeddingModelsResponse{Models: make([]*v1pb.EmbeddingModel, 0, len(models))}
+	for _, model := range models {
+		response.Models = append(response.Models, &v1pb.EmbeddingModel{Id: model.ID, Title: model.Title})
+	}
+	return response, nil
 }
 
 func (*APIV1Service) transcribeViaSTT(
@@ -229,6 +269,8 @@ func convertAIProviderTypeFromStore(providerType storepb.AIProviderType) ai.Prov
 		return ai.ProviderOpenAI
 	case storepb.AIProviderType_GEMINI:
 		return ai.ProviderGemini
+	case storepb.AIProviderType_OPENROUTER:
+		return ai.ProviderOpenRouter
 	default:
 		return ""
 	}

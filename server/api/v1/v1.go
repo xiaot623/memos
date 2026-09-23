@@ -91,6 +91,7 @@ type APIV1Service struct {
 	linkMetadataFetcher linkMetadataFetcher
 	attachmentUploads   attachmentUploads
 	memoImports         memoImports
+	semantic            *semanticIndex
 }
 
 // NewAPIV1Service creates an API v1 service with its shared dependencies.

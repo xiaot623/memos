@@ -99,7 +99,7 @@ func (s *APIV1Service) prepareInstanceAISettingForUpdate(ctx context.Context, se
 		if provider.Title == "" {
 			return errors.New("provider title is required")
 		}
-		if provider.Type != storepb.AIProviderType_OPENAI && provider.Type != storepb.AIProviderType_GEMINI {
+		if provider.Type != storepb.AIProviderType_OPENAI && provider.Type != storepb.AIProviderType_GEMINI && provider.Type != storepb.AIProviderType_OPENROUTER {
 			return errors.Errorf("provider %q has unsupported type", provider.Id)
 		}
 
@@ -109,6 +109,9 @@ func (s *APIV1Service) prepareInstanceAISettingForUpdate(ctx context.Context, se
 		}
 		if provider.Type == storepb.AIProviderType_GEMINI && provider.Endpoint == "" {
 			provider.Endpoint = "https://generativelanguage.googleapis.com/v1beta"
+		}
+		if provider.Type == storepb.AIProviderType_OPENROUTER && provider.Endpoint == "" {
+			provider.Endpoint = "https://openrouter.ai/api/v1"
 		}
 
 		if provider.ApiKey == "" {
@@ -122,6 +125,9 @@ func (s *APIV1Service) prepareInstanceAISettingForUpdate(ctx context.Context, se
 	}
 
 	if err := preparePersistedTranscriptionConfig(setting, existing); err != nil {
+		return err
+	}
+	if err := preparePersistedEmbeddingConfig(setting, existing); err != nil {
 		return err
 	}
 	return nil
@@ -166,6 +172,41 @@ func preparePersistedTranscriptionConfig(setting *storepb.InstanceAISetting, exi
 	}
 	if len(cfg.Prompt) > maxTranscriptionConfigPromptLength {
 		return errors.Errorf("transcription prompt is too long; maximum length is %d characters", maxTranscriptionConfigPromptLength)
+	}
+	return nil
+}
+
+func preparePersistedEmbeddingConfig(setting *storepb.InstanceAISetting, existing *storepb.InstanceAISetting) error {
+	if setting.Embedding == nil && existing != nil {
+		setting.Embedding = existing.GetEmbedding()
+	}
+	if setting.Embedding == nil {
+		return nil
+	}
+	cfg := setting.Embedding
+	cfg.ProviderId = strings.TrimSpace(cfg.ProviderId)
+	cfg.Model = strings.TrimSpace(cfg.Model)
+	if cfg.Dimensions < 0 {
+		return errors.New("embedding dimensions must be positive")
+	}
+	if len(cfg.Model) > maxTranscriptionConfigModelLength {
+		return errors.Errorf("embedding model is too long; maximum length is %d characters", maxTranscriptionConfigModelLength)
+	}
+	if cfg.ProviderId == "" {
+		return nil
+	}
+	var referenced *storepb.AIProviderConfig
+	for _, provider := range setting.Providers {
+		if provider != nil && provider.Id == cfg.ProviderId {
+			referenced = provider
+			break
+		}
+	}
+	if referenced == nil {
+		return errors.Errorf("embedding provider_id %q does not reference any configured provider", cfg.ProviderId)
+	}
+	if referenced.Type == storepb.AIProviderType_GEMINI {
+		return errors.Errorf("embedding provider %q does not support the GEMINI API", cfg.ProviderId)
 	}
 	return nil
 }

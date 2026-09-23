@@ -448,7 +448,19 @@
       "transcription-prompt-placeholder": "人名：张三、李四。术语：Kubernetes、OAuth。",
       "transcription-provider": "供应商",
       "transcription-title": "语音转写",
-      "transcription-warning-no-key": "所选供应商未设置 API 密钥。请在上方编辑集成信息以添加密钥。"
+      "transcription-warning-no-key": "所选供应商未设置 API 密钥。请在上方编辑集成信息以添加密钥。",
+      "embedding-description": "选择用于为模糊搜索建立笔记索引的供应商和模型。维度留空时使用 768。",
+      "embedding-dimensions": "维度",
+      "embedding-dimensions-help": "该模型的向量维度。留空则使用 768。",
+      "embedding-empty-providers": "请先添加 OpenAI 或 OpenRouter 集成，再启用嵌入。",
+      "embedding-gemini-unsupported": "Gemini 供应商不能用于嵌入。",
+      "embedding-model": "模型",
+      "embedding-model-help": "从供应商目录中选择，或直接填写模型 id。",
+      "embedding-model-placeholder": "模型 id",
+      "embedding-model-unavailable": "模型列表加载失败。请直接填写模型 id。",
+      "embedding-no-provider": "无 — 不启用嵌入",
+      "embedding-provider": "供应商",
+      "embedding-title": "嵌入"
     },
     "preference": {
       "appearance-description": "选择当前账号使用的界面语言和外观主题。",
@@ -464,7 +476,15 @@
       "theme": "主题",
       "label": "偏好设置",
       "uploads-privacy-description": "控制上传媒体时提交的隐私敏感信息。",
-      "uploads-privacy-title": "上传与隐私"
+      "uploads-privacy-title": "上传与隐私",
+      "search-description": "模糊搜索会把查询和已索引的笔记做相似度比较。",
+      "search-title": "搜索",
+      "semantic-index": "模糊搜索",
+      "semantic-index-description": "为已有笔记建立索引，之后的编辑会自动同步。",
+      "semantic-index-initializing": "正在为已有笔记建立索引。完成后会出现模糊搜索。",
+      "semantic-index-ready": "模糊搜索已可用。关闭后会删除你的索引。",
+      "semantic-score-threshold": "匹配阈值",
+      "semantic-score-threshold-description": "只返回相似度不低于这个值的笔记。越高越严格，默认 0.50。"
     },
     "memo-view": {
       "delete-confirm": "您确定要删除视图 `{{title}}` 吗？",
@@ -1017,7 +1037,8 @@
     "load-error": "无法加载备忘录",
     "mode": "搜索模式",
     "syntax-help": "搜索语法",
-    "text": "文本"
+    "text": "文本",
+    "fuzzy": "模糊"
   },
   "profile": {
     "no-shared-memos": "@{{username}} 尚未分享任何备忘录。",

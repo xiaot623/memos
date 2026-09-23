@@ -36,6 +36,10 @@ describe("Quick Find", () => {
     ]);
     expect(buildQuickFindFilters(" \n ", filters, true, "cel")).toEqual(scopedFilters.slice(0, 2));
     expect(buildQuickFindFilters(" ", filters, true, "text")).toEqual(scopedFilters.slice(0, 2));
+    expect(buildQuickFindFilters("project plan", filters, true, "semantic")).toEqual([
+      ...scopedFilters.slice(0, 2),
+      { factor: "semanticSearch", value: "project plan" },
+    ]);
   });
 
   it("does not recognize expressions in Text mode", () => {

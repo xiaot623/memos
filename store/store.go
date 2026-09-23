@@ -8,12 +8,14 @@ import (
 	storepb "github.com/usememos/memos/proto/gen/store"
 	"github.com/usememos/memos/provider/storage"
 	"github.com/usememos/memos/store/cache"
+	"github.com/usememos/memos/store/vector"
 )
 
 // Store provides database access to all raw objects.
 type Store struct {
 	profile *profile.Profile
 	driver  Driver
+	vector  vector.Store
 
 	userCreateMu   sync.Mutex
 	authConfigMu   sync.Mutex
@@ -74,6 +76,16 @@ func (s *Store) GetDriver() Driver {
 	return s.driver
 }
 
+// SetVector attaches the process-wide vector store. Nil leaves vector search disabled.
+func (s *Store) SetVector(vectorStore vector.Store) {
+	s.vector = vectorStore
+}
+
+// Vector returns the vector store, or nil when the process was started without one.
+func (s *Store) Vector() vector.Store {
+	return s.vector
+}
+
 // GetDataDir returns the store data directory.
 func (s *Store) GetDataDir() string {
 	return s.profile.Data
@@ -85,5 +97,12 @@ func (s *Store) Close() error {
 	s.userCache.Close()
 	s.userSettingCache.Close()
 
-	return s.driver.Close()
+	var vectorErr error
+	if s.vector != nil {
+		vectorErr = s.vector.Close()
+	}
+	if err := s.driver.Close(); err != nil {
+		return err
+	}
+	return vectorErr
 }

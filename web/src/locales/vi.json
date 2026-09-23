@@ -391,7 +391,15 @@
       "save-media-metadata-description": "Đối với các lần tải lên trong tương lai, hãy lưu thông tin về máy ảnh, thời gian chụp, vị trí, kích thước hình ảnh và chi tiết video cơ bản. Bất kỳ ai có thể xem tệp đính kèm đều có thể nhận được siêu dữ liệu này. Các tệp đính kèm hiện có không thay đổi.",
       "theme-description": "Áp dụng chủ đề đã chọn ngay lập tức trên thiết bị này.",
       "uploads-privacy-description": "Kiểm soát thông tin nhạy cảm về quyền riêng tư được gửi kèm theo phương tiện đã tải lên.",
-      "uploads-privacy-title": "Tải lên & quyền riêng tư"
+      "uploads-privacy-title": "Tải lên & quyền riêng tư",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Bạn có chắc chắn muốn xóa chế độ xem `{{title}}`?",
@@ -691,7 +699,19 @@
       "transcription-prompt": "Gợi ý nhắc nhở",
       "transcription-provider": "Nhà cung cấp",
       "transcription-title": "Phiên âm",
-      "transcription-warning-no-key": "Nhà cung cấp đã chọn không có khóa API được thiết lập. Chỉnh sửa tích hợp ở trên để thêm một khóa."
+      "transcription-warning-no-key": "Nhà cung cấp đã chọn không có khóa API được thiết lập. Chỉnh sửa tích hợp ở trên để thêm một khóa.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "memo-export": {
       "review-file": "Tệp",
@@ -990,7 +1010,8 @@
     "mode": "Chế độ tìm kiếm",
     "retry": "Thử lại",
     "syntax-help": "Cú pháp tìm kiếm",
-    "text": "Văn bản"
+    "text": "Văn bản",
+    "fuzzy": "Fuzzy"
   },
   "space": {
     "icon": {

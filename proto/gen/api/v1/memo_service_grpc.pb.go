@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	MemoService_CreateMemo_FullMethodName           = "/memos.api.v1.MemoService/CreateMemo"
 	MemoService_ListMemos_FullMethodName            = "/memos.api.v1.MemoService/ListMemos"
+	MemoService_SearchMemos_FullMethodName          = "/memos.api.v1.MemoService/SearchMemos"
 	MemoService_GetMemo_FullMethodName              = "/memos.api.v1.MemoService/GetMemo"
 	MemoService_UpdateMemo_FullMethodName           = "/memos.api.v1.MemoService/UpdateMemo"
 	MemoService_DeleteMemo_FullMethodName           = "/memos.api.v1.MemoService/DeleteMemo"
@@ -53,6 +54,8 @@ type MemoServiceClient interface {
 	CreateMemo(ctx context.Context, in *CreateMemoRequest, opts ...grpc.CallOption) (*Memo, error)
 	// ListMemos lists readable non-comment memos with pagination and filter.
 	ListMemos(ctx context.Context, in *ListMemosRequest, opts ...grpc.CallOption) (*ListMemosResponse, error)
+	// SearchMemos ranks readable memos by embedding similarity.
+	SearchMemos(ctx context.Context, in *SearchMemosRequest, opts ...grpc.CallOption) (*SearchMemosResponse, error)
 	// GetMemo gets a memo.
 	GetMemo(ctx context.Context, in *GetMemoRequest, opts ...grpc.CallOption) (*Memo, error)
 	// UpdateMemo updates a memo.
@@ -121,6 +124,16 @@ func (c *memoServiceClient) ListMemos(ctx context.Context, in *ListMemosRequest,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListMemosResponse)
 	err := c.cc.Invoke(ctx, MemoService_ListMemos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memoServiceClient) SearchMemos(ctx context.Context, in *SearchMemosRequest, opts ...grpc.CallOption) (*SearchMemosResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SearchMemosResponse)
+	err := c.cc.Invoke(ctx, MemoService_SearchMemos_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -318,6 +331,8 @@ type MemoServiceServer interface {
 	CreateMemo(context.Context, *CreateMemoRequest) (*Memo, error)
 	// ListMemos lists readable non-comment memos with pagination and filter.
 	ListMemos(context.Context, *ListMemosRequest) (*ListMemosResponse, error)
+	// SearchMemos ranks readable memos by embedding similarity.
+	SearchMemos(context.Context, *SearchMemosRequest) (*SearchMemosResponse, error)
 	// GetMemo gets a memo.
 	GetMemo(context.Context, *GetMemoRequest) (*Memo, error)
 	// UpdateMemo updates a memo.
@@ -377,6 +392,9 @@ func (UnimplementedMemoServiceServer) CreateMemo(context.Context, *CreateMemoReq
 }
 func (UnimplementedMemoServiceServer) ListMemos(context.Context, *ListMemosRequest) (*ListMemosResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListMemos not implemented")
+}
+func (UnimplementedMemoServiceServer) SearchMemos(context.Context, *SearchMemosRequest) (*SearchMemosResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SearchMemos not implemented")
 }
 func (UnimplementedMemoServiceServer) GetMemo(context.Context, *GetMemoRequest) (*Memo, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMemo not implemented")
@@ -485,6 +503,24 @@ func _MemoService_ListMemos_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MemoServiceServer).ListMemos(ctx, req.(*ListMemosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MemoService_SearchMemos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchMemosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemoServiceServer).SearchMemos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemoService_SearchMemos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemoServiceServer).SearchMemos(ctx, req.(*SearchMemosRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -827,6 +863,10 @@ var MemoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMemos",
 			Handler:    _MemoService_ListMemos_Handler,
+		},
+		{
+			MethodName: "SearchMemos",
+			Handler:    _MemoService_SearchMemos_Handler,
 		},
 		{
 			MethodName: "GetMemo",

@@ -1,7 +1,7 @@
 import { create } from "@bufbuild/protobuf";
 import { isEqual } from "lodash-es";
 import { MoreVerticalIcon, PlusIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -12,12 +12,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { aiServiceClient } from "@/connect";
 import { useInstance } from "@/contexts/InstanceContext";
+import type { EmbeddingModel } from "@/types/proto/api/v1/ai_service_pb";
 import {
   InstanceSetting_AIProviderConfig,
   InstanceSetting_AIProviderConfigSchema,
   InstanceSetting_AIProviderType,
   InstanceSetting_AISettingSchema,
+  InstanceSetting_EmbeddingConfig,
+  InstanceSetting_EmbeddingConfigSchema,
   InstanceSetting_Key,
   InstanceSetting_TranscriptionConfig,
   InstanceSetting_TranscriptionConfigSchema,
@@ -47,7 +51,17 @@ type LocalTranscription = {
   prompt: string;
 };
 
-const providerTypeOptions = [InstanceSetting_AIProviderType.OPENAI, InstanceSetting_AIProviderType.GEMINI];
+type LocalEmbedding = {
+  providerId: string;
+  model: string;
+  dimensions: string;
+};
+
+const providerTypeOptions = [
+  InstanceSetting_AIProviderType.OPENAI,
+  InstanceSetting_AIProviderType.GEMINI,
+  InstanceSetting_AIProviderType.OPENROUTER,
+];
 
 const byokNotes = ["setting.ai.byok-key-note", "setting.ai.byok-storage-note", "setting.ai.byok-model-note"] as const;
 
@@ -101,12 +115,28 @@ const toTranscriptionConfig = (transcription: LocalTranscription) =>
     prompt: transcription.prompt,
   });
 
+const toLocalEmbedding = (config: InstanceSetting_EmbeddingConfig | undefined): LocalEmbedding => ({
+  providerId: config?.providerId ?? "",
+  model: config?.model ?? "",
+  dimensions: config?.dimensions ? String(config.dimensions) : "",
+});
+
+const toEmbeddingConfig = (embedding: LocalEmbedding) => {
+  const parsed = Number.parseInt(embedding.dimensions, 10);
+  return create(InstanceSetting_EmbeddingConfigSchema, {
+    providerId: embedding.providerId,
+    model: embedding.model.trim(),
+    dimensions: Number.isFinite(parsed) && parsed > 0 ? parsed : 0,
+  });
+};
+
 const AISection = () => {
   const t = useTranslate();
   const saveInstanceSetting = useInstanceSettingUpdater();
   const { aiSetting: originalSetting } = useInstance();
   const [providers, setProviders] = useState<LocalAIProvider[]>(() => originalSetting.providers.map(toLocalProvider));
   const [transcription, setTranscription] = useState<LocalTranscription>(() => toLocalTranscription(originalSetting.transcription));
+  const [embedding, setEmbedding] = useState<LocalEmbedding>(() => toLocalEmbedding(originalSetting.embedding));
   const [editingProvider, setEditingProvider] = useState<LocalAIProvider | undefined>();
   const [deleteTarget, setDeleteTarget] = useState<LocalAIProvider | undefined>();
 
@@ -130,6 +160,18 @@ const AISection = () => {
   const originalTranscription = useMemo(() => toLocalTranscription(originalSetting.transcription), [originalSetting.transcription]);
   const transcriptionHasChanges = !isEqual(transcription, originalTranscription);
 
+  const lastSyncedEmbedding = useRef<LocalEmbedding>(toLocalEmbedding(originalSetting.embedding));
+  useEffect(() => {
+    const next = toLocalEmbedding(originalSetting.embedding);
+    if (!isEqual(lastSyncedEmbedding.current, next)) {
+      setEmbedding(next);
+      lastSyncedEmbedding.current = next;
+    }
+  }, [originalSetting.embedding]);
+
+  const originalEmbedding = useMemo(() => toLocalEmbedding(originalSetting.embedding), [originalSetting.embedding]);
+  const embeddingHasChanges = !isEqual(embedding, originalEmbedding);
+
   const transcriptionProviderRef = useMemo(
     () => providers.find((provider) => provider.id === transcription.providerId),
     [providers, transcription.providerId],
@@ -141,6 +183,7 @@ const AISection = () => {
   const persistAISetting = async (
     nextProviders: LocalAIProvider[],
     nextTranscription: InstanceSetting_TranscriptionConfig | undefined,
+    nextEmbedding: InstanceSetting_EmbeddingConfig | undefined,
     errorContext: string,
   ) => {
     return saveInstanceSetting({
@@ -152,6 +195,7 @@ const AISection = () => {
           value: create(InstanceSetting_AISettingSchema, {
             providers: nextProviders.map(toProviderConfig),
             transcription: nextTranscription,
+            embedding: nextEmbedding,
           }),
         },
       }),
@@ -186,7 +230,7 @@ const AISection = () => {
       ? providers.map((item) => (item.id === normalizedProvider.id ? normalizedProvider : item))
       : [...providers, normalizedProvider];
 
-    const ok = await persistAISetting(nextProviders, originalSetting.transcription, "Update AI provider");
+    const ok = await persistAISetting(nextProviders, originalSetting.transcription, originalSetting.embedding, "Update AI provider");
     if (!ok) return;
     setProviders(nextProviders);
     setEditingProvider(undefined);
@@ -205,12 +249,20 @@ const AISection = () => {
       persistedTranscription && persistedTranscription.providerId === target.id
         ? create(InstanceSetting_TranscriptionConfigSchema, {})
         : persistedTranscription;
+    const persistedEmbedding = originalSetting.embedding;
+    const nextEmbedding =
+      persistedEmbedding && persistedEmbedding.providerId === target.id
+        ? create(InstanceSetting_EmbeddingConfigSchema, {})
+        : persistedEmbedding;
 
-    const ok = await persistAISetting(nextProviders, nextTranscription, "Delete AI provider");
+    const ok = await persistAISetting(nextProviders, nextTranscription, nextEmbedding, "Delete AI provider");
     if (!ok) return;
     setProviders(nextProviders);
     if (transcription.providerId === target.id) {
       setTranscription((prev) => ({ ...prev, providerId: "" }));
+    }
+    if (embedding.providerId === target.id) {
+      setEmbedding((prev) => ({ ...prev, providerId: "" }));
     }
     setDeleteTarget(undefined);
   };
@@ -220,7 +272,20 @@ const AISection = () => {
       toast.error(t("setting.ai.transcription-empty-providers"));
       return;
     }
-    await persistAISetting(providers, toTranscriptionConfig(transcription), "Update transcription");
+    await persistAISetting(providers, toTranscriptionConfig(transcription), originalSetting.embedding, "Update transcription");
+  };
+
+  const handleSaveEmbedding = async () => {
+    const provider = providers.find((item) => item.id === embedding.providerId);
+    if (embedding.providerId && !provider) {
+      toast.error(t("setting.ai.embedding-empty-providers"));
+      return;
+    }
+    if (provider?.type === InstanceSetting_AIProviderType.GEMINI) {
+      toast.error(t("setting.ai.embedding-gemini-unsupported"));
+      return;
+    }
+    await persistAISetting(providers, originalSetting.transcription, toEmbeddingConfig(embedding), "Update embedding");
   };
 
   return (
@@ -326,6 +391,19 @@ const AISection = () => {
           onChange={setTranscription}
           referencedProvider={transcriptionProviderRef}
         />
+      </SettingGroup>
+
+      <SettingGroup
+        title={t("setting.ai.embedding-title")}
+        description={t("setting.ai.embedding-description")}
+        showSeparator
+        actions={
+          <Button disabled={!embeddingHasChanges} onClick={handleSaveEmbedding}>
+            {t("common.save")}
+          </Button>
+        }
+      >
+        <EmbeddingForm providers={providers} embedding={embedding} onChange={setEmbedding} />
       </SettingGroup>
 
       <AIProviderDialog
@@ -536,12 +614,119 @@ const AIProviderDialog = ({ provider, onOpenChange, onSave }: AIProviderDialogPr
   );
 };
 
+const EmbeddingForm = ({
+  providers,
+  embedding,
+  onChange,
+}: {
+  providers: LocalAIProvider[];
+  embedding: LocalEmbedding;
+  onChange: (embedding: LocalEmbedding) => void;
+}) => {
+  const t = useTranslate();
+  const listId = useId();
+  const [models, setModels] = useState<EmbeddingModel[]>([]);
+  const [modelsFailed, setModelsFailed] = useState(false);
+  const embeddingProviders = providers.filter((provider) => provider.type !== InstanceSetting_AIProviderType.GEMINI);
+  const selected = providers.find((provider) => provider.id === embedding.providerId);
+  const providerOptions = [
+    { value: "__none__", label: t("setting.ai.embedding-no-provider") },
+    ...embeddingProviders.map((provider) => ({ value: provider.id, label: provider.title || provider.id })),
+  ];
+
+  useEffect(() => {
+    if (!embedding.providerId || selected?.type === InstanceSetting_AIProviderType.GEMINI) {
+      setModels([]);
+      setModelsFailed(false);
+      return;
+    }
+    let cancelled = false;
+    setModelsFailed(false);
+    aiServiceClient
+      .listEmbeddingModels({ providerId: embedding.providerId })
+      .then((response) => {
+        if (!cancelled) setModels(response.models);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setModels([]);
+          setModelsFailed(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [embedding.providerId, selected?.type]);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
+        <Label>{t("setting.ai.embedding-provider")}</Label>
+        <Select
+          value={embedding.providerId || "__none__"}
+          items={providerOptions}
+          onValueChange={(value) => onChange({ ...embedding, providerId: value === "__none__" ? "" : value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {providerOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {providers.length === 0 && <p className="text-xs text-muted-foreground">{t("setting.ai.embedding-empty-providers")}</p>}
+        {selected?.type === InstanceSetting_AIProviderType.GEMINI && (
+          <p className="text-xs text-destructive">{t("setting.ai.embedding-gemini-unsupported")}</p>
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>{t("setting.ai.embedding-model")}</Label>
+        <Input
+          list={listId}
+          value={embedding.model}
+          placeholder={t("setting.ai.embedding-model-placeholder")}
+          disabled={!embedding.providerId}
+          onChange={(event) => onChange({ ...embedding, model: event.target.value })}
+        />
+        <datalist id={listId}>
+          {models.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.title || model.id}
+            </option>
+          ))}
+        </datalist>
+        <p className="text-xs text-muted-foreground">
+          {modelsFailed ? t("setting.ai.embedding-model-unavailable") : t("setting.ai.embedding-model-help")}
+        </p>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>{t("setting.ai.embedding-dimensions")}</Label>
+        <Input
+          type="number"
+          min={1}
+          value={embedding.dimensions}
+          placeholder="768"
+          disabled={!embedding.providerId}
+          onChange={(event) => onChange({ ...embedding, dimensions: event.target.value })}
+        />
+        <p className="text-xs text-muted-foreground">{t("setting.ai.embedding-dimensions-help")}</p>
+      </div>
+    </div>
+  );
+};
+
 const getDefaultEndpointPlaceholder = (type: InstanceSetting_AIProviderType) => {
   switch (type) {
     case InstanceSetting_AIProviderType.OPENAI:
       return "https://api.openai.com/v1";
     case InstanceSetting_AIProviderType.GEMINI:
       return "https://generativelanguage.googleapis.com/v1beta";
+    case InstanceSetting_AIProviderType.OPENROUTER:
+      return "https://openrouter.ai/api/v1";
     default:
       return "";
   }

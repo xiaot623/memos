@@ -187,10 +187,12 @@ func convertUserSettingFromStore(storeSetting *storepb.UserSetting, user *store.
 		if general := storeSetting.GetGeneral(); general != nil {
 			setting.Value = &v1pb.UserSetting_GeneralSetting_{
 				GeneralSetting: &v1pb.UserSetting_GeneralSetting{
-					Locale:            general.Locale,
-					MemoVisibility:    general.MemoVisibility,
-					Theme:             general.Theme,
-					SaveMediaMetadata: general.SaveMediaMetadata,
+					Locale:                 general.Locale,
+					MemoVisibility:         general.MemoVisibility,
+					Theme:                  general.Theme,
+					SaveMediaMetadata:      general.SaveMediaMetadata,
+					SemanticIndexState:     v1pb.UserSetting_SemanticIndexState(general.SemanticIndexState),
+					SemanticScoreThreshold: semanticScoreThresholdPointer(semanticScoreThreshold(general)),
 				},
 			}
 		} else {
@@ -241,10 +243,12 @@ func convertUserSettingToStore(apiSetting *v1pb.UserSetting, userID int32, key s
 		if general := apiSetting.GetGeneralSetting(); general != nil {
 			storeSetting.Value = &storepb.UserSetting_General{
 				General: &storepb.GeneralUserSetting{
-					Locale:            general.Locale,
-					MemoVisibility:    general.MemoVisibility,
-					Theme:             general.Theme,
-					SaveMediaMetadata: general.SaveMediaMetadata,
+					Locale:                 general.Locale,
+					MemoVisibility:         general.MemoVisibility,
+					Theme:                  general.Theme,
+					SaveMediaMetadata:      general.SaveMediaMetadata,
+					SemanticIndexState:     storepb.SemanticIndexState(general.SemanticIndexState),
+					SemanticScoreThreshold: semanticScoreThresholdPointer(semanticScoreThresholdFromAPI(general)),
 				},
 			}
 		} else {

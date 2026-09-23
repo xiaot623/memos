@@ -10,6 +10,7 @@ import AppSidebar, {
   useSidebarWidth,
 } from "@/components/AppSidebar";
 import { AppSidebarProvider } from "@/contexts/AppSidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { GlobalMemoEditorProvider } from "@/contexts/GlobalMemoEditorContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { MemoFilterProvider, useMemoFilterContext } from "@/contexts/MemoFilterContext";
@@ -19,6 +20,7 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { ROUTES, resolveCollectionRoute } from "@/router/routes";
 import { InstanceAccessMode } from "@/types/proto/api/v1/instance_service_pb";
+import { UserSetting_SemanticIndexState } from "@/types/proto/api/v1/user_service_pb";
 import { buildAuthRoute, shouldGatePrivateInstance } from "@/utils/auth-redirect";
 import { useTranslate } from "@/utils/i18n";
 
@@ -46,7 +48,8 @@ const RootLayoutContent = () => {
   const currentUser = useCurrentUser();
   const md = useMediaQuery("md");
   const { profile } = useInstance();
-  const { removeFilter } = useMemoFilterContext();
+  const { isUserSettingsInitialized, userGeneralSetting } = useAuth();
+  const { filters, removeFilter } = useMemoFilterContext();
   const { pathname } = location;
   // The map fills the viewport and scrolls inside itself, so the document must not.
   const fullBleed = resolveCollectionRoute(pathname).pathname.toLowerCase() === ROUTES.MAP;
@@ -64,6 +67,13 @@ const RootLayoutContent = () => {
 
     prevPathnameRef.current = pathname;
   }, [pathname, searchParams, removeFilter]);
+
+  useEffect(() => {
+    if (!isUserSettingsInitialized) return;
+    if (userGeneralSetting?.semanticIndexState === UserSetting_SemanticIndexState.READY) return;
+    if (!filters.some((filter) => filter.factor === "semanticSearch")) return;
+    removeFilter((filter) => filter.factor === "semanticSearch");
+  }, [filters, isUserSettingsInitialized, removeFilter, userGeneralSetting?.semanticIndexState]);
 
   // Anonymous visitors to private instances may only reach share links. Treat an
   // unspecified mode as private so a partial or older response cannot expose content.

@@ -311,6 +311,8 @@ func TestMigrationSpaceMemberStatusBackfillsActive(t *testing.T) {
 	require.NoError(t, err)
 	_, err = db.ExecContext(ctx, "ALTER TABLE space DROP COLUMN payload")
 	require.NoError(t, err)
+	_, err = db.ExecContext(ctx, "DROP TABLE memo_embedding")
+	require.NoError(t, err)
 
 	basicSetting, err := ts.GetInstanceBasicSetting(ctx)
 	require.NoError(t, err)

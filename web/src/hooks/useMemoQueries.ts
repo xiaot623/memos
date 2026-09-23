@@ -16,7 +16,12 @@ import { userKeys } from "@/hooks/useUserQueries";
 import { DEFAULT_LIST_MEMOS_PAGE_SIZE } from "@/lib/constants";
 import { shouldRetry } from "@/lib/query-client";
 import type { ListMemosRequest, ListMemosResponse, Memo } from "@/types/proto/api/v1/memo_service_pb";
-import { ListMemoCommentsRequestSchema, ListMemosRequestSchema, MemoSchema } from "@/types/proto/api/v1/memo_service_pb";
+import {
+  ListMemoCommentsRequestSchema,
+  ListMemosRequestSchema,
+  MemoSchema,
+  SearchMemosRequestSchema,
+} from "@/types/proto/api/v1/memo_service_pb";
 
 // Query keys factory for consistent cache management
 export const memoKeys = {
@@ -176,10 +181,23 @@ export function useMemos(request: Partial<ListMemosRequest> = {}) {
   });
 }
 
-export function useInfiniteMemos(request: Partial<ListMemosRequest> = {}, options?: { enabled?: boolean }) {
+export function useInfiniteMemos(request: Partial<ListMemosRequest> = {}, options?: { enabled?: boolean; semanticQuery?: string }) {
+  const semanticQuery = options?.semanticQuery?.trim() ?? "";
   return useInfiniteQuery({
-    queryKey: memoKeys.list(request),
+    queryKey: semanticQuery ? [...memoKeys.lists(), { ...request, semanticQuery }] : memoKeys.list(request),
     queryFn: async ({ pageParam, signal }) => {
+      if (semanticQuery) {
+        return memoServiceClient.searchMemos(
+          create(SearchMemosRequestSchema, {
+            query: semanticQuery,
+            pageSize: request.pageSize,
+            pageToken: pageParam || "",
+            state: request.state,
+            filter: request.filter,
+          }),
+          { signal },
+        );
+      }
       const response = await memoServiceClient.listMemos(
         create(ListMemosRequestSchema, {
           ...request,

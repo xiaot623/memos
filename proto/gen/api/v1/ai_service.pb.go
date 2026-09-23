@@ -214,6 +214,149 @@ func (x *TranscribeResponse) GetText() string {
 	return ""
 }
 
+type ListEmbeddingModelsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Required. The id of a configured AI provider.
+	ProviderId    string `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEmbeddingModelsRequest) Reset() {
+	*x = ListEmbeddingModelsRequest{}
+	mi := &file_api_v1_ai_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEmbeddingModelsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEmbeddingModelsRequest) ProtoMessage() {}
+
+func (x *ListEmbeddingModelsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_ai_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEmbeddingModelsRequest.ProtoReflect.Descriptor instead.
+func (*ListEmbeddingModelsRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ListEmbeddingModelsRequest) GetProviderId() string {
+	if x != nil {
+		return x.ProviderId
+	}
+	return ""
+}
+
+type ListEmbeddingModelsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Models        []*EmbeddingModel      `protobuf:"bytes,1,rep,name=models,proto3" json:"models,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListEmbeddingModelsResponse) Reset() {
+	*x = ListEmbeddingModelsResponse{}
+	mi := &file_api_v1_ai_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListEmbeddingModelsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListEmbeddingModelsResponse) ProtoMessage() {}
+
+func (x *ListEmbeddingModelsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_ai_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListEmbeddingModelsResponse.ProtoReflect.Descriptor instead.
+func (*ListEmbeddingModelsResponse) Descriptor() ([]byte, []int) {
+	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ListEmbeddingModelsResponse) GetModels() []*EmbeddingModel {
+	if x != nil {
+		return x.Models
+	}
+	return nil
+}
+
+type EmbeddingModel struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// id is the provider model identifier sent with embedding requests.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// title is a display name. It may match id when the provider has no separate title.
+	Title         string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EmbeddingModel) Reset() {
+	*x = EmbeddingModel{}
+	mi := &file_api_v1_ai_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EmbeddingModel) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmbeddingModel) ProtoMessage() {}
+
+func (x *EmbeddingModel) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_ai_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmbeddingModel.ProtoReflect.Descriptor instead.
+func (*EmbeddingModel) Descriptor() ([]byte, []int) {
+	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *EmbeddingModel) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *EmbeddingModel) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
 var File_api_v1_ai_service_proto protoreflect.FileDescriptor
 
 const file_api_v1_ai_service_proto_rawDesc = "" +
@@ -228,10 +371,19 @@ const file_api_v1_ai_service_proto_rawDesc = "" +
 	"\fcontent_type\x18\x04 \x01(\tB\x03\xe0A\x01R\vcontentTypeB\b\n" +
 	"\x06source\"(\n" +
 	"\x12TranscribeResponse\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text2\x86\x01\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"B\n" +
+	"\x1aListEmbeddingModelsRequest\x12$\n" +
+	"\vprovider_id\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
+	"providerId\"S\n" +
+	"\x1bListEmbeddingModelsResponse\x124\n" +
+	"\x06models\x18\x01 \x03(\v2\x1c.memos.api.v1.EmbeddingModelR\x06models\"6\n" +
+	"\x0eEmbeddingModel\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title2\x97\x02\n" +
 	"\tAIService\x12y\n" +
 	"\n" +
-	"Transcribe\x12\x1f.memos.api.v1.TranscribeRequest\x1a .memos.api.v1.TranscribeResponse\"(\xdaA\x05audio\x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/api/v1/ai:transcribeB\xa6\x01\n" +
+	"Transcribe\x12\x1f.memos.api.v1.TranscribeRequest\x1a .memos.api.v1.TranscribeResponse\"(\xdaA\x05audio\x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/api/v1/ai:transcribe\x12\x8e\x01\n" +
+	"\x13ListEmbeddingModels\x12(.memos.api.v1.ListEmbeddingModelsRequest\x1a).memos.api.v1.ListEmbeddingModelsResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/api/v1/ai/embeddingModelsB\xa6\x01\n" +
 	"\x10com.memos.api.v1B\x0eAiServiceProtoP\x01Z0github.com/usememos/memos/proto/gen/api/v1;apiv1\xa2\x02\x03MAX\xaa\x02\fMemos.Api.V1\xca\x02\fMemos\\Api\\V1\xe2\x02\x18Memos\\Api\\V1\\GPBMetadata\xea\x02\x0eMemos::Api::V1b\x06proto3"
 
 var (
@@ -246,21 +398,27 @@ func file_api_v1_ai_service_proto_rawDescGZIP() []byte {
 	return file_api_v1_ai_service_proto_rawDescData
 }
 
-var file_api_v1_ai_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_api_v1_ai_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_api_v1_ai_service_proto_goTypes = []any{
-	(*TranscribeRequest)(nil),  // 0: memos.api.v1.TranscribeRequest
-	(*TranscriptionAudio)(nil), // 1: memos.api.v1.TranscriptionAudio
-	(*TranscribeResponse)(nil), // 2: memos.api.v1.TranscribeResponse
+	(*TranscribeRequest)(nil),           // 0: memos.api.v1.TranscribeRequest
+	(*TranscriptionAudio)(nil),          // 1: memos.api.v1.TranscriptionAudio
+	(*TranscribeResponse)(nil),          // 2: memos.api.v1.TranscribeResponse
+	(*ListEmbeddingModelsRequest)(nil),  // 3: memos.api.v1.ListEmbeddingModelsRequest
+	(*ListEmbeddingModelsResponse)(nil), // 4: memos.api.v1.ListEmbeddingModelsResponse
+	(*EmbeddingModel)(nil),              // 5: memos.api.v1.EmbeddingModel
 }
 var file_api_v1_ai_service_proto_depIdxs = []int32{
 	1, // 0: memos.api.v1.TranscribeRequest.audio:type_name -> memos.api.v1.TranscriptionAudio
-	0, // 1: memos.api.v1.AIService.Transcribe:input_type -> memos.api.v1.TranscribeRequest
-	2, // 2: memos.api.v1.AIService.Transcribe:output_type -> memos.api.v1.TranscribeResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5, // 1: memos.api.v1.ListEmbeddingModelsResponse.models:type_name -> memos.api.v1.EmbeddingModel
+	0, // 2: memos.api.v1.AIService.Transcribe:input_type -> memos.api.v1.TranscribeRequest
+	3, // 3: memos.api.v1.AIService.ListEmbeddingModels:input_type -> memos.api.v1.ListEmbeddingModelsRequest
+	2, // 4: memos.api.v1.AIService.Transcribe:output_type -> memos.api.v1.TranscribeResponse
+	4, // 5: memos.api.v1.AIService.ListEmbeddingModels:output_type -> memos.api.v1.ListEmbeddingModelsResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_ai_service_proto_init() }
@@ -278,7 +436,7 @@ func file_api_v1_ai_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_ai_service_proto_rawDesc), len(file_api_v1_ai_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

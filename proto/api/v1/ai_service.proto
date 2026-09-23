@@ -17,6 +17,11 @@ service AIService {
     };
     option (google.api.method_signature) = "audio";
   }
+
+  // ListEmbeddingModels returns embedding models advertised by one configured provider.
+  rpc ListEmbeddingModels(ListEmbeddingModelsRequest) returns (ListEmbeddingModelsResponse) {
+    option (google.api.http) = {get: "/api/v1/ai/embeddingModels"};
+  }
 }
 
 message TranscribeRequest {
@@ -43,4 +48,20 @@ message TranscriptionAudio {
 message TranscribeResponse {
   // The transcribed text.
   string text = 1;
+}
+
+message ListEmbeddingModelsRequest {
+  // Required. The id of a configured AI provider.
+  string provider_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message ListEmbeddingModelsResponse {
+  repeated EmbeddingModel models = 1;
+}
+
+message EmbeddingModel {
+  // id is the provider model identifier sent with embedding requests.
+  string id = 1;
+  // title is a display name. It may match id when the provider has no separate title.
+  string title = 2;
 }

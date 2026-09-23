@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file api/v1/ai_service.proto.
  */
 export const file_api_v1_ai_service: GenFile = /*@__PURE__*/
-  fileDesc("ChdhcGkvdjEvYWlfc2VydmljZS5wcm90bxIMbWVtb3MuYXBpLnYxIkkKEVRyYW5zY3JpYmVSZXF1ZXN0EjQKBWF1ZGlvGAEgASgLMiAubWVtb3MuYXBpLnYxLlRyYW5zY3JpcHRpb25BdWRpb0ID4EECIncKElRyYW5zY3JpcHRpb25BdWRpbxIWCgdjb250ZW50GAEgASgMQgPgQQRIABINCgN1cmkYAiABKAlIABIVCghmaWxlbmFtZRgDIAEoCUID4EEBEhkKDGNvbnRlbnRfdHlwZRgEIAEoCUID4EEBQggKBnNvdXJjZSIiChJUcmFuc2NyaWJlUmVzcG9uc2USDAoEdGV4dBgBIAEoCTKGAQoJQUlTZXJ2aWNlEnkKClRyYW5zY3JpYmUSHy5tZW1vcy5hcGkudjEuVHJhbnNjcmliZVJlcXVlc3QaIC5tZW1vcy5hcGkudjEuVHJhbnNjcmliZVJlc3BvbnNlIijaQQVhdWRpb4LT5JMCGjoBKiIVL2FwaS92MS9haTp0cmFuc2NyaWJlQqYBChBjb20ubWVtb3MuYXBpLnYxQg5BaVNlcnZpY2VQcm90b1ABWjBnaXRodWIuY29tL3VzZW1lbW9zL21lbW9zL3Byb3RvL2dlbi9hcGkvdjE7YXBpdjGiAgNNQViqAgxNZW1vcy5BcGkuVjHKAgxNZW1vc1xBcGlcVjHiAhhNZW1vc1xBcGlcVjFcR1BCTWV0YWRhdGHqAg5NZW1vczo6QXBpOjpWMWIGcHJvdG8z", [file_google_api_annotations, file_google_api_client, file_google_api_field_behavior]);
+  fileDesc("ChdhcGkvdjEvYWlfc2VydmljZS5wcm90bxIMbWVtb3MuYXBpLnYxIkkKEVRyYW5zY3JpYmVSZXF1ZXN0EjQKBWF1ZGlvGAEgASgLMiAubWVtb3MuYXBpLnYxLlRyYW5zY3JpcHRpb25BdWRpb0ID4EECIncKElRyYW5zY3JpcHRpb25BdWRpbxIWCgdjb250ZW50GAEgASgMQgPgQQRIABINCgN1cmkYAiABKAlIABIVCghmaWxlbmFtZRgDIAEoCUID4EEBEhkKDGNvbnRlbnRfdHlwZRgEIAEoCUID4EEBQggKBnNvdXJjZSIiChJUcmFuc2NyaWJlUmVzcG9uc2USDAoEdGV4dBgBIAEoCSI2ChpMaXN0RW1iZWRkaW5nTW9kZWxzUmVxdWVzdBIYCgtwcm92aWRlcl9pZBgBIAEoCUID4EECIksKG0xpc3RFbWJlZGRpbmdNb2RlbHNSZXNwb25zZRIsCgZtb2RlbHMYASADKAsyHC5tZW1vcy5hcGkudjEuRW1iZWRkaW5nTW9kZWwiKwoORW1iZWRkaW5nTW9kZWwSCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkylwIKCUFJU2VydmljZRJ5CgpUcmFuc2NyaWJlEh8ubWVtb3MuYXBpLnYxLlRyYW5zY3JpYmVSZXF1ZXN0GiAubWVtb3MuYXBpLnYxLlRyYW5zY3JpYmVSZXNwb25zZSIo2kEFYXVkaW+C0+STAho6ASoiFS9hcGkvdjEvYWk6dHJhbnNjcmliZRKOAQoTTGlzdEVtYmVkZGluZ01vZGVscxIoLm1lbW9zLmFwaS52MS5MaXN0RW1iZWRkaW5nTW9kZWxzUmVxdWVzdBopLm1lbW9zLmFwaS52MS5MaXN0RW1iZWRkaW5nTW9kZWxzUmVzcG9uc2UiIoLT5JMCHBIaL2FwaS92MS9haS9lbWJlZGRpbmdNb2RlbHNCpgEKEGNvbS5tZW1vcy5hcGkudjFCDkFpU2VydmljZVByb3RvUAFaMGdpdGh1Yi5jb20vdXNlbWVtb3MvbWVtb3MvcHJvdG8vZ2VuL2FwaS92MTthcGl2MaICA01BWKoCDE1lbW9zLkFwaS5WMcoCDE1lbW9zXEFwaVxWMeICGE1lbW9zXEFwaVxWMVxHUEJNZXRhZGF0YeoCDk1lbW9zOjpBcGk6OlYxYgZwcm90bzM", [file_google_api_annotations, file_google_api_client, file_google_api_field_behavior]);
 
 /**
  * @generated from message memos.api.v1.TranscribeRequest
@@ -101,6 +101,68 @@ export const TranscribeResponseSchema: GenMessage<TranscribeResponse> = /*@__PUR
   messageDesc(file_api_v1_ai_service, 2);
 
 /**
+ * @generated from message memos.api.v1.ListEmbeddingModelsRequest
+ */
+export type ListEmbeddingModelsRequest = Message<"memos.api.v1.ListEmbeddingModelsRequest"> & {
+  /**
+   * Required. The id of a configured AI provider.
+   *
+   * @generated from field: string provider_id = 1;
+   */
+  providerId: string;
+};
+
+/**
+ * Describes the message memos.api.v1.ListEmbeddingModelsRequest.
+ * Use `create(ListEmbeddingModelsRequestSchema)` to create a new message.
+ */
+export const ListEmbeddingModelsRequestSchema: GenMessage<ListEmbeddingModelsRequest> = /*@__PURE__*/
+  messageDesc(file_api_v1_ai_service, 3);
+
+/**
+ * @generated from message memos.api.v1.ListEmbeddingModelsResponse
+ */
+export type ListEmbeddingModelsResponse = Message<"memos.api.v1.ListEmbeddingModelsResponse"> & {
+  /**
+   * @generated from field: repeated memos.api.v1.EmbeddingModel models = 1;
+   */
+  models: EmbeddingModel[];
+};
+
+/**
+ * Describes the message memos.api.v1.ListEmbeddingModelsResponse.
+ * Use `create(ListEmbeddingModelsResponseSchema)` to create a new message.
+ */
+export const ListEmbeddingModelsResponseSchema: GenMessage<ListEmbeddingModelsResponse> = /*@__PURE__*/
+  messageDesc(file_api_v1_ai_service, 4);
+
+/**
+ * @generated from message memos.api.v1.EmbeddingModel
+ */
+export type EmbeddingModel = Message<"memos.api.v1.EmbeddingModel"> & {
+  /**
+   * id is the provider model identifier sent with embedding requests.
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * title is a display name. It may match id when the provider has no separate title.
+   *
+   * @generated from field: string title = 2;
+   */
+  title: string;
+};
+
+/**
+ * Describes the message memos.api.v1.EmbeddingModel.
+ * Use `create(EmbeddingModelSchema)` to create a new message.
+ */
+export const EmbeddingModelSchema: GenMessage<EmbeddingModel> = /*@__PURE__*/
+  messageDesc(file_api_v1_ai_service, 5);
+
+/**
  * @generated from service memos.api.v1.AIService
  */
 export const AIService: GenService<{
@@ -113,6 +175,16 @@ export const AIService: GenService<{
     methodKind: "unary";
     input: typeof TranscribeRequestSchema;
     output: typeof TranscribeResponseSchema;
+  },
+  /**
+   * ListEmbeddingModels returns embedding models advertised by one configured provider.
+   *
+   * @generated from rpc memos.api.v1.AIService.ListEmbeddingModels
+   */
+  listEmbeddingModels: {
+    methodKind: "unary";
+    input: typeof ListEmbeddingModelsRequestSchema;
+    output: typeof ListEmbeddingModelsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_api_v1_ai_service, 0);

@@ -33,6 +33,10 @@ vi.mock("@/hooks/useCurrentUser", () => ({
   default: () => state.currentUser,
 }));
 
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ userGeneralSetting: undefined, isUserSettingsInitialized: true }),
+}));
+
 vi.mock("@/hooks/useSpaceQueries", () => ({
   useSpaces: () => ({ data: state.spaces, isSuccess: true, isPending: false, isError: false }),
   useSpace: (_user: string, name: string) => ({

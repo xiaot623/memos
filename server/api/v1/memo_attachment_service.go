@@ -57,6 +57,7 @@ func (s *APIV1Service) SetMemoAttachments(ctx context.Context, request *v1pb.Set
 		return nil, status.Errorf(codes.Internal, "failed to build updated memo state")
 	}
 	s.dispatchMemoUpdatedSideEffects(ctx, memoMessage)
+	s.enqueueSemanticMemo(memo.ID)
 
 	return &emptypb.Empty{}, nil
 }

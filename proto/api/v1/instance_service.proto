@@ -92,6 +92,11 @@ message InstanceProfile {
   // Access mode controls whether unauthenticated users may access instance content.
   InstanceAccessMode access_mode = 10;
 
+  // SemanticSearchAvailable is true when this process has a vector driver and
+  // an embedding provider and model are configured. It exposes no connection
+  // details.
+  bool semantic_search_available = 12;
+
   // A proof-of-humanity challenge the deployment requires on signup and
   // password sign-in. Absent when none is configured, which is the case on
   // every self-hosted instance.
@@ -318,6 +323,10 @@ message InstanceSetting {
     // transcription is the speech-to-text feature configuration.
     // When unset or transcription.provider_id is empty, transcription is disabled.
     TranscriptionConfig transcription = 2;
+
+    // embedding selects the provider and model used for semantic search.
+    // When unset, or when provider_id or model is empty, embedding is disabled.
+    EmbeddingConfig embedding = 3;
   }
 
   // AIProviderConfig represents one callable AI provider connection.
@@ -339,6 +348,21 @@ message InstanceSetting {
     AI_PROVIDER_TYPE_UNSPECIFIED = 0;
     OPENAI = 1;
     GEMINI = 2;
+    OPENROUTER = 3;
+  }
+
+  // EmbeddingConfig selects one AI provider for memo embeddings.
+  message EmbeddingConfig {
+    // provider_id references an entry in AISetting.providers[].id.
+    // Empty string means embedding is disabled.
+    string provider_id = 1;
+
+    // model is the provider-specific embedding model identifier.
+    // Empty string means embedding is disabled. There is no built-in default.
+    string model = 2;
+
+    // dimensions is the output vector size. Zero uses 768.
+    int32 dimensions = 3;
   }
 
   // TranscriptionConfig configures the speech-to-text feature.

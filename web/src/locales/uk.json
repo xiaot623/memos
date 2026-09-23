@@ -483,7 +483,15 @@
       "save-media-metadata": "Зберегти метадані медіа",
       "save-media-metadata-description": "Для майбутніх завантажень зберігати доступну камеру, час зйомки, місцезнаходження, розміри зображення та основні відомості про відео. Будь-хто, хто може переглядати вкладення, може отримати ці метадані. Існуючі вкладення залишаються незмінними.",
       "uploads-privacy-description": "Контролювати конфіденційну інформацію, що надсилається разом із завантаженими медіафайлами.",
-      "uploads-privacy-title": "Завантаження та конфіденційність"
+      "uploads-privacy-title": "Завантаження та конфіденційність",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Ви впевнені, що хочете видалити подання `{{title}}`?",
@@ -696,7 +704,19 @@
       "transcription-prompt": "Оперативні підказки",
       "transcription-provider": "Провайдер",
       "transcription-title": "Транскрипція",
-      "transcription-warning-no-key": "Вибраний постачальник не має набору ключів API. Відредагуйте інтеграцію вище, щоб додати її."
+      "transcription-warning-no-key": "Вибраний постачальник не має набору ключів API. Відредагуйте інтеграцію вище, щоб додати її.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "notification": {
       "email-description": "Надсилайте копії електронною поштою, щоб отримати коментарі та згадки. Gmail працює з smtp.gmail.com, портом 587, STARTTLS і паролем програми.",
@@ -960,7 +980,8 @@
     "load-error": "Не вдалося завантажити нотатки",
     "mode": "Режим пошуку",
     "syntax-help": "Синтаксис пошуку",
-    "text": "Текст"
+    "text": "Текст",
+    "fuzzy": "Fuzzy"
   },
   "map": {
     "selection": "Вибрані нотатки",

@@ -6,6 +6,31 @@ info:
     title: ""
     version: 0.0.1
 paths:
+    /api/v1/ai/embeddingModels:
+        get:
+            tags:
+                - AIService
+            description: ListEmbeddingModels returns embedding models advertised by one configured provider.
+            operationId: AIService_ListEmbeddingModels
+            parameters:
+                - name: providerId
+                  in: query
+                  description: Required. The id of a configured AI provider.
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListEmbeddingModelsResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/ai:transcribe:
         post:
             tags:
@@ -1301,6 +1326,31 @@ paths:
                 "200":
                     description: OK
                     content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/memos:search:
+        post:
+            tags:
+                - MemoService
+            description: SearchMemos ranks readable memos by embedding similarity.
+            operationId: MemoService_SearchMemos
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SearchMemosRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SearchMemosResponse'
                 default:
                     description: Default error response
                     content:
@@ -3348,6 +3398,15 @@ components:
                 name:
                     type: string
                     description: 'Required. Format: spaces/{space}/invitations/{username}.'
+        EmbeddingModel:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: id is the provider model identifier sent with embedding requests.
+                title:
+                    type: string
+                    description: title is a display name. It may match id when the provider has no separate title.
         FieldMapping:
             type: object
             properties:
@@ -3541,6 +3600,12 @@ components:
                     type: string
                     description: Access mode controls whether unauthenticated users may access instance content.
                     format: enum
+                semanticSearchAvailable:
+                    type: boolean
+                    description: |-
+                        SemanticSearchAvailable is true when this process has a vector driver and
+                         an embedding provider and model are configured. It exposes no connection
+                         details.
                 challenge:
                     $ref: '#/components/schemas/InstanceProfile_Challenge'
             description: Instance profile message containing basic instance information.
@@ -3592,6 +3657,7 @@ components:
                         - AI_PROVIDER_TYPE_UNSPECIFIED
                         - OPENAI
                         - GEMINI
+                        - OPENROUTER
                     type: string
                     format: enum
                 endpoint:
@@ -3623,6 +3689,12 @@ components:
                     description: |-
                         transcription is the speech-to-text feature configuration.
                          When unset or transcription.provider_id is empty, transcription is disabled.
+                embedding:
+                    allOf:
+                        - $ref: '#/components/schemas/InstanceSetting_EmbeddingConfig'
+                    description: |-
+                        embedding selects the provider and model used for semantic search.
+                         When unset, or when provider_id or model is empty, embedding is disabled.
             description: AI provider configuration settings.
         InstanceSetting_AccessSetting:
             type: object
@@ -3635,6 +3707,24 @@ components:
                     type: string
                     format: enum
             description: Access policy configuration for the instance.
+        InstanceSetting_EmbeddingConfig:
+            type: object
+            properties:
+                providerId:
+                    type: string
+                    description: |-
+                        provider_id references an entry in AISetting.providers[].id.
+                         Empty string means embedding is disabled.
+                model:
+                    type: string
+                    description: |-
+                        model is the provider-specific embedding model identifier.
+                         Empty string means embedding is disabled. There is no built-in default.
+                dimensions:
+                    type: integer
+                    description: dimensions is the output vector size. Zero uses 768.
+                    format: int32
+            description: EmbeddingConfig selects one AI provider for memo embeddings.
         InstanceSetting_GeneralSetting:
             type: object
             properties:
@@ -3873,6 +3963,13 @@ components:
                     description: |-
                         A token that can be sent as `page_token` to retrieve the next page.
                          If this field is omitted, there are no subsequent pages.
+        ListEmbeddingModelsResponse:
+            type: object
+            properties:
+                models:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/EmbeddingModel'
         ListIdentityProvidersResponse:
             type: object
             properties:
@@ -4551,6 +4648,43 @@ components:
                     type: string
                     description: When the access token expires.
                     format: date-time
+        SearchMemosRequest:
+            required:
+                - query
+            type: object
+            properties:
+                query:
+                    type: string
+                    description: Required. The natural-language query to embed and compare.
+                pageSize:
+                    type: integer
+                    description: Optional. The maximum number of memos to return.
+                    format: int32
+                pageToken:
+                    type: string
+                    description: Optional. A page token from a previous SearchMemos call.
+                state:
+                    enum:
+                        - STATE_UNSPECIFIED
+                        - NORMAL
+                        - ARCHIVED
+                    type: string
+                    description: Optional. The state of the memos to search. Defaults to NORMAL.
+                    format: enum
+                filter:
+                    type: string
+                    description: Optional. A CEL expression using the same grammar as ListMemos.
+        SearchMemosResponse:
+            type: object
+            properties:
+                memos:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Memo'
+                    description: Memos ordered by similarity, highest first.
+                nextPageToken:
+                    type: string
+                    description: A token that can be sent as `page_token` to retrieve the next page.
         SetMemoAttachmentsRequest:
             required:
                 - name
@@ -5155,6 +5289,24 @@ components:
                 saveMediaMetadata:
                     type: boolean
                     description: Whether the official client should save metadata from future media uploads.
+                semanticIndexState:
+                    enum:
+                        - SEMANTIC_INDEX_STATE_UNSPECIFIED
+                        - SEMANTIC_INDEX_STATE_OFF
+                        - SEMANTIC_INDEX_STATE_INITIALIZING
+                        - SEMANTIC_INDEX_STATE_READY
+                    type: string
+                    description: |-
+                        semantic_index_state is the user's semantic-search index lifecycle.
+                         Clients may set OFF or INITIALIZING. READY is set by the server when
+                         the first backfill finishes.
+                    format: enum
+                semanticScoreThreshold:
+                    type: number
+                    description: |-
+                        semantic_score_threshold is the minimum cosine similarity for fuzzy search.
+                         Unset uses 0.5. Valid range is 0 to 1. Higher values are stricter.
+                    format: float
             description: General user settings configuration.
         UserSetting_TagMetadata:
             type: object

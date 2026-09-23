@@ -113,6 +113,48 @@ func TestGeneralUserSettingSaveMediaMetadata(t *testing.T) {
 	require.False(t, updated.GetGeneralSetting().GetSaveMediaMetadata())
 }
 
+func TestGeneralUserSettingSemanticScoreThreshold(t *testing.T) {
+	ctx := context.Background()
+	ts := NewTestService(t)
+	defer ts.Cleanup()
+
+	user, err := ts.CreateRegularUser(ctx, "threshold-user")
+	require.NoError(t, err)
+	userCtx := ts.CreateUserContext(ctx, user.ID)
+	settingName := "users/threshold-user/settings/GENERAL"
+
+	defaultSetting, err := ts.Service.GetUserSetting(userCtx, &apiv1.GetUserSettingRequest{Name: settingName})
+	require.NoError(t, err)
+	require.InDelta(t, 0.5, defaultSetting.GetGeneralSetting().GetSemanticScoreThreshold(), 0.001)
+
+	updated, err := ts.Service.UpdateUserSetting(userCtx, &apiv1.UpdateUserSettingRequest{
+		Setting: &apiv1.UserSetting{
+			Name: settingName,
+			Value: &apiv1.UserSetting_GeneralSetting_{
+				GeneralSetting: &apiv1.UserSetting_GeneralSetting{SemanticScoreThreshold: protoFloat32(0.7)},
+			},
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"semantic_score_threshold"}},
+	})
+	require.NoError(t, err)
+	require.InDelta(t, 0.7, updated.GetGeneralSetting().GetSemanticScoreThreshold(), 0.001)
+
+	_, err = ts.Service.UpdateUserSetting(userCtx, &apiv1.UpdateUserSettingRequest{
+		Setting: &apiv1.UserSetting{
+			Name: settingName,
+			Value: &apiv1.UserSetting_GeneralSetting_{
+				GeneralSetting: &apiv1.UserSetting_GeneralSetting{SemanticScoreThreshold: protoFloat32(1.2)},
+			},
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"semantic_score_threshold"}},
+	})
+	require.Error(t, err)
+}
+
+func protoFloat32(value float32) *float32 {
+	return &value
+}
+
 func TestUserTagSettings(t *testing.T) {
 	ctx := context.Background()
 	ts := NewTestService(t)

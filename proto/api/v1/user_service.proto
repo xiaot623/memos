@@ -681,6 +681,21 @@ message UserSetting {
     string theme = 4 [(google.api.field_behavior) = OPTIONAL];
     // Whether the official client should save metadata from future media uploads.
     bool save_media_metadata = 5 [(google.api.field_behavior) = OPTIONAL];
+    // semantic_index_state is the user's semantic-search index lifecycle.
+    // Clients may set OFF or INITIALIZING. READY is set by the server when
+    // the first backfill finishes.
+    SemanticIndexState semantic_index_state = 6 [(google.api.field_behavior) = OPTIONAL];
+    // semantic_score_threshold is the minimum cosine similarity for fuzzy search.
+    // Unset uses 0.5. Valid range is 0 to 1. Higher values are stricter.
+    optional float semantic_score_threshold = 7 [(google.api.field_behavior) = OPTIONAL];
+  }
+
+  // SemanticIndexState is the lifecycle of one user's memo embedding index.
+  enum SemanticIndexState {
+    SEMANTIC_INDEX_STATE_UNSPECIFIED = 0;
+    SEMANTIC_INDEX_STATE_OFF = 1;
+    SEMANTIC_INDEX_STATE_INITIALIZING = 2;
+    SEMANTIC_INDEX_STATE_READY = 3;
   }
 
   // Tag metadata for user-specific display rules.

@@ -47,6 +47,18 @@ message GeneralUserSetting {
   string theme = 3;
   // Whether the official client should save metadata from future media uploads.
   bool save_media_metadata = 4;
+  // semantic_index_state is the user's semantic-search index lifecycle.
+  SemanticIndexState semantic_index_state = 5;
+  // semantic_score_threshold is the minimum cosine similarity for fuzzy search.
+  // Unset uses 0.5. Valid range is 0 to 1. Higher values are stricter.
+  optional float semantic_score_threshold = 6;
+}
+
+enum SemanticIndexState {
+  SEMANTIC_INDEX_STATE_UNSPECIFIED = 0;
+  SEMANTIC_INDEX_STATE_OFF = 1;
+  SEMANTIC_INDEX_STATE_INITIALIZING = 2;
+  SEMANTIC_INDEX_STATE_READY = 3;
 }
 
 message UserTagMetadata {

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,6 +21,7 @@ import (
 	"github.com/usememos/memos/server"
 	"github.com/usememos/memos/store"
 	"github.com/usememos/memos/store/db"
+	"github.com/usememos/memos/store/vector"
 )
 
 func initSlogDefault() {
@@ -51,6 +53,10 @@ var (
 func init() {
 	cobra.OnInitialize(initSlogDefault)
 
+	// Optional repo-root .env for local development. A missing file is fine,
+	// and variables already set in the process environment are left alone.
+	_ = godotenv.Load()
+
 	viper.SetDefault("demo", false)
 	viper.SetDefault("driver", "sqlite")
 	viper.SetDefault("port", 8081)
@@ -62,6 +68,8 @@ func init() {
 	rootCmd.Flags().String("data", "", "data directory")
 	rootCmd.Flags().String("driver", "sqlite", "database driver (sqlite, mysql, postgres, d1)")
 	rootCmd.Flags().String("dsn", "", "database source name (DSN)")
+	rootCmd.Flags().String("vector-driver", "", "vector database driver (qdrant); empty disables vector search")
+	rootCmd.Flags().String("vector-dsn", "", "vector database source name (DSN)")
 	rootCmd.Flags().String("instance-url", "", "canonical external URL of the Memos instance")
 	rootCmd.Flags().Bool("allow-private-webhooks", false, "allow webhooks to access any private/reserved IP address")
 	rootCmd.Flags().StringSlice("webhook-private-network-allowlist", nil, "private webhook destinations to allow (exact hostname, IP, or CIDR)")
@@ -80,6 +88,8 @@ func init() {
 		"data",
 		"driver",
 		"dsn",
+		"vector-driver",
+		"vector-dsn",
 		"instance-url",
 		"allow-private-webhooks",
 		"webhook-private-network-allowlist",
@@ -116,6 +126,8 @@ func runServer() error {
 		Data:           viper.GetString("data"),
 		Driver:         viper.GetString("driver"),
 		DSN:            viper.GetString("dsn"),
+		VectorDriver:   viper.GetString("vector-driver"),
+		VectorDSN:      viper.GetString("vector-dsn"),
 		InstanceURL:    viper.GetString("instance-url"),
 		RateLimit:      viper.GetBool("rate-limit"),
 		TrustedProxies: viper.GetStringSlice("trusted-proxies"),
@@ -143,6 +155,13 @@ func runServer() error {
 		return errors.Wrap(err, "failed to create database driver")
 	}
 	storeInstance := store.New(dbDriver, instanceProfile)
+	if instanceProfile.VectorDriver != "" {
+		vectorStore, err := vector.New(instanceProfile.VectorDriver, instanceProfile.VectorDSN)
+		if err != nil {
+			return errors.Wrap(err, "failed to create vector store")
+		}
+		storeInstance.SetVector(vectorStore)
+	}
 	closeStore := true
 	defer func() {
 		if closeStore {
@@ -204,6 +223,9 @@ func printServerInfo(profile *profile.Profile, accessMode storepb.InstanceAccess
 	// Server information
 	fmt.Printf("Data directory: %s\n", profile.Data)
 	fmt.Printf("Database driver: %s\n", profile.Driver)
+	if profile.VectorDriver != "" {
+		fmt.Printf("Vector driver: %s\n", profile.VectorDriver)
+	}
 
 	// Connection information
 	if len(profile.UNIXSock) == 0 {

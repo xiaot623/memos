@@ -489,7 +489,19 @@
       "transcription-prompt": "Άμεσες συμβουλές",
       "transcription-provider": "Προμηθευτής",
       "transcription-title": "Μεταγραφή",
-      "transcription-warning-no-key": "Ο επιλεγμένος πάροχος δεν έχει σύνολο κλειδιών API. Επεξεργαστείτε την παραπάνω ενοποίηση για να προσθέσετε μία."
+      "transcription-warning-no-key": "Ο επιλεγμένος πάροχος δεν έχει σύνολο κλειδιών API. Επεξεργαστείτε την παραπάνω ενοποίηση για να προσθέσετε μία.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "instance": {
       "access-description": "Ελέγξτε την εγγραφή, τον έλεγχο ταυτότητας, την επεξεργασία προφίλ και τις προεπιλογές ημερολογίου για αυτήν την περίπτωση.",
@@ -599,7 +611,15 @@
       "save-media-metadata": "Αποθήκευση μεταδεδομένων πολυμέσων",
       "save-media-metadata-description": "Για μελλοντικές μεταφορτώσεις, αποθηκεύστε τη διαθέσιμη κάμερα, την ώρα λήψης, την τοποθεσία, τις διαστάσεις της εικόνας και τις βασικές λεπτομέρειες του βίντεο. Όποιος μπορεί να δει το συνημμένο μπορεί να λάβει αυτά τα μεταδεδομένα. Τα υπάρχοντα συνημμένα παραμένουν αμετάβλητα.",
       "uploads-privacy-description": "Έλεγχος πληροφοριών που είναι ευαίσθητες στην προστασία της ιδιωτικής ζωής και υποβάλλονται με τα μεταφορτωμένα μέσα.",
-      "uploads-privacy-title": "Μεταφορτώσεις & απόρρητο"
+      "uploads-privacy-title": "Μεταφορτώσεις & απόρρητο",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Είστε βέβαιοι ότι θέλετε να διαγράψετε την προβολή `{{title}}`;",
@@ -960,7 +980,8 @@
     "load-error": "Δεν ήταν δυνατή η φόρτωση των σημειωμάτων",
     "mode": "Λειτουργία αναζήτησης",
     "syntax-help": "Σύνταξη αναζήτησης",
-    "text": "Κείμενο"
+    "text": "Κείμενο",
+    "fuzzy": "Fuzzy"
   },
   "map": {
     "selection": "Επιλεγμένα σημειώματα",

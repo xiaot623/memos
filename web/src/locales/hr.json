@@ -483,7 +483,15 @@
       "save-media-metadata": "Spremite metapodatke medija",
       "save-media-metadata-description": "Za buduće prijenose spremite dostupnu kameru, vrijeme snimanja, lokaciju, dimenzije slike i osnovne detalje videa. Svatko tko može pregledati privitak može primiti ove metapodatke. Postojeći privitci ostaju nepromijenjeni.",
       "uploads-privacy-description": "Kontrolirajte podatke osjetljive na privatnost koji se šalju s prenesenim medijima.",
-      "uploads-privacy-title": "Prijenosi i privatnost"
+      "uploads-privacy-title": "Prijenosi i privatnost",
+      "search-description": "Fuzzy search compares a query with your indexed memos.",
+      "search-title": "Search",
+      "semantic-index": "Fuzzy search",
+      "semantic-index-description": "Index existing memos, then keep the index updated as you edit.",
+      "semantic-index-initializing": "Indexing existing memos. Fuzzy search appears when this finishes.",
+      "semantic-index-ready": "Fuzzy search is available. Turning this off deletes your index.",
+      "semantic-score-threshold": "Match threshold",
+      "semantic-score-threshold-description": "Only memos at least this similar are returned. Higher is stricter. The default is 0.50."
     },
     "memo-view": {
       "delete-confirm": "Jesi li siguran da želiš obrisati prikaz `{{title}}`?",
@@ -696,7 +704,19 @@
       "transcription-prompt": "Brzi savjeti",
       "transcription-provider": "Davatelj",
       "transcription-title": "Transkripcija",
-      "transcription-warning-no-key": "Odabrani pružatelj nema set ključeva API. Uredite gornju integraciju da biste je dodali."
+      "transcription-warning-no-key": "Odabrani pružatelj nema set ključeva API. Uredite gornju integraciju da biste je dodali.",
+      "embedding-description": "Choose the provider and model used to index memos for fuzzy search. Leave dimensions empty to use 768.",
+      "embedding-dimensions": "Dimensions",
+      "embedding-dimensions-help": "Vector size for this model. Empty uses 768.",
+      "embedding-empty-providers": "Add an OpenAI or OpenRouter integration before enabling embeddings.",
+      "embedding-gemini-unsupported": "Gemini providers cannot be used for embeddings.",
+      "embedding-model": "Model",
+      "embedding-model-help": "Pick a model from the provider, or type a model id.",
+      "embedding-model-placeholder": "Model id",
+      "embedding-model-unavailable": "The model list could not be loaded. Type the model id.",
+      "embedding-no-provider": "None — embeddings disabled",
+      "embedding-provider": "Provider",
+      "embedding-title": "Embeddings"
     },
     "notification": {
       "email-description": "Pošaljite kopije e-poštom za komentare i spominjanje dopisa. Gmail radi sa smtp.gmail.com, portom 587, STARTTLS i lozinkom aplikacije.",
@@ -960,7 +980,8 @@
     "load-error": "Nije moguće učitati dopise",
     "mode": "Način pretraživanja",
     "syntax-help": "Sintaksa pretraživanja",
-    "text": "Tekst"
+    "text": "Tekst",
+    "fuzzy": "Fuzzy"
   },
   "map": {
     "selection": "Odabrani zapisi",

@@ -7,6 +7,7 @@ export type FilterFactor =
   | "visibility"
   | "contentSearch"
   | "celSearch"
+  | "semanticSearch"
   | "displayTime"
   | "pinned"
   | "property.hasLink"
@@ -49,7 +50,8 @@ export const getFilterSearch = (filters: MemoFilter[]): string => {
 };
 
 /** Search filters carry the user's query itself (plain words or a CEL expression), as opposed to facets. */
-export const isSearchFilter = (filter: MemoFilter): boolean => filter.factor === "contentSearch" || filter.factor === "celSearch";
+export const isSearchFilter = (filter: MemoFilter): boolean =>
+  filter.factor === "contentSearch" || filter.factor === "celSearch" || filter.factor === "semanticSearch";
 
 export const replaceFiltersByFactor = (filters: MemoFilter[], factor: FilterFactor, replacements: MemoFilter[]): MemoFilter[] => [
   ...filters.filter((filter) => filter.factor !== factor),

@@ -529,7 +529,19 @@
       "transcription-prompt-placeholder": "名稱：Alice, Bob。詞彙表：kubernetes, OAuth。",
       "transcription-provider": "服務供應商",
       "transcription-title": "轉寫",
-      "transcription-warning-no-key": "所選服務供應商尚未設定 API 金鑰。請編輯上方的整合以新增。"
+      "transcription-warning-no-key": "所選服務供應商尚未設定 API 金鑰。請編輯上方的整合以新增。",
+      "embedding-description": "選擇用於為模糊搜尋建立筆記索引的供應商和模型。維度留空時使用 768。",
+      "embedding-dimensions": "維度",
+      "embedding-dimensions-help": "此模型的向量維度。留空則使用 768。",
+      "embedding-empty-providers": "請先新增 OpenAI 或 OpenRouter 整合，再啟用嵌入。",
+      "embedding-gemini-unsupported": "Gemini 供應商不能用於嵌入。",
+      "embedding-model": "模型",
+      "embedding-model-help": "從供應商目錄中選擇，或直接填寫模型 id。",
+      "embedding-model-placeholder": "模型 id",
+      "embedding-model-unavailable": "模型列表載入失敗。請直接填寫模型 id。",
+      "embedding-no-provider": "無 — 不啟用嵌入",
+      "embedding-provider": "供應商",
+      "embedding-title": "嵌入"
     },
     "instance": {
       "access-description": "控制此實例的公開存取、註冊、身分驗證和個人檔案編輯。",
@@ -639,7 +651,15 @@
       "theme-description": "立即在此裝置上套入選定的主題。",
       "theme": "主題",
       "uploads-privacy-description": "控制上傳媒體時提交的隱私敏感資訊。",
-      "uploads-privacy-title": "上傳與隱私"
+      "uploads-privacy-title": "上傳與隱私",
+      "search-description": "模糊搜尋會把查詢和已索引的筆記做相似度比較。",
+      "search-title": "搜尋",
+      "semantic-index": "模糊搜尋",
+      "semantic-index-description": "為既有筆記建立索引，之後的編輯會自動同步。",
+      "semantic-index-initializing": "正在為既有筆記建立索引。完成後會出現模糊搜尋。",
+      "semantic-index-ready": "模糊搜尋已可用。關閉後會刪除你的索引。",
+      "semantic-score-threshold": "匹配閾值",
+      "semantic-score-threshold-description": "只返回相似度不低於這個值的筆記。越高越嚴格，預設 0.50。"
     },
     "memo-view": {
       "delete-confirm": "您確定要刪除檢視 `{{title}}` 嗎？",
@@ -999,7 +1019,8 @@
     "load-error": "無法載入備忘錄",
     "mode": "搜尋模式",
     "syntax-help": "搜尋語法",
-    "text": "文字"
+    "text": "文字",
+    "fuzzy": "模糊"
   },
   "map": {
     "selection": "已選備忘錄",

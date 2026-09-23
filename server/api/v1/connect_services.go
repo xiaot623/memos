@@ -381,6 +381,14 @@ func (s *ConnectServiceHandler) ListMemos(ctx context.Context, req *connect.Requ
 	return connect.NewResponse(resp), nil
 }
 
+func (s *ConnectServiceHandler) SearchMemos(ctx context.Context, req *connect.Request[v1pb.SearchMemosRequest]) (*connect.Response[v1pb.SearchMemosResponse], error) {
+	resp, err := s.APIV1Service.SearchMemos(ctx, req.Msg)
+	if err != nil {
+		return nil, convertGRPCError(err)
+	}
+	return connect.NewResponse(resp), nil
+}
+
 func (s *ConnectServiceHandler) GetMemo(ctx context.Context, req *connect.Request[v1pb.GetMemoRequest]) (*connect.Response[v1pb.Memo], error) {
 	resp, err := s.APIV1Service.GetMemo(ctx, req.Msg)
 	if err != nil {
@@ -717,6 +725,14 @@ func (s *ConnectServiceHandler) BatchDeleteAttachments(ctx context.Context, req 
 
 func (s *ConnectServiceHandler) Transcribe(ctx context.Context, req *connect.Request[v1pb.TranscribeRequest]) (*connect.Response[v1pb.TranscribeResponse], error) {
 	resp, err := s.APIV1Service.Transcribe(ctx, req.Msg)
+	if err != nil {
+		return nil, convertGRPCError(err)
+	}
+	return connect.NewResponse(resp), nil
+}
+
+func (s *ConnectServiceHandler) ListEmbeddingModels(ctx context.Context, req *connect.Request[v1pb.ListEmbeddingModelsRequest]) (*connect.Response[v1pb.ListEmbeddingModelsResponse], error) {
+	resp, err := s.APIV1Service.ListEmbeddingModels(ctx, req.Msg)
 	if err != nil {
 		return nil, convertGRPCError(err)
 	}

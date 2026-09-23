@@ -82,6 +82,7 @@ func (s *APIV1Service) UpdateUserSetting(ctx context.Context, request *v1pb.Upda
 	}
 
 	var updatedSetting *v1pb.UserSetting
+	startSemanticBackfill := false
 	switch storeKey {
 	case storepb.UserSetting_GENERAL:
 		existingUserSetting, err := s.Store.GetUserSetting(ctx, &store.FindUserSetting{
@@ -115,6 +116,33 @@ func (s *APIV1Service) UpdateUserSetting(ctx context.Context, request *v1pb.Upda
 				updatedGeneral.Locale = incomingGeneral.Locale
 			case "save_media_metadata":
 				updatedGeneral.SaveMediaMetadata = incomingGeneral.SaveMediaMetadata
+			case "semantic_score_threshold":
+				if incomingGeneral.SemanticScoreThreshold == nil {
+					return nil, status.Errorf(codes.InvalidArgument, "semantic_score_threshold is required")
+				}
+				threshold, err := normalizeSemanticScoreThreshold(*incomingGeneral.SemanticScoreThreshold)
+				if err != nil {
+					return nil, err
+				}
+				updatedGeneral.SemanticScoreThreshold = semanticScoreThresholdPointer(threshold)
+			case "semantic_index_state":
+				switch incomingGeneral.SemanticIndexState {
+				case v1pb.UserSetting_SEMANTIC_INDEX_STATE_OFF:
+					if err := s.deleteUserSemanticIndex(ctx, userID); err != nil {
+						return nil, status.Errorf(codes.Internal, "failed to delete semantic index: %v", err)
+					}
+					updatedGeneral.SemanticIndexState = v1pb.UserSetting_SEMANTIC_INDEX_STATE_OFF
+				case v1pb.UserSetting_SEMANTIC_INDEX_STATE_INITIALIZING:
+					if !s.semanticSearchAvailable(ctx) {
+						return nil, status.Errorf(codes.FailedPrecondition, "semantic search is not enabled")
+					}
+					if updatedGeneral.SemanticIndexState != v1pb.UserSetting_SEMANTIC_INDEX_STATE_READY {
+						updatedGeneral.SemanticIndexState = v1pb.UserSetting_SEMANTIC_INDEX_STATE_INITIALIZING
+						startSemanticBackfill = true
+					}
+				default:
+					return nil, status.Errorf(codes.InvalidArgument, "semantic_index_state must be OFF or INITIALIZING")
+				}
 			default:
 				// Ignore unsupported fields.
 			}
@@ -166,6 +194,9 @@ func (s *APIV1Service) UpdateUserSetting(ctx context.Context, request *v1pb.Upda
 	// Upsert the setting
 	if _, err := s.Store.UpsertUserSetting(ctx, storeSetting); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to upsert user setting: %v", err)
+	}
+	if startSemanticBackfill {
+		s.enqueueSemanticBackfill(userID)
 	}
 
 	return s.GetUserSetting(ctx, &v1pb.GetUserSettingRequest{Name: request.Setting.Name})

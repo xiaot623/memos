@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AIService_Transcribe_FullMethodName = "/memos.api.v1.AIService/Transcribe"
+	AIService_Transcribe_FullMethodName          = "/memos.api.v1.AIService/Transcribe"
+	AIService_ListEmbeddingModels_FullMethodName = "/memos.api.v1.AIService/ListEmbeddingModels"
 )
 
 // AIServiceClient is the client API for AIService service.
@@ -28,6 +29,8 @@ const (
 type AIServiceClient interface {
 	// Transcribe transcribes an audio file using an instance AI provider.
 	Transcribe(ctx context.Context, in *TranscribeRequest, opts ...grpc.CallOption) (*TranscribeResponse, error)
+	// ListEmbeddingModels returns embedding models advertised by one configured provider.
+	ListEmbeddingModels(ctx context.Context, in *ListEmbeddingModelsRequest, opts ...grpc.CallOption) (*ListEmbeddingModelsResponse, error)
 }
 
 type aIServiceClient struct {
@@ -48,12 +51,24 @@ func (c *aIServiceClient) Transcribe(ctx context.Context, in *TranscribeRequest,
 	return out, nil
 }
 
+func (c *aIServiceClient) ListEmbeddingModels(ctx context.Context, in *ListEmbeddingModelsRequest, opts ...grpc.CallOption) (*ListEmbeddingModelsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListEmbeddingModelsResponse)
+	err := c.cc.Invoke(ctx, AIService_ListEmbeddingModels_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AIServiceServer is the server API for AIService service.
 // All implementations must embed UnimplementedAIServiceServer
 // for forward compatibility.
 type AIServiceServer interface {
 	// Transcribe transcribes an audio file using an instance AI provider.
 	Transcribe(context.Context, *TranscribeRequest) (*TranscribeResponse, error)
+	// ListEmbeddingModels returns embedding models advertised by one configured provider.
+	ListEmbeddingModels(context.Context, *ListEmbeddingModelsRequest) (*ListEmbeddingModelsResponse, error)
 	mustEmbedUnimplementedAIServiceServer()
 }
 
@@ -66,6 +81,9 @@ type UnimplementedAIServiceServer struct{}
 
 func (UnimplementedAIServiceServer) Transcribe(context.Context, *TranscribeRequest) (*TranscribeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Transcribe not implemented")
+}
+func (UnimplementedAIServiceServer) ListEmbeddingModels(context.Context, *ListEmbeddingModelsRequest) (*ListEmbeddingModelsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListEmbeddingModels not implemented")
 }
 func (UnimplementedAIServiceServer) mustEmbedUnimplementedAIServiceServer() {}
 func (UnimplementedAIServiceServer) testEmbeddedByValue()                   {}
@@ -106,6 +124,24 @@ func _AIService_Transcribe_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AIService_ListEmbeddingModels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListEmbeddingModelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).ListEmbeddingModels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_ListEmbeddingModels_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).ListEmbeddingModels(ctx, req.(*ListEmbeddingModelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AIService_ServiceDesc is the grpc.ServiceDesc for AIService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -116,6 +152,10 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Transcribe",
 			Handler:    _AIService_Transcribe_Handler,
+		},
+		{
+			MethodName: "ListEmbeddingModels",
+			Handler:    _AIService_ListEmbeddingModels_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

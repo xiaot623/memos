@@ -526,9 +526,10 @@ func convertUserWriteError(err error, context string) error {
 
 func getDefaultUserGeneralSetting() *v1pb.UserSetting_GeneralSetting {
 	return &v1pb.UserSetting_GeneralSetting{
-		Locale:         "en",
-		MemoVisibility: "PRIVATE",
-		Theme:          "",
+		Locale:                 "en",
+		MemoVisibility:         "PRIVATE",
+		Theme:                  "",
+		SemanticScoreThreshold: semanticScoreThresholdPointer(defaultSemanticScoreThreshold),
 	}
 }
 

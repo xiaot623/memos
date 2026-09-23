@@ -58,6 +58,8 @@ export const buildMemoFilter = ({
       conditions.push(`content.contains(${escapeFilterValue(filter.value)})`);
     } else if (filter.factor === "celSearch") {
       conditions.push(filter.value);
+    } else if (filter.factor === "semanticSearch") {
+      // Ranked by SearchMemos. The query is not a CEL condition.
     } else if (filter.factor === "tagSearch") {
       conditions.push(`tag in [${escapeFilterValue(filter.value)}]`);
     } else if (filter.factor === "pinned") {

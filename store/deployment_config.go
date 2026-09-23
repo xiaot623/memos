@@ -330,6 +330,10 @@ func normalizeDeploymentAISetting(setting *storepb.InstanceAISetting) error {
 			if provider.Endpoint == "" {
 				provider.Endpoint = "https://generativelanguage.googleapis.com/v1beta"
 			}
+		case storepb.AIProviderType_OPENROUTER:
+			if provider.Endpoint == "" {
+				provider.Endpoint = "https://openrouter.ai/api/v1"
+			}
 		default:
 			return errors.Errorf("aiSetting provider %q has unsupported type", provider.Id)
 		}
@@ -346,6 +350,26 @@ func normalizeDeploymentAISetting(setting *storepb.InstanceAISetting) error {
 		}
 		if len(transcription.Model) > maxTranscriptionModelLength || len(transcription.Language) > maxTranscriptionLanguageLength || len(transcription.Prompt) > maxTranscriptionPromptLength {
 			return errors.New("aiSetting transcription configuration exceeds a supported length limit")
+		}
+	}
+	if embedding := setting.Embedding; embedding != nil {
+		embedding.ProviderId = strings.TrimSpace(embedding.ProviderId)
+		embedding.Model = strings.TrimSpace(embedding.Model)
+		if embedding.Dimensions < 0 {
+			return errors.New("aiSetting embedding dimensions must be positive")
+		}
+		if embedding.ProviderId != "" {
+			if _, ok := providers[embedding.ProviderId]; !ok {
+				return errors.Errorf("aiSetting embedding providerId %q does not reference a provider", embedding.ProviderId)
+			}
+			for _, provider := range setting.Providers {
+				if provider != nil && provider.Id == embedding.ProviderId && provider.Type == storepb.AIProviderType_GEMINI {
+					return errors.Errorf("aiSetting embedding provider %q does not support the GEMINI API", embedding.ProviderId)
+				}
+			}
+		}
+		if len(embedding.Model) > maxTranscriptionModelLength {
+			return errors.New("aiSetting embedding model exceeds the supported length limit")
 		}
 	}
 	return nil
