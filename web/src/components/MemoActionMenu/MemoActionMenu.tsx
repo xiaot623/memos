@@ -11,12 +11,9 @@ import {
   LinkIcon,
   ListChecksIcon,
   ListRestartIcon,
-  MoreHorizontalIcon,
   MoreVerticalIcon,
-  TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
-import ConfirmDialog from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -37,8 +34,6 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
   const { memo, readonly } = props;
   const t = useTranslate();
 
-  // Dialog state
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
 
   // Derived state
@@ -56,12 +51,9 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
     handleCopyContent,
     handleCheckAllTaskListItemsClick,
     handleUncheckAllTaskListItemsClick,
-    handleDeleteMemoClick,
-    confirmDeleteMemo,
   } = useMemoActionHandlers({
     memo,
     onEdit: props.onEdit,
-    setDeleteDialogOpen,
   });
 
   return (
@@ -131,43 +123,15 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
           </DropdownMenuItem>
         )}
 
-        {(canMove || !readonly) && (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <MoreHorizontalIcon />
-              {t("common.more")}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              {canMove && (
-                <DropdownMenuItem onClick={() => setMoveDialogOpen(true)}>
-                  <FolderInputIcon />
-                  {t("memo.move.title")}
-                </DropdownMenuItem>
-              )}
-              {!readonly && (
-                <DropdownMenuItem onClick={handleDeleteMemoClick}>
-                  <TrashIcon />
-                  {t("common.delete")}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+        {canMove && (
+          <DropdownMenuItem onClick={() => setMoveDialogOpen(true)}>
+            <FolderInputIcon />
+            {t("memo.move.confirm")}
+          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
 
       {moveDialogOpen && <MemoMoveDialog memo={memo} onOpenChange={setMoveDialogOpen} />}
-
-      {/* Delete confirmation dialog */}
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title={t("memo.delete-confirm")}
-        confirmLabel={t("common.delete")}
-        description={t("memo.delete-confirm-description")}
-        cancelLabel={t("common.cancel")}
-        onConfirm={confirmDeleteMemo}
-        confirmVariant="destructive"
-      />
     </DropdownMenu>
   );
 };

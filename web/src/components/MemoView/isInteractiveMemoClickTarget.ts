@@ -21,3 +21,14 @@ export function isInteractiveMemoClickTarget(target: EventTarget | null): boolea
   const element = target instanceof Element ? target : target instanceof Node ? target.parentElement : null;
   return Boolean(element?.closest(INTERACTIVE_SELECTOR));
 }
+
+/**
+ * True when the click landed on the card itself. Portaled descendants (the move dialog,
+ * its space list) still bubble through React, but their DOM nodes are outside the card.
+ */
+export function isMemoCardSurfaceClick(event: { currentTarget: EventTarget | null; target: EventTarget | null }): boolean {
+  if (!(event.currentTarget instanceof Node) || !(event.target instanceof Node) || !event.currentTarget.contains(event.target)) {
+    return false;
+  }
+  return !isInteractiveMemoClickTarget(event.target);
+}

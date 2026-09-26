@@ -290,24 +290,3 @@ export function useUpdateMemo() {
     },
   });
 }
-
-export function useDeleteMemo() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (name: string) => {
-      await memoServiceClient.deleteMemo({ name });
-      return name;
-    },
-    onSuccess: (name) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: memoKeys.detail(name) });
-      // Invalidate lists
-      queryClient.invalidateQueries({ queryKey: memoKeys.lists() });
-      // Invalidate user stats
-      queryClient.invalidateQueries({ queryKey: userKeys.stats() });
-      // Memo deletion can remove or unlink associated attachments.
-      queryClient.invalidateQueries({ queryKey: attachmentKeys.lists() });
-    },
-  });
-}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isInteractiveMemoClickTarget } from "@/components/MemoView/isInteractiveMemoClickTarget";
+import { isInteractiveMemoClickTarget, isMemoCardSurfaceClick } from "@/components/MemoView/isInteractiveMemoClickTarget";
 
 const fire = (html: string, selector?: string): boolean => {
   const root = document.createElement("article");
@@ -32,5 +32,22 @@ describe("isInteractiveMemoClickTarget", () => {
     button.textContent = "Edit";
     root.append(button);
     expect(isInteractiveMemoClickTarget(button.firstChild)).toBe(true);
+  });
+
+  it("opens the editor only for clicks on the card surface", () => {
+    const card = document.createElement("article");
+    const body = document.createElement("p");
+    body.textContent = "note";
+    card.append(body);
+    const option = document.createElement("div");
+    option.setAttribute("role", "option");
+    option.textContent = "Space";
+    document.body.append(card, option);
+
+    expect(isMemoCardSurfaceClick({ currentTarget: card, target: body })).toBe(true);
+    expect(isMemoCardSurfaceClick({ currentTarget: card, target: option })).toBe(false);
+
+    card.remove();
+    option.remove();
   });
 });

@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { useInstance } from "@/contexts/InstanceContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
-import { useDeleteMemo, useUpdateMemo } from "@/hooks/useMemoQueries";
+import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
@@ -19,12 +19,10 @@ import { isMemoDetailPath } from "../MemoView/navigation";
 
 interface UseMemoActionHandlersOptions {
   memo: Memo;
-  parentPage?: string;
   onEdit?: () => void;
-  setDeleteDialogOpen: (open: boolean) => void;
 }
 
-export const useMemoActionHandlers = ({ memo, parentPage, onEdit, setDeleteDialogOpen }: UseMemoActionHandlersOptions) => {
+export const useMemoActionHandlers = ({ memo, onEdit }: UseMemoActionHandlersOptions) => {
   const t = useTranslate();
   const location = useLocation();
   const currentUser = useCurrentUser();
@@ -33,7 +31,6 @@ export const useMemoActionHandlers = ({ memo, parentPage, onEdit, setDeleteDialo
   const queryClient = useQueryClient();
   const { profile } = useInstance();
   const { mutateAsync: updateMemo } = useUpdateMemo();
-  const { mutateAsync: deleteMemo } = useDeleteMemo();
   const isInMemoDetailPage = isMemoDetailPath(location.pathname, memo.name);
 
   const memoUpdatedCallback = useCallback(() => {
@@ -134,24 +131,6 @@ export const useMemoActionHandlers = ({ memo, parentPage, onEdit, setDeleteDialo
     await updateMemoContent(uncheckAllTasks(memo.content), "Uncheck memo task list items");
   }, [memo.content, updateMemoContent]);
 
-  const handleDeleteMemoClick = useCallback(() => {
-    setDeleteDialogOpen(true);
-  }, [setDeleteDialogOpen]);
-
-  const confirmDeleteMemo = useCallback(async () => {
-    try {
-      await deleteMemo(memo.name);
-    } catch (error: unknown) {
-      handleError(error, toast.error, { context: "Delete memo", fallbackMessage: "An error occurred" });
-      return;
-    }
-    toast.success(t("message.deleted-successfully"));
-    if (isInMemoDetailPage) {
-      navigateTo(parentPage || ROUTES.HOME);
-    }
-    memoUpdatedCallback();
-  }, [memo.name, t, isInMemoDetailPage, parentPage, navigateTo, memoUpdatedCallback, deleteMemo, queryClient]);
-
   return {
     canMove,
     handleTogglePinMemoBtnClick,
@@ -161,7 +140,5 @@ export const useMemoActionHandlers = ({ memo, parentPage, onEdit, setDeleteDialo
     handleCopyContent,
     handleCheckAllTaskListItemsClick,
     handleUncheckAllTaskListItemsClick,
-    handleDeleteMemoClick,
-    confirmDeleteMemo,
   };
 };

@@ -26,7 +26,7 @@ import { canManageMemo } from "@/utils/user";
 import { MemoBody, MemoHeader } from "./components";
 import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
-import { isInteractiveMemoClickTarget } from "./isInteractiveMemoClickTarget";
+import { isMemoCardSurfaceClick } from "./isInteractiveMemoClickTarget";
 import { MemoViewContext } from "./MemoViewContext";
 import { isMemoDetailPath, resolveMemoParentPage } from "./navigation";
 import type { MemoViewHandle, MemoViewProps } from "./types";
@@ -111,7 +111,7 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
   const handleCardClick = useCallback(
     (e: React.MouseEvent) => {
       if (!canEdit || showEditor) return;
-      if (isInteractiveMemoClickTarget(e.target)) return;
+      if (!isMemoCardSurfaceClick(e)) return;
       if (isInMemoDetailPage) {
         setCaretPoint({ x: e.clientX, y: e.clientY });
       }
