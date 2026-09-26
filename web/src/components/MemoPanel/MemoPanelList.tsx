@@ -71,15 +71,7 @@ export function MemoPanelList({ memos, selectionKey, timeDisplay, emptyText, com
     <NewMemoProvider>
       <MentionResolutionProvider contents={contents} userNames={userNames}>
         {memos.map((memo) => (
-          <MemoView
-            key={memo.name}
-            memo={memo}
-            timeDisplay={timeDisplay}
-            showVisibility
-            showPinned
-            showSpace={!selectedSpaceName}
-            compact={compactMode}
-          />
+          <MemoView key={memo.name} memo={memo} timeDisplay={timeDisplay} showPinned showSpace={!selectedSpaceName} compact={compactMode} />
         ))}
       </MentionResolutionProvider>
       {emptyText && memos.length === 0 && <p className="text-sm text-muted-foreground">{emptyText}</p>}

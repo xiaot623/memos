@@ -11,7 +11,6 @@ import { getErrorMessage } from "@/lib/error";
 import { extractSpaceUidFromName, getDuplicateSpaceTitles } from "@/lib/space-display";
 import { type Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
-import { getAssignableVisibilityOptions, getVisibilityOption } from "@/utils/memo";
 import { canManageMemo } from "@/utils/user";
 
 const UNASSIGNED = "unassigned";
@@ -22,9 +21,10 @@ export default function MemoMoveDialog({ memo, onOpenChange }: { memo: Memo; onO
   const { data: spaces = [], isPending: loadingSpaces, error: spacesError, refetch } = useSpaces(currentUser?.name);
   const { mutateAsync: updateMemo, isPending } = useUpdateMemo();
   const [destination, setDestination] = useState(memo.space || UNASSIGNED);
-  const [visibility, setVisibility] = useState(memo.visibility);
   const [error, setError] = useState("");
   const nextSpace = destination === UNASSIGNED ? undefined : destination;
+  // A Space has one audience: its members. Leaving a Space returns the memo to its owner.
+  const visibility = nextSpace ? Visibility.SPACE : Visibility.PRIVATE;
   const duplicateTitles = getDuplicateSpaceTitles(spaces);
   const spaceLabel = (space: (typeof spaces)[number]) =>
     duplicateTitles.has(space.title) ? `${space.title} (${extractSpaceUidFromName(space.name)})` : space.title;
@@ -34,7 +34,6 @@ export default function MemoMoveDialog({ memo, onOpenChange }: { memo: Memo; onO
       ? spaceLabel(selectedSpace)
       : extractSpaceUidFromName(nextSpace)
     : t("memo.move.unassigned");
-  const visibilityOption = getVisibilityOption(visibility);
   const canSubmit =
     canManageMemo(memo, currentUser) && (memo.space || undefined) !== nextSpace && (!nextSpace || !!selectedSpace) && !isPending;
 
@@ -76,7 +75,6 @@ export default function MemoMoveDialog({ memo, onOpenChange }: { memo: Memo; onO
               onValueChange={(value) => {
                 setDestination(value);
                 setError("");
-                if (value === UNASSIGNED && visibility === Visibility.SPACE) setVisibility(Visibility.PRIVATE);
               }}
             >
               <SelectTrigger id="memo-destination" className="w-full">
@@ -100,26 +98,6 @@ export default function MemoMoveDialog({ memo, onOpenChange }: { memo: Memo; onO
                 </Button>
               </div>
             )}
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="memo-move-audience">{t("common.visibility")}</Label>
-            <Select value={String(visibility)} disabled={isPending} onValueChange={(value) => setVisibility(Number(value))}>
-              <SelectTrigger id="memo-move-audience" className="w-full">
-                <SelectValue>{visibilityOption && t(visibilityOption.labelKey)}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {getAssignableVisibilityOptions({ hasSpacePlacement: !!nextSpace }).map((option) => (
-                  <SelectItem key={option.value} value={String(option.value)}>
-                    {t(option.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs leading-5 text-muted-foreground">
-              {visibility === Visibility.SPACE
-                ? t("memo.move.space-audience", { space: destinationLabel })
-                : visibilityOption && t(visibilityOption.descriptionKey)}
-            </p>
           </div>
           <p className="text-xs leading-5 text-muted-foreground">{t("memo.move.history")}</p>
           {error && (

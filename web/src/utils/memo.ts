@@ -39,14 +39,6 @@ export const VISIBILITY_OPTIONS: readonly VisibilityOption[] = [
 export const getVisibilityOption = (visibility: Visibility): VisibilityOption | undefined =>
   VISIBILITY_OPTIONS.find((option) => option.value === visibility);
 
-/**
- * Audiences a memo can be set to. SPACE is offered when the memo is placed in a
- * Space, and also when a legacy/inconsistent memo already uses it so the control
- * can still name its current audience instead of silently downgrading it.
- */
-export const getAssignableVisibilityOptions = (options: { hasSpacePlacement: boolean; current?: Visibility }): VisibilityOption[] =>
-  VISIBILITY_OPTIONS.filter((option) => !option.requiresSpace || options.hasSpacePlacement || option.value === options.current);
-
 /** Audiences offered as a persistent default. A Space-scoped default has no meaning outside a Space. */
 export const DEFAULT_VISIBILITY_OPTIONS: readonly VisibilityOption[] = VISIBILITY_OPTIONS.filter((option) => !option.requiresSpace);
 

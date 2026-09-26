@@ -8,7 +8,6 @@ export interface MemoViewProps {
   compact?: boolean;
   timeDisplay?: MemoTimeDisplay;
   showCreator?: boolean;
-  showVisibility?: boolean;
   showPinned?: boolean;
   showSpace?: boolean;
   className?: string;
@@ -22,7 +21,6 @@ export interface MemoViewHandle {
 export interface MemoHeaderProps {
   timeDisplay?: MemoTimeDisplay;
   showCreator?: boolean;
-  showVisibility?: boolean;
   showPinned?: boolean;
   showSpace?: boolean;
 }

@@ -262,11 +262,10 @@
     "parent-unavailable-description": "It may have been deleted or you may no longer have access.",
     "move": {
       "title": "Move to Space",
-      "description": "Choose where this memo belongs and who can read it.",
+      "description": "Choose where this memo belongs.",
       "unassigned": "Unassigned",
       "confirm": "Move",
       "success": "Memo moved",
-      "space-audience": "Members of {{space}} will be able to read this memo.",
       "history": "Existing reactions stay with this memo. Comments and linked memos keep their own access rules."
     },
     "click-to-show-sensitive-content": "Click to show sensitive content",

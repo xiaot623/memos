@@ -49,7 +49,6 @@ const Home = () => {
               key={getMemoKey(memo)}
               memo={memo}
               showCreator={Boolean(selectedSpaceName)}
-              showVisibility
               showPinned
               showSpace={!selectedSpaceName}
               compact={compact}

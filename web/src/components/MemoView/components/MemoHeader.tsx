@@ -9,15 +9,12 @@ import { useNewMemo } from "@/contexts/NewMemoContext";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
-import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { User } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
-import { getVisibilityOption } from "@/utils/memo";
 import MemoActionMenu from "../../MemoActionMenu";
 import { ReactionSelector } from "../../MemoReactionListView";
 import { useSemanticScore } from "../../PagedMemoList/semanticScoreContext";
 import UserAvatar from "../../UserAvatar";
-import VisibilityIcon from "../../VisibilityIcon";
 import { MEMO_TIME_CONTROL_CLASSES } from "../constants";
 import { useMemoActions } from "../hooks";
 import { useMemoViewContext, useMemoViewDerived } from "../MemoViewContext";
@@ -28,13 +25,12 @@ import MemoSpaceBadge from "./MemoSpaceBadge";
 /** The card's trailing actions are the kit's quiet 24px squares, whether or not they are kit buttons. */
 const MEMO_HEADER_ACTION_CLASSES = cn(buttonVariants({ variant: "quiet", size: "icon-sm" }));
 
-const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showCreator, showVisibility, showPinned, showSpace }) => {
+const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showCreator, showPinned, showSpace }) => {
   const t = useTranslate();
 
   const { memo, creator, currentUser, parentPage, isArchived, readonly, openEditor, isSaving } = useMemoViewContext();
   const { createTime, updateTime, displayTime: memoDisplayTime, isDisplayingUpdatedTime, relativeTimeFormat } = useMemoViewDerived();
   const { newMemoName } = useNewMemo();
-  const visibilityOption = getVisibilityOption(memo.visibility);
 
   const navigateTo = useNavigateTo();
   const handleGotoMemoDetailPage = useCallback(() => {
@@ -108,15 +104,6 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
             )}
             {currentUser && !isArchived && <ReactionSelector memo={memo} trigger={<Button variant="quiet" size="icon-sm" />} />}
           </span>
-        )}
-
-        {showVisibility && memo.visibility !== Visibility.PRIVATE && (
-          <Tooltip>
-            <TooltipTrigger aria-label={visibilityOption && t(visibilityOption.labelKey)} className={MEMO_HEADER_ACTION_CLASSES}>
-              <VisibilityIcon visibility={memo.visibility} className="text-current" />
-            </TooltipTrigger>
-            <TooltipContent>{visibilityOption && t(visibilityOption.labelKey)}</TooltipContent>
-          </Tooltip>
         )}
 
         {showPinned && memo.pinned && (

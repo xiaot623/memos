@@ -254,11 +254,10 @@
     "parent-unavailable-description": "它可能已被删除，或者您可能已失去访问权限。",
     "move": {
       "title": "移动到空间",
-      "description": "选择此备忘录的归属位置以及谁可以阅读它。",
+      "description": "选择此备忘录的归属位置。",
       "unassigned": "未分配",
       "confirm": "移动",
       "success": "备忘录已移动",
-      "space-audience": "{{space}} 的成员将可以阅读此备忘录。",
       "history": "现有表态会保留在此备忘录上。评论和关联的备忘录仍遵循各自的访问规则。"
     }
   },

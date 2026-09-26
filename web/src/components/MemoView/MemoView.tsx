@@ -34,17 +34,7 @@ import type { MemoViewHandle, MemoViewProps } from "./types";
 const PreviewImageDialog = lazyWithReload(() => import("../PreviewImageDialog"));
 
 const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
-  const {
-    memo: memoData,
-    className,
-    parentPage: parentPageProp,
-    compact,
-    timeDisplay,
-    showCreator,
-    showVisibility,
-    showPinned,
-    showSpace,
-  } = props;
+  const { memo: memoData, className, parentPage: parentPageProp, compact, timeDisplay, showCreator, showPinned, showSpace } = props;
   const cardRef = useRef<HTMLElement>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [EditorComponent, setEditorComponent] = useState<ComponentType<MemoEditorProps>>();
@@ -196,13 +186,7 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
         aria-busy={isBackgroundSaving || undefined}
         onClick={canEdit ? handleCardClick : undefined}
       >
-        <MemoHeader
-          timeDisplay={timeDisplay}
-          showCreator={showCreator}
-          showVisibility={showVisibility}
-          showPinned={showPinned}
-          showSpace={showSpace}
-        />
+        <MemoHeader timeDisplay={timeDisplay} showCreator={showCreator} showPinned={showPinned} showSpace={showSpace} />
 
         <MemoBody compact={compact} />
 

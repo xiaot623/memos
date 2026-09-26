@@ -134,7 +134,6 @@ const MemoDetail = () => {
               compact={false}
               parentPage={parentPage}
               showCreator
-              showVisibility
               showPinned
               showSpace
             />
