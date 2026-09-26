@@ -26,7 +26,7 @@ type Profile struct {
 	Data string
 	// DSN points to where memos stores its own data
 	DSN string
-	// Driver is the database driver: sqlite, mysql, postgres, or d1.
+	// Driver is the database driver. Only sqlite is supported.
 	Driver string
 	// VectorDriver is the vector database driver. Empty disables vector search.
 	VectorDriver string
@@ -66,8 +66,8 @@ func checkDataDir(dataDir string) (string, error) {
 }
 
 func (p *Profile) Validate() error {
-	if p.Demo && p.Driver != "sqlite" {
-		return errors.Errorf("demo mode requires the sqlite database driver, got %q", p.Driver)
+	if p.Driver != "sqlite" {
+		return errors.Errorf("unsupported database driver %q", p.Driver)
 	}
 
 	instanceURL, err := normalizeInstanceURL(p.InstanceURL)

@@ -22,7 +22,7 @@ export interface MemoPanelCompose {
   /** The quiet row's label, e.g. "New memo on this day". */
   label: string;
   /** What the new memo inherits from the selection: its day, its place. */
-  defaults?: Pick<MemoEditorProps, "defaultCreateTime" | "defaultLocation">;
+  defaults?: Pick<MemoEditorProps, "defaultCreateTime">;
   /** Whether the editor is open in place of the row, for hosts whose own gestures could dismiss it. */
   onComposingChange?: (composing: boolean) => void;
   onSavingChange?: (saving: boolean) => void;

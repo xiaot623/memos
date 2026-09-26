@@ -175,10 +175,9 @@ func (s *APIV1Service) backfillSemanticUser(ctx context.Context, userID int32, m
 		}
 		limit := semanticBackfillPageSize
 		memos, err := s.Store.ListMemos(ctx, &store.FindMemo{
-			CreatorID:       &userID,
-			ExcludeComments: true,
-			Limit:           &limit,
-			Offset:          &offset,
+			CreatorID: &userID,
+			Limit:     &limit,
+			Offset:    &offset,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to list memos for semantic backfill")
@@ -211,7 +210,7 @@ func (s *APIV1Service) syncSemanticMemo(ctx context.Context, memoID int32) error
 	if err != nil {
 		return errors.Wrap(err, "failed to get memo")
 	}
-	if memo == nil || memo.ParentUID != nil {
+	if memo == nil {
 		return s.deleteSemanticMemo(ctx, memoID)
 	}
 	state, err := s.semanticIndexState(ctx, memo.CreatorID)

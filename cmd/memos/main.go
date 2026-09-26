@@ -16,8 +16,6 @@ import (
 
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/version"
-	"github.com/usememos/memos/internal/webhook"
-	storepb "github.com/usememos/memos/proto/gen/store"
 	"github.com/usememos/memos/server"
 	"github.com/usememos/memos/store"
 	"github.com/usememos/memos/store/db"
@@ -66,20 +64,15 @@ func init() {
 	rootCmd.Flags().Int("port", 8081, "port of server")
 	rootCmd.Flags().String("unix-sock", "", "path to the unix socket, overrides --addr and --port")
 	rootCmd.Flags().String("data", "", "data directory")
-	rootCmd.Flags().String("driver", "sqlite", "database driver (sqlite, mysql, postgres, d1)")
+	rootCmd.Flags().String("driver", "sqlite", "database driver (sqlite)")
 	rootCmd.Flags().String("dsn", "", "database source name (DSN)")
 	rootCmd.Flags().String("vector-driver", "", "vector database driver (qdrant); empty disables vector search")
 	rootCmd.Flags().String("vector-dsn", "", "vector database source name (DSN)")
 	rootCmd.Flags().String("instance-url", "", "canonical external URL of the Memos instance")
-	rootCmd.Flags().Bool("allow-private-webhooks", false, "allow webhooks to access any private/reserved IP address")
-	rootCmd.Flags().StringSlice("webhook-private-network-allowlist", nil, "private webhook destinations to allow (exact hostname, IP, or CIDR)")
 	rootCmd.Flags().String("log-level", "info", "log verbosity level (debug, info, warn, error)")
 	rootCmd.Flags().Bool("rate-limit", true, "enable request rate limiting")
 	rootCmd.Flags().StringSlice("trusted-proxies", []string{"private"}, "proxies whose forwarding headers identify the client: CIDRs, IPs, \"private\" (default; the loopback and private ranges), or \"none\" when the instance is reached without a header-rewriting proxy")
 
-	if err := rootCmd.Flags().MarkDeprecated("allow-private-webhooks", "use --webhook-private-network-allowlist to allow only required destinations"); err != nil {
-		panic(err)
-	}
 	for _, key := range []string{
 		"demo",
 		"addr",
@@ -91,8 +84,6 @@ func init() {
 		"vector-driver",
 		"vector-dsn",
 		"instance-url",
-		"allow-private-webhooks",
-		"webhook-private-network-allowlist",
 		"log-level",
 		"rate-limit",
 		"trusted-proxies",
@@ -135,15 +126,6 @@ func runServer() error {
 		Commit:         version.Commit,
 	}
 
-	allowPrivateWebhooks := viper.GetBool("allow-private-webhooks")
-	//nolint:staticcheck // The deprecated CLI/env input remains supported for upgrade compatibility.
-	webhook.AllowPrivateIPs = allowPrivateWebhooks
-	if allowPrivateWebhooks {
-		slog.Warn("--allow-private-webhooks is deprecated and disables webhook private-network protection; use --webhook-private-network-allowlist")
-	}
-	if err := webhook.ConfigurePrivateDestinationAllowlist(privateWebhookAllowlist()); err != nil {
-		return errors.Wrap(err, "failed to configure private webhook destinations")
-	}
 	if err := instanceProfile.Validate(); err != nil {
 		return errors.Wrap(err, "failed to validate profile")
 	}
@@ -177,10 +159,6 @@ func runServer() error {
 	if err := storeInstance.LoadDeploymentConfiguration(ctx); err != nil {
 		return errors.Wrap(err, "failed to load deployment configuration")
 	}
-	accessSetting, err := storeInstance.GetInstanceAccessSetting(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to get instance access setting")
-	}
 
 	s, err := server.NewServer(ctx, instanceProfile, storeInstance)
 	if err != nil {
@@ -195,25 +173,13 @@ func runServer() error {
 	}
 	closeStore = false
 
-	printServerInfo(instanceProfile, accessSetting.AccessMode)
+	printServerInfo(instanceProfile)
 	<-signals
 	s.Shutdown(context.Background())
 	return nil
 }
 
-func privateWebhookAllowlist() []string {
-	var entries []string
-	for _, value := range viper.GetStringSlice("webhook-private-network-allowlist") {
-		for entry := range strings.SplitSeq(value, ",") {
-			if entry = strings.TrimSpace(entry); entry != "" {
-				entries = append(entries, entry)
-			}
-		}
-	}
-	return entries
-}
-
-func printServerInfo(profile *profile.Profile, accessMode storepb.InstanceAccessMode) {
+func printServerInfo(profile *profile.Profile) {
 	fmt.Printf("Memos %s started successfully!\n", profile.Version)
 
 	if profile.Demo {
@@ -239,12 +205,6 @@ func printServerInfo(profile *profile.Profile, accessMode storepb.InstanceAccess
 	} else {
 		fmt.Printf("Server running on unix socket: %s\n", profile.UNIXSock)
 	}
-
-	accessModeLabel := "private"
-	if accessMode == storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC {
-		accessModeLabel = "public"
-	}
-	fmt.Printf("Access mode: %s\n", accessModeLabel)
 }
 
 func main() {

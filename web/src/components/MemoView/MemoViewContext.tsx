@@ -4,7 +4,6 @@ import { useLocation } from "react-router-dom";
 import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
 import { useView } from "@/contexts/ViewContext";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
-import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import type { User } from "@/types/proto/api/v1/user_service_pb";
 import type { PreviewMediaItem } from "@/utils/media-item";
 import { RELATIVE_TIME_THRESHOLD_MS } from "./constants";
@@ -40,8 +39,7 @@ export const useMemoViewContext = (): MemoViewContextValue => {
   return context;
 };
 
-export const computeCommentAmount = (memo: Memo): number =>
-  memo.relations.filter((r) => r.type === MemoRelation_Type.COMMENT && r.relatedMemo?.name === memo.name).length;
+export const computeCommentAmount = (_memo: Memo): number => 0;
 
 export const useMemoViewDerived = () => {
   const { memo, isArchived, readonly } = useMemoViewContext();

@@ -12,8 +12,8 @@ describe("getSafeRedirectPath", () => {
     expect(getSafeRedirectPath("/home")).toBe("/home");
     expect(getSafeRedirectPath("/setting")).toBe("/setting");
     expect(getSafeRedirectPath("/memos/abc")).toBe("/memos/abc");
-    expect(getSafeRedirectPath("/explore?foo=1")).toBe("/explore?foo=1");
-    expect(getSafeRedirectPath("/explore#anchor")).toBe("/explore#anchor");
+    expect(getSafeRedirectPath("/archived?foo=1")).toBe("/archived?foo=1");
+    expect(getSafeRedirectPath("/attachments#anchor")).toBe("/attachments#anchor");
   });
 
   it("rejects empty and non-string input", () => {
@@ -67,33 +67,33 @@ describe("isPublicRoute", () => {
     expect(isPublicRoute("/auth")).toBe(true);
     expect(isPublicRoute("/auth/signup")).toBe(true);
     expect(isPublicRoute("/about")).toBe(true);
-    expect(isPublicRoute("/explore")).toBe(true);
     expect(isPublicRoute("/memos/abc")).toBe(true);
     expect(isPublicRoute("/memos/shares/abc")).toBe(true);
-    expect(isPublicRoute("/u/steven")).toBe(true);
   });
 
   it("treats authenticated-only pages as non-public", () => {
+    expect(isPublicRoute("/")).toBe(false);
     expect(isPublicRoute("/home")).toBe(false);
     expect(isPublicRoute("/setting")).toBe(false);
-    expect(isPublicRoute("/inbox")).toBe(false);
     expect(isPublicRoute("/attachments")).toBe(false);
     expect(isPublicRoute("/archived")).toBe(false);
+    expect(isPublicRoute("/explore")).toBe(false);
+    expect(isPublicRoute("/u/steven")).toBe(false);
   });
 });
 
 describe("shouldGatePrivateInstance", () => {
   it("never gates on an open (public) instance", () => {
     expect(shouldGatePrivateInstance({ isPrivateInstance: false, isAuthenticated: false, pathname: "/" })).toBe(false);
-    expect(shouldGatePrivateInstance({ isPrivateInstance: false, isAuthenticated: false, pathname: "/explore" })).toBe(false);
+    expect(shouldGatePrivateInstance({ isPrivateInstance: false, isAuthenticated: false, pathname: "/about" })).toBe(false);
   });
 
   it("never gates an authenticated visitor", () => {
-    expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: true, pathname: "/explore" })).toBe(false);
+    expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: true, pathname: "/setting" })).toBe(false);
   });
 
   it("gates anonymous visitors to non-share pages on a private instance", () => {
-    for (const pathname of ["/", "/explore", "/about", "/memos/abc", "/u/steven", "/setting"]) {
+    for (const pathname of ["/", "/about", "/memos/abc", "/setting"]) {
       expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: false, pathname })).toBe(true);
     }
   });

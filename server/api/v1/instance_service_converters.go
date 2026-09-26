@@ -28,17 +28,9 @@ func convertInstanceSettingFromStore(setting *storepb.InstanceSetting) *v1pb.Ins
 		instanceSetting.Value = &v1pb.InstanceSetting_TagsSetting_{
 			TagsSetting: convertInstanceTagsSettingFromStore(setting.GetTagsSetting()),
 		}
-	case *storepb.InstanceSetting_NotificationSetting:
-		instanceSetting.Value = &v1pb.InstanceSetting_NotificationSetting_{
-			NotificationSetting: convertInstanceNotificationSettingFromStore(setting.GetNotificationSetting()),
-		}
 	case *storepb.InstanceSetting_AiSetting:
 		instanceSetting.Value = &v1pb.InstanceSetting_AiSetting{
 			AiSetting: convertInstanceAISettingFromStore(setting.GetAiSetting()),
-		}
-	case *storepb.InstanceSetting_AccessSetting:
-		instanceSetting.Value = &v1pb.InstanceSetting_AccessSetting_{
-			AccessSetting: convertInstanceAccessSettingFromStore(setting.GetAccessSetting()),
 		}
 	default:
 		// Leave Value unset for unsupported setting variants.
@@ -71,44 +63,14 @@ func convertInstanceSettingToStore(setting *v1pb.InstanceSetting) *storepb.Insta
 		instanceSetting.Value = &storepb.InstanceSetting_TagsSetting{
 			TagsSetting: convertInstanceTagsSettingToStore(setting.GetTagsSetting()),
 		}
-	case storepb.InstanceSettingKey_NOTIFICATION:
-		instanceSetting.Value = &storepb.InstanceSetting_NotificationSetting{
-			NotificationSetting: convertInstanceNotificationSettingToStore(setting.GetNotificationSetting()),
-		}
 	case storepb.InstanceSettingKey_AI:
 		instanceSetting.Value = &storepb.InstanceSetting_AiSetting{
 			AiSetting: convertInstanceAISettingToStore(setting.GetAiSetting()),
-		}
-	case storepb.InstanceSettingKey_ACCESS:
-		instanceSetting.Value = &storepb.InstanceSetting_AccessSetting{
-			AccessSetting: convertInstanceAccessSettingToStore(setting.GetAccessSetting()),
 		}
 	default:
 		// Keep the default GeneralSetting value
 	}
 	return instanceSetting
-}
-
-func convertInstanceAccessSettingFromStore(setting *storepb.InstanceAccessSetting) *v1pb.InstanceSetting_AccessSetting {
-	if setting == nil {
-		return nil
-	}
-	return &v1pb.InstanceSetting_AccessSetting{
-		AccessMode: convertInstanceAccessModeFromStore(setting.AccessMode),
-	}
-}
-
-func convertInstanceAccessSettingToStore(setting *v1pb.InstanceSetting_AccessSetting) *storepb.InstanceAccessSetting {
-	if setting == nil {
-		return nil
-	}
-	return &storepb.InstanceAccessSetting{
-		AccessMode: storepb.InstanceAccessMode(setting.AccessMode),
-	}
-}
-
-func convertInstanceAccessModeFromStore(mode storepb.InstanceAccessMode) v1pb.InstanceAccessMode {
-	return v1pb.InstanceAccessMode(mode)
 }
 
 func convertInstanceGeneralSettingFromStore(setting *storepb.InstanceGeneralSetting) *v1pb.InstanceSetting_GeneralSetting {
@@ -316,52 +278,6 @@ func convertInstanceTagsSettingToStore(setting *v1pb.InstanceSetting_TagsSetting
 	}
 }
 
-func convertInstanceNotificationSettingFromStore(setting *storepb.InstanceNotificationSetting) *v1pb.InstanceSetting_NotificationSetting {
-	if setting == nil {
-		return nil
-	}
-
-	notificationSetting := &v1pb.InstanceSetting_NotificationSetting{}
-	if setting.Email != nil {
-		notificationSetting.Email = &v1pb.InstanceSetting_NotificationSetting_EmailSetting{
-			Enabled:      setting.Email.Enabled,
-			SmtpHost:     setting.Email.SmtpHost,
-			SmtpPort:     setting.Email.SmtpPort,
-			SmtpUsername: setting.Email.SmtpUsername,
-			// SmtpPassword is write-only: never returned in responses.
-			FromEmail: setting.Email.FromEmail,
-			FromName:  setting.Email.FromName,
-			ReplyTo:   setting.Email.ReplyTo,
-			UseTls:    setting.Email.UseTls,
-			UseSsl:    setting.Email.UseSsl,
-		}
-	}
-	return notificationSetting
-}
-
-func convertInstanceNotificationSettingToStore(setting *v1pb.InstanceSetting_NotificationSetting) *storepb.InstanceNotificationSetting {
-	if setting == nil {
-		return nil
-	}
-
-	notificationSetting := &storepb.InstanceNotificationSetting{}
-	if setting.Email != nil {
-		notificationSetting.Email = &storepb.InstanceNotificationSetting_EmailSetting{
-			Enabled:      setting.Email.Enabled,
-			SmtpHost:     setting.Email.SmtpHost,
-			SmtpPort:     setting.Email.SmtpPort,
-			SmtpUsername: setting.Email.SmtpUsername,
-			SmtpPassword: setting.Email.SmtpPassword,
-			FromEmail:    setting.Email.FromEmail,
-			FromName:     setting.Email.FromName,
-			ReplyTo:      setting.Email.ReplyTo,
-			UseTls:       setting.Email.UseTls,
-			UseSsl:       setting.Email.UseSsl,
-		}
-	}
-	return notificationSetting
-}
-
 func convertInstanceAISettingFromStore(setting *storepb.InstanceAISetting) *v1pb.InstanceSetting_AISetting {
 	if setting == nil {
 		return nil
@@ -369,7 +285,6 @@ func convertInstanceAISettingFromStore(setting *storepb.InstanceAISetting) *v1pb
 
 	aiSetting := &v1pb.InstanceSetting_AISetting{
 		Providers:     make([]*v1pb.InstanceSetting_AIProviderConfig, 0, len(setting.Providers)),
-		Transcription: convertTranscriptionConfigFromStore(setting.GetTranscription()),
 		Embedding:     convertEmbeddingConfigFromStore(setting.GetEmbedding()),
 	}
 	for _, provider := range setting.Providers {
@@ -396,7 +311,6 @@ func convertInstanceAISettingToStore(setting *v1pb.InstanceSetting_AISetting) *s
 
 	aiSetting := &storepb.InstanceAISetting{
 		Providers:     make([]*storepb.AIProviderConfig, 0, len(setting.Providers)),
-		Transcription: convertTranscriptionConfigToStore(setting.GetTranscription()),
 		Embedding:     convertEmbeddingConfigToStore(setting.GetEmbedding()),
 	}
 	for _, provider := range setting.Providers {
@@ -436,26 +350,3 @@ func convertEmbeddingConfigToStore(setting *v1pb.InstanceSetting_EmbeddingConfig
 	}
 }
 
-func convertTranscriptionConfigFromStore(setting *storepb.TranscriptionConfig) *v1pb.InstanceSetting_TranscriptionConfig {
-	if setting == nil {
-		return nil
-	}
-	return &v1pb.InstanceSetting_TranscriptionConfig{
-		ProviderId: setting.GetProviderId(),
-		Model:      setting.GetModel(),
-		Language:   setting.GetLanguage(),
-		Prompt:     setting.GetPrompt(),
-	}
-}
-
-func convertTranscriptionConfigToStore(setting *v1pb.InstanceSetting_TranscriptionConfig) *storepb.TranscriptionConfig {
-	if setting == nil {
-		return nil
-	}
-	return &storepb.TranscriptionConfig{
-		ProviderId: setting.GetProviderId(),
-		Model:      setting.GetModel(),
-		Language:   setting.GetLanguage(),
-		Prompt:     setting.GetPrompt(),
-	}
-}

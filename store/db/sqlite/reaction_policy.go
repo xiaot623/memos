@@ -23,7 +23,7 @@ func validateSQLiteReactionWritePolicy(ctx context.Context, tx dbExecutor, react
 
 // validateSQLiteReactionDeletePolicy authorizes a withdrawal and returns the
 // participation snapshot so the caller can honour an administrator actor.
-func validateSQLiteReactionDeletePolicy(ctx context.Context, tx dbExecutor, reaction *store.Reaction) (*store.MemoCommentAuthorizationSnapshot, error) {
+func validateSQLiteReactionDeletePolicy(ctx context.Context, tx dbExecutor, reaction *store.Reaction) (*store.ReactionAuthorizationSnapshot, error) {
 	policy := reaction.Policy
 	participation, err := loadSQLiteMemoParticipation(ctx, tx, reaction.MemoID, policy.ActorUserID)
 	if err != nil {

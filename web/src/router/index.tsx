@@ -11,27 +11,20 @@ import {
   RequireGuestRoute,
   RequireInstanceInitializationRoute,
 } from "./guards";
-import { CALENDAR_ROUTE_PATTERN, ROUTES, SPACE_ROUTE_PATTERN } from "./routes";
+import { ROUTES, SPACE_ROUTE_PATTERN } from "./routes";
 import { SpaceRoute } from "./SpaceRoute";
 
 const AdminSignIn = lazyWithReload(() => import("@/pages/AdminSignIn"));
 const About = lazyWithReload(() => import("@/pages/About"));
 const Archived = lazyWithReload(() => import("@/pages/Archived"));
-const AuthCallback = lazyWithReload(() => import("@/pages/AuthCallback"));
-const MemoMap = lazyWithReload(() => import("@/pages/Map"));
-const Calendar = lazyWithReload(() => import("@/pages/Calendar"));
-const Explore = lazyWithReload(() => import("@/pages/Explore"));
 const Home = lazyWithReload(() => import("@/pages/Home"));
-const Inboxes = lazyWithReload(() => import("@/pages/Inboxes"));
 const MemoDetail = lazyWithReload(() => import("@/pages/MemoDetail"));
 const NotFound = lazyWithReload(() => import("@/pages/NotFound"));
 const PermissionDenied = lazyWithReload(() => import("@/pages/PermissionDenied"));
 const Attachments = lazyWithReload(() => import("@/pages/Attachments"));
 const Setting = lazyWithReload(() => import("@/pages/Setting"));
-const MemoViews = lazyWithReload(() => import("@/pages/MemoViews"));
 const SignIn = lazyWithReload(() => import("@/pages/SignIn"));
 const SignUp = lazyWithReload(() => import("@/pages/SignUp"));
-const UserProfile = lazyWithReload(() => import("@/pages/UserProfile"));
 
 // Backward compatibility alias.
 export const Routes = ROUTES;
@@ -39,8 +32,7 @@ export { ROUTES };
 
 /**
  * Static route configuration. Exported so tests can assert on the tree shape
- * (e.g. that `/auth/callback` stays outside the guest-only guard subtree) and
- * so integration tests can drive a `createMemoryRouter` over the same tree.
+ * and so integration tests can drive a `createMemoryRouter` over the same tree.
  */
 export const routeConfig: RouteObject[] = [
   {
@@ -51,10 +43,6 @@ export const routeConfig: RouteObject[] = [
       {
         path: Routes.AUTH,
         children: [
-          // The OAuth callback must run regardless of the current session — an
-          // authenticated tab elsewhere must not block it from consuming its
-          // one-time OAuth state. Keep it outside the guest-only subtree.
-          { path: "callback", element: <AuthCallback /> },
           {
             element: <RequireInstanceInitializationRoute />,
             children: [
@@ -86,18 +74,9 @@ export const routeConfig: RouteObject[] = [
                 element: <RequireInstanceInitializationRoute />,
                 children: [{ path: Routes.ABOUT, element: <About /> }],
               },
-              { path: Routes.EXPLORE, element: <Explore /> },
-              { path: Routes.USER_PROFILE, element: <UserProfile /> },
               {
                 element: <RequireAuthRoute />,
-                children: [
-                  { path: Routes.ARCHIVED, element: <Archived /> },
-                  { path: CALENDAR_ROUTE_PATTERN, element: <Calendar /> },
-                  {
-                    element: <RequireFullInitializationRoute />,
-                    children: [{ path: Routes.VIEWS, element: <MemoViews /> }],
-                  },
-                ],
+                children: [{ path: Routes.ARCHIVED, element: <Archived /> }],
               },
             ],
           },
@@ -117,22 +96,15 @@ export const routeConfig: RouteObject[] = [
                         children: [
                           {
                             element: <MainLayout />,
-                            children: [
-                              { index: true, element: <Home /> },
-                              { path: "explore", element: <Explore /> },
-                              { path: "calendar/:year?/:month?/:day?", element: <Calendar /> },
-                            ],
+                            children: [{ index: true, element: <Home /> }],
                           },
                           { path: "attachments", element: <Attachments /> },
-                          { path: "map", element: <MemoMap /> },
                         ],
                       },
                       { path: "*", element: <NotFound /> },
                     ],
                   },
                   { path: Routes.ATTACHMENTS, element: <Attachments /> },
-                  { path: Routes.MAP, element: <MemoMap /> },
-                  { path: Routes.INBOX, element: <Inboxes /> },
                   { path: Routes.SETTING, element: <Setting /> },
                 ],
               },

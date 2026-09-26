@@ -6,7 +6,6 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -24,15 +23,14 @@ import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { lazyWithReload } from "@/utils/lazy";
 import { canManageMemo } from "@/utils/user";
-import { MemoBody, MemoCommentListView, MemoHeader } from "./components";
+import { MemoBody, MemoHeader } from "./components";
 import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
 import { isInteractiveMemoClickTarget } from "./isInteractiveMemoClickTarget";
-import { computeCommentAmount, MemoViewContext } from "./MemoViewContext";
+import { MemoViewContext } from "./MemoViewContext";
 import { isMemoDetailPath, resolveMemoParentPage } from "./navigation";
 import type { MemoViewHandle, MemoViewProps } from "./types";
 
-const MemoShareImageDialog = lazyWithReload(() => import("../MemoActionMenu/MemoShareImageDialog"));
 const PreviewImageDialog = lazyWithReload(() => import("../PreviewImageDialog"));
 
 const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
@@ -50,14 +48,13 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
   const cardRef = useRef<HTMLElement>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [EditorComponent, setEditorComponent] = useState<ComponentType<MemoEditorProps>>();
-  const [cardWidth, setCardWidth] = useState(0);
   const [isBackgroundSaving, setIsBackgroundSaving] = useState(false);
   const [caretPoint, setCaretPoint] = useState<MarkdownCaretPoint | null>(null);
   const draftRef = useRef(memoData.content);
 
   const currentUser = useCurrentUser();
   const { userTagsSetting } = useAuth();
-  const creator = useResolvedUser(memoData.creator, { enabled: Boolean(showCreator || props.shareImageDialogOpen) });
+  const creator = useResolvedUser(memoData.creator);
   const isArchived = memoData.state === State.ARCHIVED;
   const readonly = !canManageMemo(memoData, currentUser);
   const canEdit = !readonly && !isArchived;
@@ -70,9 +67,7 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
   });
   const isInMemoDetailPage = isMemoDetailPath(location.pathname, memoData.name);
   const isEditing = showEditor && isInMemoDetailPage;
-  const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
 
-  // Blur content when any tag has blur_content enabled in the current user's tag settings.
   const [showBlurredContent, setShowBlurredContent] = useState(false);
   const blurred = isMemoBlurred(memoData, userTagsSetting);
   const toggleBlurVisibility = useCallback(() => setShowBlurredContent((prev) => !prev), []);
@@ -150,46 +145,13 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
 
   useImperativeHandle(ref, () => ({ openEditor }), [openEditor]);
 
-  // The card width is only needed by the share-image dialog. Keep feed cards
-  // free of a permanent ResizeObserver and measure only while that dialog is open.
-  useLayoutEffect(() => {
-    if (!props.shareImageDialogOpen) {
-      return;
-    }
-
-    const card = cardRef.current;
-    if (!card) {
-      return;
-    }
-
-    const updateWidth = (nextWidth?: number) => {
-      const width = Math.round(nextWidth ?? card.getBoundingClientRect().width);
-      setCardWidth((prev) => (prev === width ? prev : width));
-    };
-
-    updateWidth();
-
-    if (typeof ResizeObserver === "undefined") {
-      const handleResize = () => updateWidth();
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      updateWidth(entries[0]?.contentRect.width);
-    });
-
-    resizeObserver.observe(card);
-    return () => resizeObserver.disconnect();
-  }, [props.shareImageDialogOpen]);
-
   const contextValue = useMemo(
     () => ({
       memo: memoData,
       creator,
       currentUser,
       parentPage,
-      cardWidth,
+      cardWidth: 0,
       isArchived,
       readonly,
       showBlurredContent,
@@ -208,7 +170,6 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
       creator,
       currentUser,
       parentPage,
-      cardWidth,
       isArchived,
       readonly,
       showBlurredContent,
@@ -224,67 +185,42 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
     ],
   );
 
-  const article = (
-    <article
-      className={cn(
-        MEMO_CARD_BASE_CLASSES,
-        canEdit && (isEditing ? "cursor-text" : "cursor-pointer"),
-        showCommentPreview ? "mb-0 rounded-b-none" : "mb-2",
-        className,
-      )}
-      ref={cardRef}
-      tabIndex={readonly ? -1 : 0}
-      aria-busy={isBackgroundSaving || undefined}
-      onClick={canEdit ? handleCardClick : undefined}
-    >
-      <MemoHeader
-        timeDisplay={timeDisplay}
-        showCreator={showCreator}
-        showVisibility={showVisibility}
-        showPinned={showPinned}
-        showSpace={showSpace}
-      />
-
-      <MemoBody compact={compact} />
-
-      {previewState.items.length > 0 && (
-        <Suspense fallback={null}>
-          <PreviewImageDialog
-            open={previewState.open}
-            onOpenChange={setPreviewOpen}
-            items={previewState.items}
-            initialIndex={previewState.index}
-          />
-        </Suspense>
-      )}
-
-      {props.onShareImageDialogOpenChange && props.shareImageDialogOpen && (
-        <Suspense fallback={null}>
-          <MemoShareImageDialog open onOpenChange={props.onShareImageDialogOpenChange} />
-        </Suspense>
-      )}
-    </article>
-  );
-
-  const memoDisplay = showCommentPreview ? (
-    <div className="w-full mb-2">
-      {article}
-      <MemoCommentListView />
-    </div>
-  ) : (
-    article
-  );
-
   return (
     <MemoViewContext.Provider value={contextValue}>
-      {memoDisplay}
+      <article
+        className={cn(MEMO_CARD_BASE_CLASSES, canEdit && (isEditing ? "cursor-text" : "cursor-pointer"), "mb-2", className)}
+        ref={cardRef}
+        tabIndex={readonly ? -1 : 0}
+        aria-busy={isBackgroundSaving || undefined}
+        onClick={canEdit ? handleCardClick : undefined}
+      >
+        <MemoHeader
+          timeDisplay={timeDisplay}
+          showCreator={showCreator}
+          showVisibility={showVisibility}
+          showPinned={showPinned}
+          showSpace={showSpace}
+        />
+
+        <MemoBody compact={compact} />
+
+        {previewState.items.length > 0 && (
+          <Suspense fallback={null}>
+            <PreviewImageDialog
+              open={previewState.open}
+              onOpenChange={setPreviewOpen}
+              items={previewState.items}
+              initialIndex={previewState.index}
+            />
+          </Suspense>
+        )}
+      </article>
       {showEditor && !isInMemoDetailPage && EditorComponent && (
         <EditorComponent
           autoFocus
           presentation="peek"
           cacheKey={`inline-memo-editor-${memoData.name}`}
           memo={memoData}
-          parentMemoName={memoData.parent || undefined}
           onConfirm={closeEditor}
           onCancel={closeEditor}
           onSavingChange={setIsBackgroundSaving}

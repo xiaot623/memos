@@ -223,16 +223,9 @@ func (i *memoImporter) createMemo(record *memoexport.Memo, targetUID string, con
 		return err
 	}
 	var parentID *int32
+	_ = parentID
 	if record.Parent != "" {
-		parent, err := i.resolveMemo(record.Parent)
-		if err != nil {
-			return err
-		}
-		if parent == nil {
-			i.warn(record.UID, fmt.Sprintf("parent memo %s was not found; imported as a top-level memo", record.Parent))
-		} else {
-			parentID = &parent.ID
-		}
+		i.warn(record.UID, "comment parents are no longer imported; treated as a top-level memo")
 	}
 	added, err := i.importAttachments(record, nil)
 	if err != nil {
@@ -242,7 +235,7 @@ func (i *memoImporter) createMemo(record *memoexport.Memo, targetUID string, con
 	// second write, as they do for a memo created through the API.
 	wantPinned, wantRowStatus := memo.Pinned, memo.RowStatus
 	err = i.bindAttachments(memo, added, added, func(prepared *preparedMemoAttachments, required []int32) error {
-		if err := i.service.createMemoWithMutation(i.ctx, i.user, memo, parentID, prepared, required, nil); err != nil {
+		if err := i.service.createMemoWithMutation(i.ctx, i.user, memo, prepared, required); err != nil {
 			return mapMemoCreateError(err, targetUID, "failed to create memo")
 		}
 		return nil
@@ -274,7 +267,7 @@ func (i *memoImporter) replaceMemo(record *memoexport.Memo, existing *store.Memo
 	if err != nil {
 		return err
 	}
-	if record.Parent != "" && (existing.ParentUID == nil || *existing.ParentUID != record.Parent) {
+	if record.Parent != "" {
 		i.warn(record.UID, "comment threading of an existing memo cannot be changed; the parent from the archive was ignored")
 	}
 	update := &store.UpdateMemo{
@@ -302,7 +295,7 @@ func (i *memoImporter) replaceMemo(record *memoexport.Memo, existing *store.Memo
 		return err
 	}
 	err = i.bindAttachments(existing, append(names, added...), added, func(prepared *preparedMemoAttachments, required []int32) error {
-		return i.service.applyMemoMutation(i.ctx, existing, prepared, update, required, nil)
+		return i.service.applyMemoMutation(i.ctx, existing, prepared, update, required)
 	})
 	if err != nil {
 		return err
@@ -372,13 +365,6 @@ func (i *memoImporter) buildMemo(record *memoexport.Memo, uid string, content []
 	if err := memopayload.RebuildMemoPayload(i.ctx, memo, i.service.MarkdownService); err != nil {
 		return nil, errors.Wrap(err, "failed to rebuild memo payload")
 	}
-	if record.Location != nil {
-		memo.Payload.Location = &storepb.MemoPayload_Location{
-			Placeholder: record.Location.Placeholder,
-			Latitude:    record.Location.Latitude,
-			Longitude:   record.Location.Longitude,
-		}
-	}
 	return memo, nil
 }
 
@@ -420,7 +406,7 @@ func (i *memoImporter) resolveMemo(uid string) (*store.Memo, error) {
 	if memo, ok := i.resolved[uid]; ok {
 		return memo, nil
 	}
-	memo, err := i.service.Store.GetMemo(i.ctx, &store.FindMemo{UID: &uid, Access: newMemoAccessScope(i.user, true)})
+	memo, err := i.service.Store.GetMemo(i.ctx, &store.FindMemo{UID: &uid, Access: newMemoAccessScope(i.user)})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to look up memo")
 	}
@@ -586,41 +572,7 @@ func (i *memoImporter) discardAttachments(attachments []*v1pb.Attachment) {
 	}
 }
 
-// applyRelations replaces the memo's REFERENCE relations with those from the
-// record, skipping targets that exist neither in the archive nor on the
-// instance.
-func (i *memoImporter) applyRelations(written writtenMemo) error {
-	record := written.record
-	if len(record.Relations) == 0 {
-		return nil
-	}
-	// Reload so the optimistic content check sees the memo as written.
-	memo, err := i.service.Store.GetMemo(i.ctx, &store.FindMemo{ID: &written.memo.ID})
-	if err != nil {
-		return errors.Wrap(err, "failed to reload memo")
-	}
-	if memo == nil {
-		return errors.New("memo disappeared during import")
-	}
-	relations := make([]*store.MemoRelation, 0, len(record.Relations))
-	seen := map[int32]struct{}{memo.ID: {}}
-	for _, relation := range record.Relations {
-		target, err := i.resolveMemo(relation.Memo)
-		if err != nil {
-			return err
-		}
-		if target == nil {
-			i.warn(record.UID, fmt.Sprintf("referenced memo %s was not found; the reference was dropped", relation.Memo))
-			continue
-		}
-		if _, dup := seen[target.ID]; dup {
-			continue
-		}
-		seen[target.ID] = struct{}{}
-		relations = append(relations, &store.MemoRelation{MemoID: memo.ID, RelatedMemoID: target.ID, Type: store.MemoRelationReference})
-	}
-	if len(relations) == 0 {
-		return nil
-	}
-	return i.service.applyMemoMutation(i.ctx, memo, nil, nil, nil, &relations)
+// applyRelations is a no-op; memo relations are no longer a product feature.
+func (*memoImporter) applyRelations(_ writtenMemo) error {
+	return nil
 }

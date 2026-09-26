@@ -60,7 +60,7 @@ CREATE TABLE memo (
   updated_ts BIGINT NOT NULL DEFAULT (strftime('%s', 'now')),
   row_status TEXT NOT NULL CHECK (row_status IN ('NORMAL', 'ARCHIVED')) DEFAULT 'NORMAL',
   content TEXT NOT NULL DEFAULT '',
-  visibility TEXT NOT NULL CHECK (visibility IN ('PUBLIC', 'PROTECTED', 'PRIVATE', 'SPACE')) DEFAULT 'PRIVATE',
+  visibility TEXT NOT NULL CHECK (visibility IN ('PRIVATE', 'SPACE')) DEFAULT 'PRIVATE',
   pinned INTEGER NOT NULL CHECK (pinned IN (0, 1)) DEFAULT 0,
   payload TEXT NOT NULL DEFAULT '{}',
   space_id INTEGER DEFAULT NULL
@@ -68,17 +68,6 @@ CREATE TABLE memo (
 
 CREATE INDEX idx_memo_creator_id ON memo(creator_id);
 CREATE INDEX idx_memo_space_id ON memo(space_id, row_status, created_ts DESC, id DESC);
-
--- memo_relation
-CREATE TABLE memo_relation (
-  memo_id INTEGER NOT NULL,
-  related_memo_id INTEGER NOT NULL,
-  type TEXT NOT NULL,
-  UNIQUE(memo_id, related_memo_id, type)
-);
-
-CREATE INDEX idx_memo_relation_related_type_memo
-  ON memo_relation(related_memo_id, type, memo_id);
 
 -- attachment
 CREATE TABLE attachment (
@@ -95,26 +84,6 @@ CREATE TABLE attachment (
   storage_type TEXT NOT NULL DEFAULT '',
   reference TEXT NOT NULL DEFAULT '',
   payload TEXT NOT NULL DEFAULT '{}'
-);
-
--- idp
-CREATE TABLE idp (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  uid TEXT NOT NULL UNIQUE,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL,
-  identifier_filter TEXT NOT NULL DEFAULT '',
-  config TEXT NOT NULL DEFAULT '{}'
-);
-
--- inbox
-CREATE TABLE inbox (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  created_ts BIGINT NOT NULL DEFAULT (strftime('%s', 'now')),
-  sender_id INTEGER NOT NULL,
-  receiver_id INTEGER NOT NULL,
-  status TEXT NOT NULL,
-  message TEXT NOT NULL DEFAULT '{}'
 );
 
 -- memo reaction
@@ -139,20 +108,6 @@ CREATE TABLE memo_share (
 );
 
 CREATE INDEX idx_memo_share_memo_id ON memo_share(memo_id);
-
--- user_identity
-CREATE TABLE user_identity (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id    INTEGER NOT NULL,
-  provider   TEXT    NOT NULL,
-  extern_uid TEXT    NOT NULL,
-  created_ts BIGINT  NOT NULL DEFAULT (strftime('%s', 'now')),
-  updated_ts BIGINT  NOT NULL DEFAULT (strftime('%s', 'now')),
-  UNIQUE (provider, extern_uid),
-  UNIQUE (user_id, provider)
-);
-
-CREATE INDEX idx_user_identity_user_id ON user_identity(user_id);
 
 -- memo_embedding
 CREATE TABLE memo_embedding (

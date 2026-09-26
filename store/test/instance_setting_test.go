@@ -153,39 +153,6 @@ func TestInstanceSettingGeneralSetting(t *testing.T) {
 	ts.Close()
 }
 
-func TestInstanceAccessSetting(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	ts := NewTestingStore(ctx, t)
-	defer ts.Close()
-
-	accessSetting, err := ts.GetInstanceAccessSetting(ctx)
-	require.NoError(t, err)
-	require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE, accessSetting.AccessMode)
-	allowsAnonymous, err := ts.AllowsAnonymousAccess(ctx)
-	require.NoError(t, err)
-	require.False(t, allowsAnonymous)
-
-	_, err = ts.UpsertInstanceSetting(ctx, &storepb.InstanceSetting{
-		Key: storepb.InstanceSettingKey_ACCESS,
-		Value: &storepb.InstanceSetting_AccessSetting{AccessSetting: &storepb.InstanceAccessSetting{
-			AccessMode: storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC,
-		}},
-	})
-	require.NoError(t, err)
-
-	stored, err := ts.GetStoredInstanceSetting(ctx, &store.FindInstanceSetting{Name: storepb.InstanceSettingKey_ACCESS.String()})
-	require.NoError(t, err)
-	require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC, stored.GetAccessSetting().AccessMode)
-
-	accessSetting, err = ts.GetInstanceAccessSetting(ctx)
-	require.NoError(t, err)
-	require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC, accessSetting.AccessMode)
-	allowsAnonymous, err = ts.AllowsAnonymousAccess(ctx)
-	require.NoError(t, err)
-	require.True(t, allowsAnonymous)
-}
-
 func TestCreateInstanceSettingIfNotExistsIsFirstWriterWins(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -472,47 +439,6 @@ func TestInstanceSettingTagsSettingWithoutColor(t *testing.T) {
 	ts.Close()
 }
 
-func TestInstanceSettingNotificationSetting(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	ts := NewTestingStore(ctx, t)
-
-	notificationSetting, err := ts.GetInstanceNotificationSetting(ctx)
-	require.NoError(t, err)
-	require.NotNil(t, notificationSetting)
-	require.NotNil(t, notificationSetting.Email)
-	require.False(t, notificationSetting.Email.Enabled)
-
-	_, err = ts.UpsertInstanceSetting(ctx, &storepb.InstanceSetting{
-		Key: storepb.InstanceSettingKey_NOTIFICATION,
-		Value: &storepb.InstanceSetting_NotificationSetting{
-			NotificationSetting: &storepb.InstanceNotificationSetting{
-				Email: &storepb.InstanceNotificationSetting_EmailSetting{
-					Enabled:      true,
-					SmtpHost:     "smtp.example.com",
-					SmtpPort:     587,
-					SmtpUsername: "bot@example.com",
-					SmtpPassword: "secret",
-					FromEmail:    "bot@example.com",
-					FromName:     "Memos Bot",
-					ReplyTo:      "support@example.com",
-					UseTls:       true,
-				},
-			},
-		},
-	})
-	require.NoError(t, err)
-
-	notificationSetting, err = ts.GetInstanceNotificationSetting(ctx)
-	require.NoError(t, err)
-	require.True(t, notificationSetting.Email.Enabled)
-	require.Equal(t, "smtp.example.com", notificationSetting.Email.SmtpHost)
-	require.Equal(t, int32(587), notificationSetting.Email.SmtpPort)
-	require.Equal(t, "bot@example.com", notificationSetting.Email.FromEmail)
-
-	ts.Close()
-}
-
 func TestInstanceSettingAISetting(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -554,49 +480,6 @@ func TestInstanceSettingAISetting(t *testing.T) {
 	require.Equal(t, "openai-main", aiSetting.Providers[0].Id)
 	require.Equal(t, "sk-test", aiSetting.Providers[0].ApiKey)
 	require.Equal(t, "gemini-main", aiSetting.Providers[1].Id)
-
-	ts.Close()
-}
-
-func TestInstanceSettingListAll(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	ts := NewTestingStore(ctx, t)
-
-	// Count initial settings
-	initialList, err := ts.ListInstanceSettings(ctx, &store.FindInstanceSetting{})
-	require.NoError(t, err)
-	initialCount := len(initialList)
-
-	// Create multiple settings
-	_, err = ts.UpsertInstanceSetting(ctx, &storepb.InstanceSetting{
-		Key: storepb.InstanceSettingKey_GENERAL,
-		Value: &storepb.InstanceSetting_GeneralSetting{
-			GeneralSetting: &storepb.InstanceGeneralSetting{},
-		},
-	})
-	require.NoError(t, err)
-
-	_, err = ts.UpsertInstanceSetting(ctx, &storepb.InstanceSetting{
-		Key: storepb.InstanceSettingKey_STORAGE,
-		Value: &storepb.InstanceSetting_StorageSetting{
-			StorageSetting: &storepb.InstanceStorageSetting{},
-		},
-	})
-	require.NoError(t, err)
-
-	_, err = ts.UpsertInstanceSetting(ctx, &storepb.InstanceSetting{
-		Key: storepb.InstanceSettingKey_NOTIFICATION,
-		Value: &storepb.InstanceSetting_NotificationSetting{
-			NotificationSetting: &storepb.InstanceNotificationSetting{},
-		},
-	})
-	require.NoError(t, err)
-
-	// List all - should have 3 more than initial
-	list, err := ts.ListInstanceSettings(ctx, &store.FindInstanceSetting{})
-	require.NoError(t, err)
-	require.Equal(t, initialCount+3, len(list))
 
 	ts.Close()
 }

@@ -479,14 +479,6 @@ func TestMCPToolCallBindsMemoFromPathForBodyStarOperations(t *testing.T) {
 			response: map[string]any{},
 		},
 		{
-			name:     "set relations",
-			method:   http.MethodPatch,
-			path:     "/api/v1/memos/:memo/relations",
-			toolName: "memo_set_memo_relations",
-			body:     map[string]any{"relations": []any{}},
-			response: map[string]any{},
-		},
-		{
 			name:     "upsert reaction",
 			method:   http.MethodPost,
 			path:     "/api/v1/memos/:memo/reactions",

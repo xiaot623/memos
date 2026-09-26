@@ -33,8 +33,6 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// AIServiceTranscribeProcedure is the fully-qualified name of the AIService's Transcribe RPC.
-	AIServiceTranscribeProcedure = "/memos.api.v1.AIService/Transcribe"
 	// AIServiceListEmbeddingModelsProcedure is the fully-qualified name of the AIService's
 	// ListEmbeddingModels RPC.
 	AIServiceListEmbeddingModelsProcedure = "/memos.api.v1.AIService/ListEmbeddingModels"
@@ -42,8 +40,6 @@ const (
 
 // AIServiceClient is a client for the memos.api.v1.AIService service.
 type AIServiceClient interface {
-	// Transcribe transcribes an audio file using an instance AI provider.
-	Transcribe(context.Context, *connect.Request[v1.TranscribeRequest]) (*connect.Response[v1.TranscribeResponse], error)
 	// ListEmbeddingModels returns embedding models advertised by one configured provider.
 	ListEmbeddingModels(context.Context, *connect.Request[v1.ListEmbeddingModelsRequest]) (*connect.Response[v1.ListEmbeddingModelsResponse], error)
 }
@@ -59,12 +55,6 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 	baseURL = strings.TrimRight(baseURL, "/")
 	aIServiceMethods := v1.File_api_v1_ai_service_proto.Services().ByName("AIService").Methods()
 	return &aIServiceClient{
-		transcribe: connect.NewClient[v1.TranscribeRequest, v1.TranscribeResponse](
-			httpClient,
-			baseURL+AIServiceTranscribeProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("Transcribe")),
-			connect.WithClientOptions(opts...),
-		),
 		listEmbeddingModels: connect.NewClient[v1.ListEmbeddingModelsRequest, v1.ListEmbeddingModelsResponse](
 			httpClient,
 			baseURL+AIServiceListEmbeddingModelsProcedure,
@@ -76,13 +66,7 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 
 // aIServiceClient implements AIServiceClient.
 type aIServiceClient struct {
-	transcribe          *connect.Client[v1.TranscribeRequest, v1.TranscribeResponse]
 	listEmbeddingModels *connect.Client[v1.ListEmbeddingModelsRequest, v1.ListEmbeddingModelsResponse]
-}
-
-// Transcribe calls memos.api.v1.AIService.Transcribe.
-func (c *aIServiceClient) Transcribe(ctx context.Context, req *connect.Request[v1.TranscribeRequest]) (*connect.Response[v1.TranscribeResponse], error) {
-	return c.transcribe.CallUnary(ctx, req)
 }
 
 // ListEmbeddingModels calls memos.api.v1.AIService.ListEmbeddingModels.
@@ -92,8 +76,6 @@ func (c *aIServiceClient) ListEmbeddingModels(ctx context.Context, req *connect.
 
 // AIServiceHandler is an implementation of the memos.api.v1.AIService service.
 type AIServiceHandler interface {
-	// Transcribe transcribes an audio file using an instance AI provider.
-	Transcribe(context.Context, *connect.Request[v1.TranscribeRequest]) (*connect.Response[v1.TranscribeResponse], error)
 	// ListEmbeddingModels returns embedding models advertised by one configured provider.
 	ListEmbeddingModels(context.Context, *connect.Request[v1.ListEmbeddingModelsRequest]) (*connect.Response[v1.ListEmbeddingModelsResponse], error)
 }
@@ -105,12 +87,6 @@ type AIServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	aIServiceMethods := v1.File_api_v1_ai_service_proto.Services().ByName("AIService").Methods()
-	aIServiceTranscribeHandler := connect.NewUnaryHandler(
-		AIServiceTranscribeProcedure,
-		svc.Transcribe,
-		connect.WithSchema(aIServiceMethods.ByName("Transcribe")),
-		connect.WithHandlerOptions(opts...),
-	)
 	aIServiceListEmbeddingModelsHandler := connect.NewUnaryHandler(
 		AIServiceListEmbeddingModelsProcedure,
 		svc.ListEmbeddingModels,
@@ -119,8 +95,6 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 	)
 	return "/memos.api.v1.AIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case AIServiceTranscribeProcedure:
-			aIServiceTranscribeHandler.ServeHTTP(w, r)
 		case AIServiceListEmbeddingModelsProcedure:
 			aIServiceListEmbeddingModelsHandler.ServeHTTP(w, r)
 		default:
@@ -131,10 +105,6 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 
 // UnimplementedAIServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAIServiceHandler struct{}
-
-func (UnimplementedAIServiceHandler) Transcribe(context.Context, *connect.Request[v1.TranscribeRequest]) (*connect.Response[v1.TranscribeResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.AIService.Transcribe is not implemented"))
-}
 
 func (UnimplementedAIServiceHandler) ListEmbeddingModels(context.Context, *connect.Request[v1.ListEmbeddingModelsRequest]) (*connect.Response[v1.ListEmbeddingModelsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.AIService.ListEmbeddingModels is not implemented"))

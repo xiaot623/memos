@@ -1,7 +1,6 @@
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import type { Location, Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
+import type { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { EditorFileOrigin } from "../Editor/extensions";
-import type { AudioRecorderStatus } from "../hooks/useAudioRecorder";
 import type { LocalFile } from "./attachment";
 
 export interface MemoEditorProps {
@@ -13,8 +12,6 @@ export interface MemoEditorProps {
   parentMemoName?: string;
   /** Assigns a newly created top-level memo to this Space. Ignored for edits and comments. */
   defaultSpace?: string;
-  /** Seeds a new memo once; restored draft metadata takes precedence. */
-  defaultLocation?: Location;
   /** A callback can decide whether focus is still appropriate after draft restoration. */
   autoFocus?: boolean | (() => boolean);
   /**
@@ -71,11 +68,8 @@ export interface EditorToolbarProps {
   onSave: () => void;
   onCancel?: () => void;
   memoName?: string;
-  /** Set when the editor composes a comment on this memo; picks the commit verb. */
-  parentMemoName?: string;
   /** The Space that owns the memo being created or edited, if any. */
   space?: string;
-  onAudioRecorderClick: () => void;
   viewToggles?: EditorViewToggles;
   onInsertImages: (files: File[]) => void;
   isRawMode?: boolean;
@@ -87,17 +81,6 @@ export interface EditorMetadataProps {
   uploadingLocalFileURLs: ReadonlySet<string>;
   onInsertAttachments: (attachments: Attachment[]) => void;
   onInsertLocalFiles: (localFiles: LocalFile[]) => void;
-}
-
-export interface AudioRecorderPanelProps {
-  audioRecorder: { status: AudioRecorderStatus; elapsedSeconds: number };
-  /** Active mic stream while recording; used for live waveform visualization. */
-  mediaStream: MediaStream | null;
-  onStop: () => void;
-  onCancel: () => void;
-  onTranscribe?: () => void;
-  canTranscribe?: boolean;
-  isTranscribing?: boolean;
 }
 
 export interface FocusModeOverlayProps {
@@ -114,10 +97,7 @@ export interface FocusModeExitButtonProps {
 export interface InsertMenuProps {
   isUploading?: boolean;
   isSaving?: boolean;
-  location?: Location;
-  onLocationChange: (location?: Location) => void;
   memoName?: string;
-  onAudioRecorderClick?: () => void;
   viewToggles?: EditorViewToggles;
   onInsertImages: (files: File[]) => void;
   isRawMode?: boolean;

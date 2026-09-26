@@ -57,7 +57,6 @@ func (s *APIV1Service) ListAllUserStats(ctx context.Context, request *v1pb.ListA
 	rowStatus := convertStateToStore(request.State)
 	memoFind := &store.FindMemo{
 		// Exclude comments by default.
-		ExcludeComments: true,
 		ExcludeContent:  true,
 		RowStatus:       &rowStatus,
 	}
@@ -199,7 +198,6 @@ func (s *APIV1Service) GetUserStats(ctx context.Context, request *v1pb.GetUserSt
 	memoFind := &store.FindMemo{
 		CreatorID: &userID,
 		// Exclude comments by default.
-		ExcludeComments: true,
 		ExcludeContent:  true,
 		RowStatus:       &normalStatus,
 	}

@@ -159,8 +159,8 @@ func (s *FileServerService) serveAttachmentFile(c *echo.Context) error {
 	if err != nil {
 		return err
 	}
-	if readClass == access.MemoReadClassPublic {
-		c.Response().Header().Set(echo.HeaderCacheControl, publicAttachmentCacheControl)
+	if readClass == access.MemoReadClassPrivate {
+		// All memo-backed attachment reads are private; keep private cache headers.
 	}
 	if attachment.StorageType != storepb.AttachmentStorageType_LOCAL && attachment.StorageType != storepb.AttachmentStorageType_S3 {
 		attachment, err = s.Store.GetAttachment(ctx, &store.FindAttachment{ID: &attachment.ID, GetBlob: true})
@@ -190,22 +190,14 @@ func (s *FileServerService) serveAttachmentFile(c *echo.Context) error {
 func (s *FileServerService) serveUserAvatar(c *echo.Context) error {
 	ctx := c.Request().Context()
 
-	allowAnonymous, err := s.Store.AllowsAnonymousAccess(ctx)
+	// Avatars require a valid session, access token, or PAT.
+	cacheControl := privateAttachmentCacheControl
+	viewer, err := s.getCurrentUser(ctx, c)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get instance access policy").Wrap(err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get current user").Wrap(err)
 	}
-	cacheControl := cacheMaxAge
-	// On a private instance, avatars are not exposed to anonymous visitors; a
-	// valid session, access token, or PAT is required.
-	if !allowAnonymous {
-		cacheControl = privateAttachmentCacheControl
-		viewer, err := s.getCurrentUser(ctx, c)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get current user").Wrap(err)
-		}
-		if viewer == nil {
-			return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized access")
-		}
+	if viewer == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized access")
 	}
 
 	identifier := c.Param("identifier")
@@ -680,10 +672,6 @@ func (s *FileServerService) checkAttachmentPermission(ctx context.Context, c *ec
 		return access.MemoReadClassPrivate, echo.NewHTTPError(http.StatusNotFound, "memo not found")
 	}
 
-	allowAnonymous, err := s.Store.AllowsAnonymousAccess(ctx)
-	if err != nil {
-		return access.MemoReadClassPrivate, echo.NewHTTPError(http.StatusInternalServerError, "failed to get instance access policy").Wrap(err)
-	}
 	var sharedMemoID *int32
 	if shareToken := (*c).QueryParam("share_token"); shareToken != "" {
 		ms, err := s.Store.GetMemoShare(ctx, &store.FindMemoShare{UID: &shareToken})
@@ -699,10 +687,10 @@ func (s *FileServerService) checkAttachmentPermission(ctx context.Context, c *ec
 	if err != nil {
 		return access.MemoReadClassPrivate, echo.NewHTTPError(http.StatusInternalServerError, "failed to resolve memo access").Wrap(err)
 	}
-	// Public and exact share-token reads do not depend on browser credentials.
+	// Exact share-token reads do not depend on browser credentials.
 	// Decide those first so an expired cookie cannot turn an otherwise valid
-	// anonymous file request into a server error.
-	anonymousContext, err := facts.WithViewer(ctx, s.Store, nil, allowAnonymous, sharedMemoID)
+	// share-token file request into a server error.
+	anonymousContext, err := facts.WithViewer(ctx, s.Store, nil, sharedMemoID)
 	if err != nil {
 		return access.MemoReadClassPrivate, echo.NewHTTPError(http.StatusInternalServerError, "failed to resolve memo access").Wrap(err)
 	}
@@ -714,7 +702,7 @@ func (s *FileServerService) checkAttachmentPermission(ctx context.Context, c *ec
 	if err != nil {
 		return access.MemoReadClassPrivate, echo.NewHTTPError(http.StatusInternalServerError, "failed to get current user").Wrap(err)
 	}
-	readContext, err := facts.WithViewer(ctx, s.Store, user, allowAnonymous, sharedMemoID)
+	readContext, err := facts.WithViewer(ctx, s.Store, user, sharedMemoID)
 	if err != nil {
 		return access.MemoReadClassPrivate, echo.NewHTTPError(http.StatusInternalServerError, "failed to find space membership").Wrap(err)
 	}

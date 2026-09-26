@@ -22,198 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type TranscribeRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Required. Audio input.
-	Audio         *TranscriptionAudio `protobuf:"bytes,1,opt,name=audio,proto3" json:"audio,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TranscribeRequest) Reset() {
-	*x = TranscribeRequest{}
-	mi := &file_api_v1_ai_service_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TranscribeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TranscribeRequest) ProtoMessage() {}
-
-func (x *TranscribeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_ai_service_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TranscribeRequest.ProtoReflect.Descriptor instead.
-func (*TranscribeRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *TranscribeRequest) GetAudio() *TranscriptionAudio {
-	if x != nil {
-		return x.Audio
-	}
-	return nil
-}
-
-type TranscriptionAudio struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Source:
-	//
-	//	*TranscriptionAudio_Content
-	//	*TranscriptionAudio_Uri
-	Source isTranscriptionAudio_Source `protobuf_oneof:"source"`
-	// Optional. The uploaded filename.
-	Filename string `protobuf:"bytes,3,opt,name=filename,proto3" json:"filename,omitempty"`
-	// Optional. The MIME type of the input audio.
-	ContentType   string `protobuf:"bytes,4,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TranscriptionAudio) Reset() {
-	*x = TranscriptionAudio{}
-	mi := &file_api_v1_ai_service_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TranscriptionAudio) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TranscriptionAudio) ProtoMessage() {}
-
-func (x *TranscriptionAudio) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_ai_service_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TranscriptionAudio.ProtoReflect.Descriptor instead.
-func (*TranscriptionAudio) Descriptor() ([]byte, []int) {
-	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *TranscriptionAudio) GetSource() isTranscriptionAudio_Source {
-	if x != nil {
-		return x.Source
-	}
-	return nil
-}
-
-func (x *TranscriptionAudio) GetContent() []byte {
-	if x != nil {
-		if x, ok := x.Source.(*TranscriptionAudio_Content); ok {
-			return x.Content
-		}
-	}
-	return nil
-}
-
-func (x *TranscriptionAudio) GetUri() string {
-	if x != nil {
-		if x, ok := x.Source.(*TranscriptionAudio_Uri); ok {
-			return x.Uri
-		}
-	}
-	return ""
-}
-
-func (x *TranscriptionAudio) GetFilename() string {
-	if x != nil {
-		return x.Filename
-	}
-	return ""
-}
-
-func (x *TranscriptionAudio) GetContentType() string {
-	if x != nil {
-		return x.ContentType
-	}
-	return ""
-}
-
-type isTranscriptionAudio_Source interface {
-	isTranscriptionAudio_Source()
-}
-
-type TranscriptionAudio_Content struct {
-	// Inline audio bytes.
-	Content []byte `protobuf:"bytes,1,opt,name=content,proto3,oneof"`
-}
-
-type TranscriptionAudio_Uri struct {
-	// URI for audio content. Reserved for future use.
-	Uri string `protobuf:"bytes,2,opt,name=uri,proto3,oneof"`
-}
-
-func (*TranscriptionAudio_Content) isTranscriptionAudio_Source() {}
-
-func (*TranscriptionAudio_Uri) isTranscriptionAudio_Source() {}
-
-type TranscribeResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// The transcribed text.
-	Text          string `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TranscribeResponse) Reset() {
-	*x = TranscribeResponse{}
-	mi := &file_api_v1_ai_service_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TranscribeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TranscribeResponse) ProtoMessage() {}
-
-func (x *TranscribeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_ai_service_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TranscribeResponse.ProtoReflect.Descriptor instead.
-func (*TranscribeResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *TranscribeResponse) GetText() string {
-	if x != nil {
-		return x.Text
-	}
-	return ""
-}
-
 type ListEmbeddingModelsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Required. The id of a configured AI provider.
@@ -224,7 +32,7 @@ type ListEmbeddingModelsRequest struct {
 
 func (x *ListEmbeddingModelsRequest) Reset() {
 	*x = ListEmbeddingModelsRequest{}
-	mi := &file_api_v1_ai_service_proto_msgTypes[3]
+	mi := &file_api_v1_ai_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -236,7 +44,7 @@ func (x *ListEmbeddingModelsRequest) String() string {
 func (*ListEmbeddingModelsRequest) ProtoMessage() {}
 
 func (x *ListEmbeddingModelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_ai_service_proto_msgTypes[3]
+	mi := &file_api_v1_ai_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,7 +57,7 @@ func (x *ListEmbeddingModelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListEmbeddingModelsRequest.ProtoReflect.Descriptor instead.
 func (*ListEmbeddingModelsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{3}
+	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ListEmbeddingModelsRequest) GetProviderId() string {
@@ -268,7 +76,7 @@ type ListEmbeddingModelsResponse struct {
 
 func (x *ListEmbeddingModelsResponse) Reset() {
 	*x = ListEmbeddingModelsResponse{}
-	mi := &file_api_v1_ai_service_proto_msgTypes[4]
+	mi := &file_api_v1_ai_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -280,7 +88,7 @@ func (x *ListEmbeddingModelsResponse) String() string {
 func (*ListEmbeddingModelsResponse) ProtoMessage() {}
 
 func (x *ListEmbeddingModelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_ai_service_proto_msgTypes[4]
+	mi := &file_api_v1_ai_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -293,7 +101,7 @@ func (x *ListEmbeddingModelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListEmbeddingModelsResponse.ProtoReflect.Descriptor instead.
 func (*ListEmbeddingModelsResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{4}
+	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ListEmbeddingModelsResponse) GetModels() []*EmbeddingModel {
@@ -315,7 +123,7 @@ type EmbeddingModel struct {
 
 func (x *EmbeddingModel) Reset() {
 	*x = EmbeddingModel{}
-	mi := &file_api_v1_ai_service_proto_msgTypes[5]
+	mi := &file_api_v1_ai_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -327,7 +135,7 @@ func (x *EmbeddingModel) String() string {
 func (*EmbeddingModel) ProtoMessage() {}
 
 func (x *EmbeddingModel) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_ai_service_proto_msgTypes[5]
+	mi := &file_api_v1_ai_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -340,7 +148,7 @@ func (x *EmbeddingModel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmbeddingModel.ProtoReflect.Descriptor instead.
 func (*EmbeddingModel) Descriptor() ([]byte, []int) {
-	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{5}
+	return file_api_v1_ai_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *EmbeddingModel) GetId() string {
@@ -361,17 +169,7 @@ var File_api_v1_ai_service_proto protoreflect.FileDescriptor
 
 const file_api_v1_ai_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17api/v1/ai_service.proto\x12\fmemos.api.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17google/api/client.proto\x1a\x1fgoogle/api/field_behavior.proto\"P\n" +
-	"\x11TranscribeRequest\x12;\n" +
-	"\x05audio\x18\x01 \x01(\v2 .memos.api.v1.TranscriptionAudioB\x03\xe0A\x02R\x05audio\"\x9c\x01\n" +
-	"\x12TranscriptionAudio\x12\x1f\n" +
-	"\acontent\x18\x01 \x01(\fB\x03\xe0A\x04H\x00R\acontent\x12\x12\n" +
-	"\x03uri\x18\x02 \x01(\tH\x00R\x03uri\x12\x1f\n" +
-	"\bfilename\x18\x03 \x01(\tB\x03\xe0A\x01R\bfilename\x12&\n" +
-	"\fcontent_type\x18\x04 \x01(\tB\x03\xe0A\x01R\vcontentTypeB\b\n" +
-	"\x06source\"(\n" +
-	"\x12TranscribeResponse\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"B\n" +
+	"\x17api/v1/ai_service.proto\x12\fmemos.api.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\"B\n" +
 	"\x1aListEmbeddingModelsRequest\x12$\n" +
 	"\vprovider_id\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
 	"providerId\"S\n" +
@@ -379,10 +177,8 @@ const file_api_v1_ai_service_proto_rawDesc = "" +
 	"\x06models\x18\x01 \x03(\v2\x1c.memos.api.v1.EmbeddingModelR\x06models\"6\n" +
 	"\x0eEmbeddingModel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title2\x97\x02\n" +
-	"\tAIService\x12y\n" +
-	"\n" +
-	"Transcribe\x12\x1f.memos.api.v1.TranscribeRequest\x1a .memos.api.v1.TranscribeResponse\"(\xdaA\x05audio\x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/api/v1/ai:transcribe\x12\x8e\x01\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title2\x9c\x01\n" +
+	"\tAIService\x12\x8e\x01\n" +
 	"\x13ListEmbeddingModels\x12(.memos.api.v1.ListEmbeddingModelsRequest\x1a).memos.api.v1.ListEmbeddingModelsResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/api/v1/ai/embeddingModelsB\xa6\x01\n" +
 	"\x10com.memos.api.v1B\x0eAiServiceProtoP\x01Z0github.com/usememos/memos/proto/gen/api/v1;apiv1\xa2\x02\x03MAX\xaa\x02\fMemos.Api.V1\xca\x02\fMemos\\Api\\V1\xe2\x02\x18Memos\\Api\\V1\\GPBMetadata\xea\x02\x0eMemos::Api::V1b\x06proto3"
 
@@ -398,27 +194,21 @@ func file_api_v1_ai_service_proto_rawDescGZIP() []byte {
 	return file_api_v1_ai_service_proto_rawDescData
 }
 
-var file_api_v1_ai_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_api_v1_ai_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_api_v1_ai_service_proto_goTypes = []any{
-	(*TranscribeRequest)(nil),           // 0: memos.api.v1.TranscribeRequest
-	(*TranscriptionAudio)(nil),          // 1: memos.api.v1.TranscriptionAudio
-	(*TranscribeResponse)(nil),          // 2: memos.api.v1.TranscribeResponse
-	(*ListEmbeddingModelsRequest)(nil),  // 3: memos.api.v1.ListEmbeddingModelsRequest
-	(*ListEmbeddingModelsResponse)(nil), // 4: memos.api.v1.ListEmbeddingModelsResponse
-	(*EmbeddingModel)(nil),              // 5: memos.api.v1.EmbeddingModel
+	(*ListEmbeddingModelsRequest)(nil),  // 0: memos.api.v1.ListEmbeddingModelsRequest
+	(*ListEmbeddingModelsResponse)(nil), // 1: memos.api.v1.ListEmbeddingModelsResponse
+	(*EmbeddingModel)(nil),              // 2: memos.api.v1.EmbeddingModel
 }
 var file_api_v1_ai_service_proto_depIdxs = []int32{
-	1, // 0: memos.api.v1.TranscribeRequest.audio:type_name -> memos.api.v1.TranscriptionAudio
-	5, // 1: memos.api.v1.ListEmbeddingModelsResponse.models:type_name -> memos.api.v1.EmbeddingModel
-	0, // 2: memos.api.v1.AIService.Transcribe:input_type -> memos.api.v1.TranscribeRequest
-	3, // 3: memos.api.v1.AIService.ListEmbeddingModels:input_type -> memos.api.v1.ListEmbeddingModelsRequest
-	2, // 4: memos.api.v1.AIService.Transcribe:output_type -> memos.api.v1.TranscribeResponse
-	4, // 5: memos.api.v1.AIService.ListEmbeddingModels:output_type -> memos.api.v1.ListEmbeddingModelsResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	2, // 0: memos.api.v1.ListEmbeddingModelsResponse.models:type_name -> memos.api.v1.EmbeddingModel
+	0, // 1: memos.api.v1.AIService.ListEmbeddingModels:input_type -> memos.api.v1.ListEmbeddingModelsRequest
+	1, // 2: memos.api.v1.AIService.ListEmbeddingModels:output_type -> memos.api.v1.ListEmbeddingModelsResponse
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_ai_service_proto_init() }
@@ -426,17 +216,13 @@ func file_api_v1_ai_service_proto_init() {
 	if File_api_v1_ai_service_proto != nil {
 		return
 	}
-	file_api_v1_ai_service_proto_msgTypes[1].OneofWrappers = []any{
-		(*TranscriptionAudio_Content)(nil),
-		(*TranscriptionAudio_Uri)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_ai_service_proto_rawDesc), len(file_api_v1_ai_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

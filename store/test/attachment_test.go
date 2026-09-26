@@ -225,85 +225,6 @@ func TestMemoMutationRollsBackOnBindingConflict(t *testing.T) {
 	require.Equal(t, otherMemo.ID, *storedConflicting.MemoID)
 }
 
-func TestMemoCreationMutationRollsBackDependentWrites(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	ts := NewTestingStore(ctx, t)
-	defer ts.Close()
-	user, err := createTestingHostUser(ctx, ts)
-	require.NoError(t, err)
-
-	topLevelUID := shortuuid.New()
-	topLevel := &store.Memo{UID: topLevelUID, CreatorID: user.ID, Content: "top level", Visibility: store.Private}
-	err = ts.ApplyMemoMutation(ctx, &store.MemoMutation{
-		MemoCreate:            topLevel,
-		MemoCreatorID:         user.ID,
-		ExpectedMemoContent:   topLevel.Content,
-		RequiredAttachmentIDs: []int32{2147483000},
-	})
-	require.ErrorIs(t, err, store.ErrMemoMutationConflict)
-	storedTopLevel, err := ts.GetMemo(ctx, &store.FindMemo{UID: &topLevelUID})
-	require.NoError(t, err)
-	require.Nil(t, storedTopLevel, "dependent write failure must roll back the top-level memo row")
-
-	root, err := ts.CreateMemo(ctx, &store.Memo{UID: shortuuid.New(), CreatorID: user.ID, Content: "root", Visibility: store.Public})
-	require.NoError(t, err)
-	commentUID := shortuuid.New()
-	comment := &store.Memo{UID: commentUID, CreatorID: user.ID, Content: "comment", Visibility: store.Public}
-	err = ts.ApplyMemoMutation(ctx, &store.MemoMutation{
-		MemoCreate:            comment,
-		CommentContextMemoID:  &root.ID,
-		MemoCreatorID:         user.ID,
-		ExpectedMemoContent:   comment.Content,
-		RequiredAttachmentIDs: []int32{2147483000},
-	})
-	require.ErrorIs(t, err, store.ErrMemoMutationConflict)
-	storedComment, err := ts.GetMemo(ctx, &store.FindMemo{UID: &commentUID})
-	require.NoError(t, err)
-	require.Nil(t, storedComment, "dependent write failure must roll back the comment row")
-}
-
-func TestMemoCreationMutationCommitsMemoBindingsAndRelationsTogether(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	ts := NewTestingStore(ctx, t)
-	defer ts.Close()
-	user, err := createTestingHostUser(ctx, ts)
-	require.NoError(t, err)
-	target, err := ts.CreateMemo(ctx, &store.Memo{UID: shortuuid.New(), CreatorID: user.ID, Content: "target", Visibility: store.Private})
-	require.NoError(t, err)
-	attachment, err := ts.CreateAttachment(ctx, &store.Attachment{
-		UID: shortuuid.New(), CreatorID: user.ID, Filename: "created.png", Type: "image/png",
-	})
-	require.NoError(t, err)
-
-	created := &store.Memo{UID: shortuuid.New(), CreatorID: user.ID, Content: "created", Visibility: store.Private}
-	err = ts.ApplyMemoMutation(ctx, &store.MemoMutation{
-		MemoCreate:                created,
-		MemoCreatorID:             user.ID,
-		ExpectedMemoContent:       created.Content,
-		Bindings:                  []*store.MemoAttachmentBinding{{ID: attachment.ID, UID: attachment.UID, UpdatedTs: time.Now().Unix()}},
-		RequiredAttachmentIDs:     []int32{attachment.ID},
-		ReplaceReferenceRelations: true,
-		ReferenceRelations: []*store.MemoRelation{{
-			RelatedMemoID: target.ID,
-			Type:          store.MemoRelationReference,
-		}},
-	})
-	require.NoError(t, err)
-	require.Positive(t, created.ID)
-
-	storedAttachment, err := ts.GetAttachment(ctx, &store.FindAttachment{ID: &attachment.ID})
-	require.NoError(t, err)
-	require.NotNil(t, storedAttachment.MemoID)
-	require.Equal(t, created.ID, *storedAttachment.MemoID)
-	relations, err := ts.ListMemoRelations(ctx, &store.FindMemoRelation{MemoIDList: []int32{created.ID}})
-	require.NoError(t, err)
-	require.Len(t, relations, 1)
-	require.Equal(t, created.ID, relations[0].MemoID)
-	require.Equal(t, target.ID, relations[0].RelatedMemoID)
-}
-
 func TestMemoMutationUpdatesMemoAndBindingsTogether(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
@@ -390,48 +311,6 @@ func TestMemoMutationRollsBackWhenRequiredAttachmentIsMissing(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, storedRemoved.MemoID)
 	require.Equal(t, memo.ID, *storedRemoved.MemoID)
-}
-
-func TestMemoMutationRejectsCommentInReferenceReplacement(t *testing.T) {
-	t.Parallel()
-	ctx := context.Background()
-	ts := NewTestingStore(ctx, t)
-	defer ts.Close()
-	user, err := createTestingHostUser(ctx, ts)
-	require.NoError(t, err)
-	source, err := ts.CreateMemo(ctx, &store.Memo{UID: shortuuid.New(), CreatorID: user.ID, Content: "original", Visibility: store.Private})
-	require.NoError(t, err)
-	originalTarget, err := ts.CreateMemo(ctx, &store.Memo{UID: shortuuid.New(), CreatorID: user.ID, Content: "original target", Visibility: store.Private})
-	require.NoError(t, err)
-	replacementTarget, err := ts.CreateMemo(ctx, &store.Memo{UID: shortuuid.New(), CreatorID: user.ID, Content: "replacement target", Visibility: store.Private})
-	require.NoError(t, err)
-	_, err = ts.UpsertMemoRelation(ctx, &store.MemoRelation{
-		MemoID: source.ID, RelatedMemoID: originalTarget.ID, Type: store.MemoRelationReference,
-	})
-	require.NoError(t, err)
-
-	updatedContent := "must roll back"
-	err = ts.ApplyMemoMutation(ctx, &store.MemoMutation{
-		MemoID:                    source.ID,
-		MemoCreatorID:             user.ID,
-		ExpectedMemoContent:       source.Content,
-		MemoUpdate:                &store.UpdateMemo{ID: source.ID, Content: &updatedContent},
-		ReplaceReferenceRelations: true,
-		ReferenceRelations: []*store.MemoRelation{
-			{MemoID: source.ID, RelatedMemoID: replacementTarget.ID, Type: store.MemoRelationReference},
-			{MemoID: source.ID, RelatedMemoID: originalTarget.ID, Type: store.MemoRelationComment},
-		},
-	})
-	require.Error(t, err)
-
-	stored, err := ts.GetMemo(ctx, &store.FindMemo{ID: &source.ID})
-	require.NoError(t, err)
-	require.Equal(t, "original", stored.Content)
-	referenceType := store.MemoRelationReference
-	relations, err := ts.ListMemoRelations(ctx, &store.FindMemoRelation{MemoID: &source.ID, Type: &referenceType})
-	require.NoError(t, err)
-	require.Len(t, relations, 1)
-	require.Equal(t, originalTarget.ID, relations[0].RelatedMemoID)
 }
 
 func TestAttachmentStoreWithFilter(t *testing.T) {

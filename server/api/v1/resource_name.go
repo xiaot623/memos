@@ -15,18 +15,15 @@ import (
 )
 
 const (
-	InstanceSettingNamePrefix  = "instance/settings/"
-	UserNamePrefix             = "users/"
-	MemoNamePrefix             = "memos/"
-	MemoShareNamePrefix        = "shares/"
-	AttachmentNamePrefix       = "attachments/"
-	ReactionNamePrefix         = "reactions/"
-	InboxNamePrefix            = "inboxes/"
-	IdentityProviderNamePrefix = "identity-providers/"
-	WebhookNamePrefix          = "webhooks/"
-	SpaceNamePrefix            = "spaces/"
-	SpaceMemberNamePrefix      = "members/"
-	SpaceInvitationNamePrefix  = "invitations/"
+	InstanceSettingNamePrefix = "instance/settings/"
+	UserNamePrefix            = "users/"
+	MemoNamePrefix            = "memos/"
+	MemoShareNamePrefix       = "shares/"
+	AttachmentNamePrefix      = "attachments/"
+	ReactionNamePrefix        = "reactions/"
+	SpaceNamePrefix           = "spaces/"
+	SpaceMemberNamePrefix     = "members/"
+	SpaceInvitationNamePrefix = "invitations/"
 )
 
 // GetNameParentTokens returns the tokens from a resource name.
@@ -148,27 +145,6 @@ func ExtractMemoReactionIDFromName(name string) (string, int32, error) {
 		return "", 0, errors.Errorf("invalid reaction ID %q", tokens[1])
 	}
 	return memoUID, reactionID, nil
-}
-
-// ExtractInboxIDFromName returns the inbox ID from a resource name.
-func ExtractInboxIDFromName(name string) (int32, error) {
-	tokens, err := GetNameParentTokens(name, InboxNamePrefix)
-	if err != nil {
-		return 0, err
-	}
-	id, err := parseInt32(tokens[0])
-	if err != nil {
-		return 0, errors.Errorf("invalid inbox ID %q", tokens[0])
-	}
-	return id, nil
-}
-
-func ExtractIdentityProviderUIDFromName(name string) (string, error) {
-	tokens, err := GetNameParentTokens(name, IdentityProviderNamePrefix)
-	if err != nil {
-		return "", err
-	}
-	return tokens[0], nil
 }
 
 // ValidateAndGenerateUID validates a user-provided UID or generates a new one.

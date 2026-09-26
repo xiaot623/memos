@@ -13,15 +13,9 @@ import {
 import { memoServiceClient } from "@/connect";
 import { attachmentKeys } from "@/hooks/useAttachmentQueries";
 import { userKeys } from "@/hooks/useUserQueries";
-import { DEFAULT_LIST_MEMOS_PAGE_SIZE } from "@/lib/constants";
 import { shouldRetry } from "@/lib/query-client";
 import type { ListMemosRequest, ListMemosResponse, Memo } from "@/types/proto/api/v1/memo_service_pb";
-import {
-  ListMemoCommentsRequestSchema,
-  ListMemosRequestSchema,
-  MemoSchema,
-  SearchMemosRequestSchema,
-} from "@/types/proto/api/v1/memo_service_pb";
+import { ListMemosRequestSchema, MemoSchema, SearchMemosRequestSchema } from "@/types/proto/api/v1/memo_service_pb";
 
 // Query keys factory for consistent cache management
 export const memoKeys = {
@@ -30,8 +24,6 @@ export const memoKeys = {
   list: (filters: Partial<ListMemosRequest>) => [...memoKeys.lists(), filters] as const,
   details: () => [...memoKeys.all, "detail"] as const,
   detail: (name: string) => [...memoKeys.details(), name] as const,
-  comments: (name: string) => [...memoKeys.all, "comments", name] as const,
-  linkMetadata: (url: string) => [...memoKeys.all, "linkMetadata", url] as const,
 };
 
 export const memoDetailQueryOptions = (name: string) =>
@@ -59,22 +51,18 @@ export function isMemoUnavailableError(error: unknown): boolean {
 }
 
 function discardUnavailableMemo(client: QueryClient, name: string) {
-  const stripRelations = (memo: Memo): Memo => {
-    const relations = memo.relations.filter((relation) => relation.memo?.name !== name && relation.relatedMemo?.name !== name);
-    return relations.length === memo.relations.length ? memo : { ...memo, relations };
-  };
   const stripList = (data: ListMemosResponse): ListMemosResponse => {
-    const memos = data.memos.filter((memo) => memo.name !== name).map(stripRelations);
-    return memos.length === data.memos.length && memos.every((memo, index) => memo === data.memos[index]) ? data : { ...data, memos };
+    const memos = data.memos.filter((memo) => memo.name !== name);
+    return memos.length === data.memos.length ? data : { ...data, memos };
   };
-  for (const [key, data] of client.getQueriesData<MemoCollectionQueryData | Memo | null>({ queryKey: memoKeys.all })) {
+  for (const [_key, data] of client.getQueriesData<MemoCollectionQueryData | Memo | null>({ queryKey: memoKeys.all })) {
     let next = data;
     if (isMemoListResponse(data)) next = stripList(data);
     else if (isInfiniteMemoListData(data)) {
       const pages = data.pages.map(stripList);
       if (pages.some((page, index) => page !== data.pages[index])) next = { ...data, pages };
-    } else if (key[1] === "detail" && data && "name" in data && data.name !== name) next = stripRelations(data);
-    if (next !== data) client.setQueryData(key, next);
+    }
+    if (next !== data) client.setQueryData(_key, next);
   }
 }
 
@@ -223,30 +211,6 @@ export function useMemo(name: string, options?: { enabled?: boolean }) {
   return { ...query, data: query.data ?? undefined, isUnavailable: query.data === null };
 }
 
-function isHTTPURL(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-export function useLinkMetadata(url: string, options?: { enabled?: boolean }) {
-  const trimmedUrl = url.trim();
-
-  return useQuery({
-    queryKey: memoKeys.linkMetadata(trimmedUrl),
-    queryFn: async () => {
-      const metadata = await memoServiceClient.getLinkMetadata({ url: trimmedUrl });
-      return metadata;
-    },
-    enabled: (options?.enabled ?? true) && isHTTPURL(trimmedUrl),
-    staleTime: 1000 * 60 * 60 * 24,
-    gcTime: 1000 * 60 * 60 * 24,
-  });
-}
-
 export function useCreateMemo() {
   const queryClient = useQueryClient();
 
@@ -319,9 +283,6 @@ export function useUpdateMemo() {
       patchMemoInCollectionQueries(queryClient, updatedMemo);
       // Invalidate lists to refresh
       queryClient.invalidateQueries({ queryKey: memoKeys.lists() });
-      if (updatedMemo.parent) {
-        queryClient.invalidateQueries({ queryKey: memoKeys.comments(updatedMemo.parent) });
-      }
       // Invalidate user stats
       queryClient.invalidateQueries({ queryKey: userKeys.stats() });
       // Placement changes move linked attachments between scoped libraries.
@@ -348,46 +309,5 @@ export function useDeleteMemo() {
       // Memo deletion can remove or unlink associated attachments.
       queryClient.invalidateQueries({ queryKey: attachmentKeys.lists() });
     },
-  });
-}
-
-export function useMemoComments(name: string, options?: { enabled?: boolean; pageSize?: number }) {
-  return useQuery({
-    queryKey: [...memoKeys.comments(name), options?.pageSize ?? 0],
-    queryFn: async () => {
-      const response = await memoServiceClient.listMemoComments(
-        create(ListMemoCommentsRequestSchema, {
-          name,
-          pageSize: options?.pageSize ?? 0,
-        }),
-      );
-      return response;
-    },
-    enabled: options?.enabled ?? true,
-    staleTime: 1000 * 60, // 1 minute
-  });
-}
-
-// useInfiniteMemoComments paginates through every comment via nextPageToken, instead of
-// stopping at the server's default page size (the cause of comments being truncated to 10).
-export function useInfiniteMemoComments(name: string, options?: { enabled?: boolean; pageSize?: number }) {
-  const pageSize = options?.pageSize ?? DEFAULT_LIST_MEMOS_PAGE_SIZE;
-  return useInfiniteQuery({
-    queryKey: [...memoKeys.comments(name), "infinite", pageSize],
-    queryFn: async ({ pageParam }) => {
-      const response = await memoServiceClient.listMemoComments(
-        create(ListMemoCommentsRequestSchema, {
-          name,
-          pageSize,
-          pageToken: pageParam || "",
-        }),
-      );
-      return response;
-    },
-    initialPageParam: "",
-    getNextPageParam: (lastPage) => lastPage.nextPageToken || undefined,
-    select: (data) => data.pages.flatMap((page) => page.memos),
-    enabled: options?.enabled ?? true,
-    staleTime: 1000 * 60, // 1 minute
   });
 }

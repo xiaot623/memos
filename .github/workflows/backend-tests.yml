@@ -65,8 +65,8 @@ jobs:
         run: |
           case "${{ matrix.test-group }}" in
             store)
-              # Run store tests for all drivers (sqlite, mysql, postgres)
-              DRIVER= go test -v -coverprofile=coverage.out -covermode=atomic ./store/...
+              # SQLite is the only database driver.
+              DRIVER=sqlite go test -v -coverprofile=coverage.out -covermode=atomic ./store/...
               ;;
             server)
               # Includes ./server/test, which boots the real server via

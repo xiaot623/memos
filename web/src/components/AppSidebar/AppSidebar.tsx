@@ -2,37 +2,27 @@ import { useDirection } from "@base-ui/react/direction-provider";
 import {
   ArchiveIcon,
   ArrowRightIcon,
-  BellIcon,
-  CalendarDaysIcon,
-  ChevronDownIcon,
-  EarthIcon,
   FileAudioIcon,
   FileTextIcon,
   HouseIcon,
   ImageIcon,
-  InfoIcon,
-  LayoutListIcon,
   ListIcon,
   type LucideIcon,
-  MapIcon,
   MenuIcon,
   SearchIcon,
   SquarePenIcon,
   Trash2Icon,
   UserRoundIcon,
 } from "lucide-react";
-import { type ReactNode, useEffect } from "react";
-import { Link, matchPath, useLocation, useNavigate } from "react-router-dom";
-import { MAP_MEMO_FILTER } from "@/components/MapView/useMapMemos";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MemoDetailSidebar } from "@/components/MemoDetailSidebar";
 import { DEFAULT_SETTING_SECTION, SETTINGS_SECTIONS } from "@/components/Settings/settingSections";
 import StatisticsView from "@/components/StatisticsView";
 import UserMenu from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { type AttachmentSection, type InboxFilter, useAppSidebar } from "@/contexts/AppSidebarContext";
+import { type AttachmentSection, useAppSidebar } from "@/contexts/AppSidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGlobalMemoEditor } from "@/contexts/GlobalMemoEditorContext";
 import { useInstance } from "@/contexts/InstanceContext";
@@ -42,14 +32,11 @@ import { useAttachmentLibraryStats } from "@/hooks/useAttachmentLibrary";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { type MemoStatsContext, useFilteredMemoStats } from "@/hooks/useFilteredMemoStats";
 import useMediaQuery from "@/hooks/useMediaQuery";
-import { useNotifications, useUser } from "@/hooks/useUserQueries";
-import { combineCELFilters } from "@/lib/cel-filter";
-import { getMemoScopePath, getProfileUsername, type PrimaryMemoScope, resolveMemoScope } from "@/lib/memo-views";
-import { userNamePrefix } from "@/lib/resource-names";
+import { getMemoScopePath, type PrimaryMemoScope, resolveMemoScope } from "@/lib/memo-views";
 import { cn } from "@/lib/utils";
 import { collectionPathForLocation, ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
-import { User_Role, UserNotification_Status } from "@/types/proto/api/v1/user_service_pb";
+import { User_Role } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import MemosLogo from "../MemosLogo";
 import CommonSidebarContent from "./CommonSidebarContent";
@@ -64,7 +51,6 @@ import {
   sidebarSurfaceVariants,
 } from "./sidebar-layout";
 import TagsSection from "./TagsSection";
-import ViewsSection from "./ViewsSection";
 
 const NewMemoAction = ({ onClick }: { onClick: () => void }) => {
   const t = useTranslate();
@@ -80,49 +66,21 @@ const NewMemoAction = ({ onClick }: { onClick: () => void }) => {
   );
 };
 
-const ProfileNavigation = () => {
+const CollectionSidebarContent = ({ context }: { context: MemoStatsContext }) => {
   const t = useTranslate();
-  const { setMobileOpen } = useAppSidebar();
-
-  return (
-    <SidebarSection label={t("common.profile")}>
-      <SidebarRow state="current" icon={LayoutListIcon} label={t("common.memos")} onClick={() => setMobileOpen(false)} />
-    </SidebarSection>
-  );
-};
-
-/** The calendar is its own month view, so its sidebar narrows by view and tag but skips the heatmap. */
-const CollectionSidebarContent = ({
-  context,
-  showStatistics = true,
-  scopeFilter,
-}: {
-  context: MemoStatsContext;
-  showStatistics?: boolean;
-  /** A page that can only show part of the collection counts that part, so a tag never promises memos the page cannot show. */
-  scopeFilter?: string;
-}) => {
-  const t = useTranslate();
-  const location = useLocation();
   const currentUser = useCurrentUser();
   const { memoFilter, selectedSpaceName } = useSpaceContext();
   const md = useMediaQuery("md");
   const { mobileOpen, setMobileOpen } = useAppSidebar();
   const { isInitialized: authInitialized } = useAuth();
   const { isInitialized: instanceInitialized } = useInstance();
-  const profileUsername = getProfileUsername(location.pathname);
-  const { data: profileUser } = useUser(`${userNamePrefix}${profileUsername ?? ""}`, {
-    enabled: context === "profile" && profileUsername !== undefined,
-  });
-  const statsUserName = context === "home" ? currentUser?.name : context === "profile" ? profileUser?.name : undefined;
-  // User-level collections stay aligned with their unscoped feeds even when a Space is remembered.
-  const isUserLevelCollection = context === "profile" || context === "archived";
+  const statsUserName = context === "home" || context === "archived" ? currentUser?.name : undefined;
+  const isUserLevelCollection = context === "archived";
   const collectionFilter = isUserLevelCollection ? undefined : memoFilter;
-  const statsFilter = scopeFilter ? combineCELFilters(collectionFilter, scopeFilter) : collectionFilter;
   const { statistics, tags } = useFilteredMemoStats({
     context,
     userName: statsUserName,
-    filter: statsFilter,
+    filter: collectionFilter,
     enabled: authInitialized && instanceInitialized && (md || mobileOpen),
   });
 
@@ -132,14 +90,9 @@ const CollectionSidebarContent = ({
 
   return (
     <div className={SIDEBAR_SECTION_STACK_CLASSES}>
-      {context === "profile" && <ProfileNavigation />}
-      {showStatistics && (
-        <SidebarSection ariaLabel={t("common.statistics")}>
-          <StatisticsView statisticsData={statistics} onDateSelect={() => setMobileOpen(false)} />
-        </SidebarSection>
-      )}
-      {/* Every collection route narrows the same way: views (yours, so signed-in only), days, tags. */}
-      {currentUser && <ViewsSection />}
+      <SidebarSection ariaLabel={t("common.statistics")}>
+        <StatisticsView statisticsData={statistics} onDateSelect={() => setMobileOpen(false)} />
+      </SidebarSection>
       <TagsSection tagCount={tags} scope={tagStateScope} onSelect={() => setMobileOpen(false)} />
     </div>
   );
@@ -162,7 +115,6 @@ const AttachmentsSidebarContent = () => {
       count: isComplete ? stats.documents : undefined,
     },
   ];
-  // Unlinked uploads do not belong to any Space, so "Unused" is only a Memos-level collection.
   if (!selectedSpaceName) {
     rows.push({
       value: "unused",
@@ -182,44 +134,6 @@ const AttachmentsSidebarContent = () => {
           count={row.count}
           onClick={() => {
             setAttachmentSection(row.value);
-            setMobileOpen(false);
-          }}
-        />
-      ))}
-    </SidebarSection>
-  );
-};
-
-const InboxSidebarContent = () => {
-  const t = useTranslate();
-  const { inboxFilter, setInboxFilter, setMobileOpen } = useAppSidebar();
-  const { data: notifications = [] } = useNotifications();
-  const rows: Array<{ value: InboxFilter; icon: LucideIcon; label: string; count: number }> = [
-    { value: "all", icon: ListIcon, label: t("common.all"), count: notifications.length },
-    {
-      value: "unread",
-      icon: BellIcon,
-      label: t("inbox.unread"),
-      count: notifications.filter((item) => item.status === UserNotification_Status.UNREAD).length,
-    },
-    {
-      value: "archived",
-      icon: ArchiveIcon,
-      label: t("common.archived"),
-      count: notifications.filter((item) => item.status === UserNotification_Status.ARCHIVED).length,
-    },
-  ];
-  return (
-    <SidebarSection label={t("common.inbox")}>
-      {rows.map((row) => (
-        <SidebarRow
-          key={row.value}
-          state={inboxFilter === row.value ? "current" : "idle"}
-          icon={row.icon}
-          label={row.label}
-          count={row.count}
-          onClick={() => {
-            setInboxFilter(row.value);
             setMobileOpen(false);
           }}
         />
@@ -264,17 +178,10 @@ const MemoDetailSidebarContent = () => {
   return (
     <MemoDetailSidebar
       memo={memoDetail.memo}
-      parentMemo={memoDetail.parentMemo}
-      parentStatus={memoDetail.parentStatus}
-      onParentRetry={memoDetail.onParentRetry}
       parentPage={memoDetail.from}
       hasExplicitOrigin={memoDetail.hasExplicitOrigin}
-      commentCount={memoDetail.commentCount}
       forceReadonly={memoDetail.readonly}
       onEdit={runAndClose(memoDetail.onEdit)}
-      onCommentsOpen={runAndClose(memoDetail.onCommentsOpen)}
-      onCommentCreate={runAndClose(memoDetail.onCommentCreate)}
-      onShareImageOpen={runAndClose(memoDetail.onShareImageOpen)}
       className="pb-2"
     />
   );
@@ -283,60 +190,18 @@ const MemoDetailSidebarContent = () => {
 const RouteSidebarContent = () => {
   const location = useLocation();
   const kind = getSidebarRouteKind(location.pathname);
-  if (kind === "home" || kind === "archived" || kind === "explore" || kind === "profile") {
+  if (kind === "home" || kind === "archived") {
     return <CollectionSidebarContent context={kind} />;
   }
-  if (kind === "views") return <ViewsSection manageActive />;
-  if (kind === "calendar") return <CollectionSidebarContent context="home" showStatistics={false} />;
-  if (kind === "map") return <CollectionSidebarContent context="home" showStatistics={false} scopeFilter={MAP_MEMO_FILTER} />;
   if (kind === "attachments") return <AttachmentsSidebarContent />;
-  if (kind === "inbox") return <InboxSidebarContent />;
   if (kind === "settings") return <SettingsSidebarContent />;
   if (kind === "memo") return <MemoDetailSidebarContent />;
   if (kind === "common") return <CommonSidebarContent />;
   return null;
 };
 
-interface GlobalNavItem {
-  id: string;
-  label: string;
-  path: string;
-  icon: LucideIcon;
-  active: boolean;
-  count?: number;
-}
-
-/**
- * The compact navigator is intentionally horizontal. Its 16px glyph plus 6px padding
- * on each side makes the collapsed control an exact 28px square, the same box as the
- * header's compose control. Expanding the label only opens the text track, so the
- * artwork and surface never jump.
- *
- * The label is a luxury the row affords by width, never by truncation. Five squares and
- * their gaps cost 148px and the longest label 82px more, so below a 230px row (the default
- * sidebar's content box) the current page stays a filled square with its tooltip.
- */
-const NAV_LABEL_QUERY = "@min-[230px]:";
 const navPillClasses = (active: boolean) =>
   cn(sidebarSurfaceVariants({ role: "navPill" }), SIDEBAR_ROW_FOCUS_CLASSES, sidebarRowStateClasses(active ? "current" : "idle"));
-
-const NavPillLabel = ({ expanded, label, children }: { expanded: boolean; label: ReactNode; children?: ReactNode }) => (
-  // The control carries its own aria-label; this text is decoration whether or not it is open.
-  <span
-    aria-hidden="true"
-    className={cn(
-      "grid min-w-0 grid-cols-[0fr] ps-0 transition-[grid-template-columns,padding] duration-200 ease-out motion-reduce:transition-none",
-      expanded && `${NAV_LABEL_QUERY}grid-cols-[1fr] ${NAV_LABEL_QUERY}ps-2`,
-    )}
-  >
-    <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
-      <span data-sidebar-label className="shrink-0 truncate text-[12px]">
-        {label}
-      </span>
-      {children}
-    </span>
-  </span>
-);
 
 const GlobalNavigation = () => {
   const t = useTranslate();
@@ -347,179 +212,63 @@ const GlobalNavigation = () => {
   const { filters } = useMemoFilterContext();
   const routeKind = getSidebarRouteKind(location.pathname);
   const resolvedScope = resolveMemoScope(location.pathname, {
-    currentUsername: currentUser?.username,
     detailFrom: memoDetail?.from,
     memoArchived: memoDetail?.memo.state === State.ARCHIVED,
     fallback: memoScope,
   });
-  const primaryScope: PrimaryMemoScope = resolvedScope === "archived" ? memoScope : resolvedScope;
-  const routeOwnsPrimaryScope =
-    resolvedScope !== "archived" && (routeKind === "home" || routeKind === "explore" || routeKind === "profile" || routeKind === "memo");
-  const scopeRouteActive = routeKind === "home" || routeKind === "explore";
+  const primaryScope: PrimaryMemoScope = "home";
+  const homeActive = routeKind === "home" || (routeKind === "memo" && resolvedScope === "home");
+  const archivedActive = routeKind === "archived" || (routeKind === "memo" && resolvedScope === "archived");
 
-  useEffect(() => {
-    if (routeOwnsPrimaryScope && primaryScope !== memoScope) {
-      setMemoScope(primaryScope);
-    }
-  }, [memoScope, primaryScope, routeOwnsPrimaryScope, setMemoScope]);
-
-  const scopeItems: Array<{ id: PrimaryMemoScope; label: string; icon: LucideIcon }> = [
-    { id: "home", label: t("common.home"), icon: HouseIcon },
-    { id: "explore", label: t("common.explore"), icon: EarthIcon },
-  ];
-  const activeScopeItem = scopeItems.find((item) => item.id === primaryScope) ?? scopeItems[0];
-  const ActiveScopeIcon = activeScopeItem.icon;
-
-  const navigateToScope = (scope: PrimaryMemoScope) => {
-    setMemoScope(scope);
-    navigate({ pathname: collectionPathForLocation(getMemoScopePath(scope), location.pathname), search: getFilterSearch(filters) });
+  const navigateHome = () => {
+    setMemoScope(primaryScope);
+    navigate({ pathname: collectionPathForLocation(getMemoScopePath(primaryScope), location.pathname), search: getFilterSearch(filters) });
     setMobileOpen(false);
   };
-
-  const items: GlobalNavItem[] = currentUser
-    ? [
-        {
-          id: "calendar",
-          label: t("common.calendar"),
-          path: collectionPathForLocation(ROUTES.CALENDAR, location.pathname),
-          icon: CalendarDaysIcon,
-          active: routeKind === "calendar",
-        },
-        {
-          id: "map",
-          label: t("common.map"),
-          path: collectionPathForLocation(ROUTES.MAP, location.pathname),
-          icon: MapIcon,
-          active: routeKind === "map",
-        },
-      ]
-    : [
-        {
-          id: "explore",
-          label: t("common.explore"),
-          path: ROUTES.EXPLORE,
-          icon: EarthIcon,
-          active: routeKind === "explore" || routeKind === "profile" || routeKind === "memo",
-        },
-        {
-          id: "about",
-          label: t("common.about"),
-          path: ROUTES.ABOUT,
-          icon: InfoIcon,
-          active: Boolean(matchPath(ROUTES.ABOUT, location.pathname)),
-        },
-      ];
-
-  // Keep exactly one textual anchor in the compact horizontal navigator. The active
-  // destination expands; routes outside this navigator fall back to its first control
-  // without incorrectly marking that fallback as the current page.
-  const activeNavigatorItemId = currentUser && scopeRouteActive ? "scope" : items.find((item) => item.active)?.id;
-  const expandedNavigatorItemId = activeNavigatorItemId ?? (currentUser ? "scope" : items[0]?.id);
-  const scopeExpanded = expandedNavigatorItemId === "scope";
-
-  const scopeMenuContent = (
-    <DropdownMenuContent align="start" sideOffset={4} className="flex w-36 flex-col gap-0.5">
-      {scopeItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <DropdownMenuItem
-            key={item.id}
-            aria-current={item.id === resolvedScope ? "page" : undefined}
-            className={cn("h-8 shrink-0 py-0 text-[13px]", item.id === resolvedScope && "bg-accent font-medium text-accent-foreground")}
-            onClick={() => navigateToScope(item.id)}
-          >
-            <Icon className="size-4" strokeWidth={1.8} />
-            <span className="truncate">{item.label}</span>
-          </DropdownMenuItem>
-        );
-      })}
-    </DropdownMenuContent>
-  );
 
   return (
     <TooltipProvider>
       <nav className={cn("@container flex h-7 items-center gap-0.5", SIDEBAR_RAIL_CLASSES)} aria-label="Primary">
         {currentUser && (
-          <DropdownMenu
-            onOpenChange={(open, eventDetails) => {
-              // Off the scope routes this is a navigation control, not a menu trigger.
-              if (open && !scopeRouteActive) {
-                eventDetails.cancel();
-                navigateToScope(primaryScope);
-              }
-            }}
-          >
-            <Tooltip disabled={scopeExpanded}>
-              {/* Keep the tooltip wrapper separate: Base UI otherwise propagates its
-                  disabled state to the nested dropdown trigger. */}
-              <TooltipTrigger render={<span className="flex min-w-0" />}>
-                <DropdownMenuTrigger
-                  render={
-                    <button
-                      type="button"
-                      aria-label={activeScopeItem.label}
-                      aria-current={scopeRouteActive ? "page" : undefined}
-                      className={cn("group/scope", navPillClasses(scopeRouteActive))}
-                    />
-                  }
-                >
-                  <span className={SIDEBAR_NAV_LEADING_SLOT_CLASSES} aria-hidden="true">
-                    <ActiveScopeIcon className="size-4 opacity-75" strokeWidth={1.8} />
-                  </span>
-                  <NavPillLabel expanded={scopeExpanded} label={activeScopeItem.label}>
-                    {scopeRouteActive && (
-                      <ChevronDownIcon
-                        data-sidebar-trailing
-                        className="size-3 shrink-0 opacity-55 transition-transform duration-200 ease-out group-data-[popup-open]/scope:rotate-180 motion-reduce:transition-none"
-                        strokeWidth={1.8}
-                      />
-                    )}
-                  </NavPillLabel>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">{activeScopeItem.label}</TooltipContent>
-            </Tooltip>
-            {scopeMenuContent}
-          </DropdownMenu>
-        )}
-        {items.map((item) => {
-          const Icon = item.icon;
-          const expanded = item.id === expandedNavigatorItemId;
-          return (
-            <Tooltip key={item.id} disabled={expanded}>
+          <>
+            <Tooltip>
               <TooltipTrigger
                 render={
-                  <Link
-                    to={item.path}
-                    onClick={() => setMobileOpen(false)}
-                    aria-label={item.label}
-                    aria-current={item.active ? "page" : undefined}
-                    className={navPillClasses(item.active)}
+                  <button
+                    type="button"
+                    aria-label={t("common.home")}
+                    aria-current={homeActive ? "page" : undefined}
+                    className={navPillClasses(homeActive)}
+                    onClick={navigateHome}
                   />
                 }
               >
                 <span className={SIDEBAR_NAV_LEADING_SLOT_CLASSES} aria-hidden="true">
-                  <Icon className="size-4 opacity-75" strokeWidth={1.8} />
+                  <HouseIcon className="size-4 opacity-75" strokeWidth={1.8} />
                 </span>
-                <NavPillLabel expanded={expanded} label={item.label} />
-                {item.count != null && (
-                  <span
-                    data-sidebar-trailing
-                    className={cn(
-                      "absolute -end-0.5 top-0 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold leading-4 text-primary-foreground transition-[opacity,scale] duration-200 ease-out motion-reduce:transition-none",
-                      item.count > 0 ? "scale-100 opacity-100" : "scale-50 opacity-0",
-                    )}
-                  >
-                    {item.count > 0 && (item.count > 99 ? "99+" : item.count)}
-                  </span>
-                )}
               </TooltipTrigger>
-              <TooltipContent side="bottom">{item.label}</TooltipContent>
+              <TooltipContent side="bottom">{t("common.home")}</TooltipContent>
             </Tooltip>
-          );
-        })}
-        {/* Search is a place to go, not a header action: it closes the navigator's row
-            so the header keeps only the brand and the bordered compose control. */}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Link
+                    to={ROUTES.ARCHIVED}
+                    onClick={() => setMobileOpen(false)}
+                    aria-label={t("common.archived")}
+                    aria-current={archivedActive ? "page" : undefined}
+                    className={navPillClasses(archivedActive)}
+                  />
+                }
+              >
+                <span className={SIDEBAR_NAV_LEADING_SLOT_CLASSES} aria-hidden="true">
+                  <ArchiveIcon className="size-4 opacity-75" strokeWidth={1.8} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t("common.archived")}</TooltipContent>
+            </Tooltip>
+          </>
+        )}
         <Tooltip>
           <TooltipTrigger
             render={
@@ -555,7 +304,7 @@ const SidebarBrand = ({ className, size = "md" }: { className?: string; size?: "
 
   return (
     <Link
-      to={currentUser ? ROUTES.HOME : ROUTES.EXPLORE}
+      to={ROUTES.HOME}
       className={cn(
         "transition-colors hover:bg-sidebar-accent/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/40",
         sidebarSurfaceVariants({ role: size === "header" ? "headerBrand" : "mobileBrand" }),
@@ -596,7 +345,7 @@ const AppSidebar = ({ className }: { className?: string }) => {
             )}
           >
             <span className={SIDEBAR_LEADING_SLOT_CLASSES}>
-              <UserRoundIcon className="me-auto size-4 text-muted-foreground" strokeWidth={1.8} />
+              <UserRoundIcon className="size-4 text-muted-foreground me-auto" strokeWidth={1.8} />
             </span>
             <span data-sidebar-label className="min-w-0 flex-1 truncate">
               {t("common.sign-in-to-memos")}

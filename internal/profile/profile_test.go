@@ -38,7 +38,7 @@ func TestValidateInstanceURL(t *testing.T) {
 	}
 }
 
-func TestValidateRejectsDemoWithNonSQLiteDriver(t *testing.T) {
+func TestValidateRejectsNonSQLiteDriver(t *testing.T) {
 	p := &Profile{Demo: true, Driver: "postgres", Data: t.TempDir()}
-	require.ErrorContains(t, p.Validate(), "demo mode requires the sqlite database driver")
+	require.ErrorContains(t, p.Validate(), `unsupported database driver "postgres"`)
 }

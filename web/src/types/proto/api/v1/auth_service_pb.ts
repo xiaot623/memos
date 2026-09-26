@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file api/v1/auth_service.proto.
  */
 export const file_api_v1_auth_service: GenFile = /*@__PURE__*/
-  fileDesc("ChlhcGkvdjEvYXV0aF9zZXJ2aWNlLnByb3RvEgxtZW1vcy5hcGkudjEiFwoVR2V0Q3VycmVudFVzZXJSZXF1ZXN0IjoKFkdldEN1cnJlbnRVc2VyUmVzcG9uc2USIAoEdXNlchgBIAEoCzISLm1lbW9zLmFwaS52MS5Vc2VyIu4CCg1TaWduSW5SZXF1ZXN0Ek8KFHBhc3N3b3JkX2NyZWRlbnRpYWxzGAEgASgLMi8ubWVtb3MuYXBpLnYxLlNpZ25JblJlcXVlc3QuUGFzc3dvcmRDcmVkZW50aWFsc0gAEkUKD3Nzb19jcmVkZW50aWFscxgCIAEoCzIqLm1lbW9zLmFwaS52MS5TaWduSW5SZXF1ZXN0LlNTT0NyZWRlbnRpYWxzSAAaQwoTUGFzc3dvcmRDcmVkZW50aWFscxIVCgh1c2VybmFtZRgBIAEoCUID4EECEhUKCHBhc3N3b3JkGAIgASgJQgPgQQIacQoOU1NPQ3JlZGVudGlhbHMSFQoIaWRwX25hbWUYASABKAlCA+BBAhIRCgRjb2RlGAIgASgJQgPgQQISGQoMcmVkaXJlY3RfdXJpGAMgASgJQgPgQQISGgoNY29kZV92ZXJpZmllchgEIAEoCUID4EEBQg0KC2NyZWRlbnRpYWxzIoUBCg5TaWduSW5SZXNwb25zZRIgCgR1c2VyGAEgASgLMhIubWVtb3MuYXBpLnYxLlVzZXISFAoMYWNjZXNzX3Rva2VuGAIgASgJEjsKF2FjY2Vzc190b2tlbl9leHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIQCg5TaWduT3V0UmVxdWVzdCIVChNSZWZyZXNoVG9rZW5SZXF1ZXN0IlwKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIuCgpleHBpcmVzX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcDK/AwoLQXV0aFNlcnZpY2USdAoOR2V0Q3VycmVudFVzZXISIy5tZW1vcy5hcGkudjEuR2V0Q3VycmVudFVzZXJSZXF1ZXN0GiQubWVtb3MuYXBpLnYxLkdldEN1cnJlbnRVc2VyUmVzcG9uc2UiF4LT5JMCERIPL2FwaS92MS9hdXRoL21lEmMKBlNpZ25JbhIbLm1lbW9zLmFwaS52MS5TaWduSW5SZXF1ZXN0GhwubWVtb3MuYXBpLnYxLlNpZ25JblJlc3BvbnNlIh6C0+STAhg6ASoiEy9hcGkvdjEvYXV0aC9zaWduaW4SXQoHU2lnbk91dBIcLm1lbW9zLmFwaS52MS5TaWduT3V0UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIcgtPkkwIWIhQvYXBpL3YxL2F1dGgvc2lnbm91dBJ2CgxSZWZyZXNoVG9rZW4SIS5tZW1vcy5hcGkudjEuUmVmcmVzaFRva2VuUmVxdWVzdBoiLm1lbW9zLmFwaS52MS5SZWZyZXNoVG9rZW5SZXNwb25zZSIfgtPkkwIZOgEqIhQvYXBpL3YxL2F1dGgvcmVmcmVzaEKoAQoQY29tLm1lbW9zLmFwaS52MUIQQXV0aFNlcnZpY2VQcm90b1ABWjBnaXRodWIuY29tL3VzZW1lbW9zL21lbW9zL3Byb3RvL2dlbi9hcGkvdjE7YXBpdjGiAgNNQViqAgxNZW1vcy5BcGkuVjHKAgxNZW1vc1xBcGlcVjHiAhhNZW1vc1xBcGlcVjFcR1BCTWV0YWRhdGHqAg5NZW1vczo6QXBpOjpWMWIGcHJvdG8z", [file_api_v1_user_service, file_google_api_annotations, file_google_api_field_behavior, file_google_protobuf_empty, file_google_protobuf_timestamp]);
+  fileDesc("ChlhcGkvdjEvYXV0aF9zZXJ2aWNlLnByb3RvEgxtZW1vcy5hcGkudjEiFwoVR2V0Q3VycmVudFVzZXJSZXF1ZXN0IjoKFkdldEN1cnJlbnRVc2VyUmVzcG9uc2USIAoEdXNlchgBIAEoCzISLm1lbW9zLmFwaS52MS5Vc2VyIqgBCg1TaWduSW5SZXF1ZXN0ElIKFHBhc3N3b3JkX2NyZWRlbnRpYWxzGAEgASgLMi8ubWVtb3MuYXBpLnYxLlNpZ25JblJlcXVlc3QuUGFzc3dvcmRDcmVkZW50aWFsc0ID4EECGkMKE1Bhc3N3b3JkQ3JlZGVudGlhbHMSFQoIdXNlcm5hbWUYASABKAlCA+BBAhIVCghwYXNzd29yZBgCIAEoCUID4EECIoUBCg5TaWduSW5SZXNwb25zZRIgCgR1c2VyGAEgASgLMhIubWVtb3MuYXBpLnYxLlVzZXISFAoMYWNjZXNzX3Rva2VuGAIgASgJEjsKF2FjY2Vzc190b2tlbl9leHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIQCg5TaWduT3V0UmVxdWVzdCIVChNSZWZyZXNoVG9rZW5SZXF1ZXN0IlwKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIuCgpleHBpcmVzX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcDK/AwoLQXV0aFNlcnZpY2USdAoOR2V0Q3VycmVudFVzZXISIy5tZW1vcy5hcGkudjEuR2V0Q3VycmVudFVzZXJSZXF1ZXN0GiQubWVtb3MuYXBpLnYxLkdldEN1cnJlbnRVc2VyUmVzcG9uc2UiF4LT5JMCERIPL2FwaS92MS9hdXRoL21lEmMKBlNpZ25JbhIbLm1lbW9zLmFwaS52MS5TaWduSW5SZXF1ZXN0GhwubWVtb3MuYXBpLnYxLlNpZ25JblJlc3BvbnNlIh6C0+STAhg6ASoiEy9hcGkvdjEvYXV0aC9zaWduaW4SXQoHU2lnbk91dBIcLm1lbW9zLmFwaS52MS5TaWduT3V0UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIcgtPkkwIWIhQvYXBpL3YxL2F1dGgvc2lnbm91dBJ2CgxSZWZyZXNoVG9rZW4SIS5tZW1vcy5hcGkudjEuUmVmcmVzaFRva2VuUmVxdWVzdBoiLm1lbW9zLmFwaS52MS5SZWZyZXNoVG9rZW5SZXNwb25zZSIfgtPkkwIZOgEqIhQvYXBpL3YxL2F1dGgvcmVmcmVzaEKoAQoQY29tLm1lbW9zLmFwaS52MUIQQXV0aFNlcnZpY2VQcm90b1ABWjBnaXRodWIuY29tL3VzZW1lbW9zL21lbW9zL3Byb3RvL2dlbi9hcGkvdjE7YXBpdjGiAgNNQViqAgxNZW1vcy5BcGkuVjHKAgxNZW1vc1xBcGlcVjHiAhhNZW1vc1xBcGlcVjFcR1BCTWV0YWRhdGHqAg5NZW1vczo6QXBpOjpWMWIGcHJvdG8z", [file_api_v1_user_service, file_google_api_annotations, file_google_api_field_behavior, file_google_protobuf_empty, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message memos.api.v1.GetCurrentUserRequest
@@ -55,27 +55,11 @@ export const GetCurrentUserResponseSchema: GenMessage<GetCurrentUserResponse> = 
  */
 export type SignInRequest = Message<"memos.api.v1.SignInRequest"> & {
   /**
-   * Authentication credentials. Provide one method.
+   * Username and password authentication.
    *
-   * @generated from oneof memos.api.v1.SignInRequest.credentials
+   * @generated from field: memos.api.v1.SignInRequest.PasswordCredentials password_credentials = 1;
    */
-  credentials: {
-    /**
-     * Username and password authentication.
-     *
-     * @generated from field: memos.api.v1.SignInRequest.PasswordCredentials password_credentials = 1;
-     */
-    value: SignInRequest_PasswordCredentials;
-    case: "passwordCredentials";
-  } | {
-    /**
-     * SSO provider authentication.
-     *
-     * @generated from field: memos.api.v1.SignInRequest.SSOCredentials sso_credentials = 2;
-     */
-    value: SignInRequest_SSOCredentials;
-    case: "ssoCredentials";
-  } | { case: undefined; value?: undefined };
+  passwordCredentials?: SignInRequest_PasswordCredentials | undefined;
 };
 
 /**
@@ -112,50 +96,6 @@ export type SignInRequest_PasswordCredentials = Message<"memos.api.v1.SignInRequ
  */
 export const SignInRequest_PasswordCredentialsSchema: GenMessage<SignInRequest_PasswordCredentials> = /*@__PURE__*/
   messageDesc(file_api_v1_auth_service, 2, 0);
-
-/**
- * Nested message for SSO authentication credentials.
- *
- * @generated from message memos.api.v1.SignInRequest.SSOCredentials
- */
-export type SignInRequest_SSOCredentials = Message<"memos.api.v1.SignInRequest.SSOCredentials"> & {
-  /**
-   * The resource name of the SSO provider.
-   * Format: identity-providers/{idp}
-   *
-   * @generated from field: string idp_name = 1;
-   */
-  idpName: string;
-
-  /**
-   * The authorization code from the SSO provider.
-   *
-   * @generated from field: string code = 2;
-   */
-  code: string;
-
-  /**
-   * The redirect URI used in the SSO flow.
-   *
-   * @generated from field: string redirect_uri = 3;
-   */
-  redirectUri: string;
-
-  /**
-   * The PKCE code verifier for enhanced security (RFC 7636).
-   * Optional - enables PKCE flow protection against authorization code interception.
-   *
-   * @generated from field: string code_verifier = 4;
-   */
-  codeVerifier: string;
-};
-
-/**
- * Describes the message memos.api.v1.SignInRequest.SSOCredentials.
- * Use `create(SignInRequest_SSOCredentialsSchema)` to create a new message.
- */
-export const SignInRequest_SSOCredentialsSchema: GenMessage<SignInRequest_SSOCredentials> = /*@__PURE__*/
-  messageDesc(file_api_v1_auth_service, 2, 1);
 
 /**
  * @generated from message memos.api.v1.SignInResponse
@@ -261,9 +201,8 @@ export const AuthService: GenService<{
     output: typeof GetCurrentUserResponseSchema;
   },
   /**
-   * SignIn authenticates a user with credentials and returns tokens.
+   * SignIn authenticates a user with a username and password and returns tokens.
    * On success, returns an access token and sets a refresh token cookie.
-   * Supports password-based and SSO authentication methods.
    *
    * @generated from rpc memos.api.v1.AuthService.SignIn
    */

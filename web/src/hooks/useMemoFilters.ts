@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 import { type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { type MemoTimeBasis, useView } from "@/contexts/ViewContext";
-import useCurrentUser from "@/hooks/useCurrentUser";
-import { useMemoViews } from "@/hooks/useUserQueries";
 import { buildTimestampRangeFilter, getLocalDayTimestampRange, getTimeBasisField } from "@/lib/calendar-utils";
 import { combineCELFilters } from "@/lib/cel-filter";
-import { BUILTIN_TASKS_VIEW_FILTER, BUILTIN_TASKS_VIEW_ID, getMemoViewId } from "@/lib/memo-views";
+import { BUILTIN_TASKS_VIEW_FILTER, BUILTIN_TASKS_VIEW_ID } from "@/lib/memo-views";
 import { buildMemoCreatorFilter, getVisibilityName } from "@/lib/resource-names";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 
@@ -93,17 +91,9 @@ export const buildMemoFilter = ({
 export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | undefined => {
   const { creatorName, includeMemoViews = false, includePinned = false, visibilities } = options;
 
-  const currentUser = useCurrentUser();
-  const { data: memoViews = [] } = useMemoViews(includeMemoViews ? currentUser?.name : undefined);
   const { filters, memoView: currentMemoView } = useMemoFilterContext();
   // The sidebar calendar buckets days by this basis, so a picked day must select on it too.
   const { timeBasis } = useView();
-
-  // Get the selected memo view if needed.
-  const selectedMemoViewFilter = useMemo(() => {
-    if (!includeMemoViews || currentMemoView === BUILTIN_TASKS_VIEW_ID) return undefined;
-    return memoViews.find((memoView) => getMemoViewId(memoView.name) === currentMemoView)?.filter;
-  }, [includeMemoViews, currentMemoView, memoViews]);
 
   return useMemo(
     () =>
@@ -112,10 +102,9 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
         currentMemoView: includeMemoViews ? currentMemoView : undefined,
         filters,
         includePinned,
-        selectedMemoViewFilter,
         visibilities,
         timeBasis,
       }),
-    [creatorName, currentMemoView, filters, includePinned, includeMemoViews, selectedMemoViewFilter, visibilities, timeBasis],
+    [creatorName, currentMemoView, filters, includePinned, includeMemoViews, visibilities, timeBasis],
   );
 };

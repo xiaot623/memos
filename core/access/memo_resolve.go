@@ -55,11 +55,10 @@ func ResolveMemoReadFacts(ctx context.Context, s MemoReadStore, memo *store.Memo
 // WithViewer completes the read context for one viewer. Only the membership
 // lookup is viewer-dependent, so evaluating additional viewers against the same
 // memo costs at most one query each.
-func (f MemoReadFacts) WithViewer(ctx context.Context, s MemoReadStore, viewer *store.User, allowAnonymous bool, sharedMemoID *int32) (MemoReadContext, error) {
+func (f MemoReadFacts) WithViewer(ctx context.Context, s MemoReadStore, viewer *store.User, sharedMemoID *int32) (MemoReadContext, error) {
 	readContext := MemoReadContext{
 		Memo:           f.Memo,
 		Viewer:         viewer,
-		AllowAnonymous: allowAnonymous,
 		SharedMemoID:   sharedMemoID,
 		CreatorValid:   f.CreatorValid,
 		SpaceValid:     f.SpaceValid,
@@ -67,9 +66,8 @@ func (f MemoReadFacts) WithViewer(ctx context.Context, s MemoReadStore, viewer *
 	if f.Memo == nil || f.Memo.SpaceID == nil || !f.SpaceValid {
 		return readContext, nil
 	}
-	// Membership never changes the outcome for an inactive viewer or for an
-	// instance administrator, so skip the lookup for both.
-	if !IsActiveUser(viewer) || IsInstanceAdmin(viewer) {
+	// Membership never changes the outcome for an inactive viewer.
+	if !IsActiveUser(viewer) {
 		return readContext, nil
 	}
 	membership, err := s.GetSpaceMember(ctx, &store.FindSpaceMember{SpaceID: f.Memo.SpaceID, UserID: &viewer.ID})
@@ -82,10 +80,10 @@ func (f MemoReadFacts) WithViewer(ctx context.Context, s MemoReadStore, viewer *
 
 // ResolveMemoReadContext resolves a complete read context for one memo and one
 // viewer.
-func ResolveMemoReadContext(ctx context.Context, s MemoReadStore, memo *store.Memo, viewer *store.User, allowAnonymous bool, sharedMemoID *int32) (MemoReadContext, error) {
+func ResolveMemoReadContext(ctx context.Context, s MemoReadStore, memo *store.Memo, viewer *store.User, sharedMemoID *int32) (MemoReadContext, error) {
 	facts, err := ResolveMemoReadFacts(ctx, s, memo)
 	if err != nil {
 		return MemoReadContext{}, err
 	}
-	return facts.WithViewer(ctx, s, viewer, allowAnonymous, sharedMemoID)
+	return facts.WithViewer(ctx, s, viewer, sharedMemoID)
 }

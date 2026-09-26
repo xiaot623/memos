@@ -9,7 +9,6 @@ import (
 	context "context"
 	errors "errors"
 	v1 "github.com/usememos/memos/proto/gen/api/v1"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
 )
@@ -46,9 +45,6 @@ const (
 	// InstanceServiceUpdateInstanceSettingProcedure is the fully-qualified name of the
 	// InstanceService's UpdateInstanceSetting RPC.
 	InstanceServiceUpdateInstanceSettingProcedure = "/memos.api.v1.InstanceService/UpdateInstanceSetting"
-	// InstanceServiceTestInstanceEmailSettingProcedure is the fully-qualified name of the
-	// InstanceService's TestInstanceEmailSetting RPC.
-	InstanceServiceTestInstanceEmailSettingProcedure = "/memos.api.v1.InstanceService/TestInstanceEmailSetting"
 	// InstanceServiceGetInstanceStatsProcedure is the fully-qualified name of the InstanceService's
 	// GetInstanceStats RPC.
 	InstanceServiceGetInstanceStatsProcedure = "/memos.api.v1.InstanceService/GetInstanceStats"
@@ -64,8 +60,6 @@ type InstanceServiceClient interface {
 	BatchGetInstanceSettings(context.Context, *connect.Request[v1.BatchGetInstanceSettingsRequest]) (*connect.Response[v1.BatchGetInstanceSettingsResponse], error)
 	// Updates an instance setting.
 	UpdateInstanceSetting(context.Context, *connect.Request[v1.UpdateInstanceSettingRequest]) (*connect.Response[v1.InstanceSetting], error)
-	// Tests notification email delivery with the provided or stored SMTP settings.
-	TestInstanceEmailSetting(context.Context, *connect.Request[v1.TestInstanceEmailSettingRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetInstanceStats returns resource usage statistics for the instance. Admin only.
 	GetInstanceStats(context.Context, *connect.Request[v1.GetInstanceStatsRequest]) (*connect.Response[v1.InstanceStats], error)
 }
@@ -105,12 +99,6 @@ func NewInstanceServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(instanceServiceMethods.ByName("UpdateInstanceSetting")),
 			connect.WithClientOptions(opts...),
 		),
-		testInstanceEmailSetting: connect.NewClient[v1.TestInstanceEmailSettingRequest, emptypb.Empty](
-			httpClient,
-			baseURL+InstanceServiceTestInstanceEmailSettingProcedure,
-			connect.WithSchema(instanceServiceMethods.ByName("TestInstanceEmailSetting")),
-			connect.WithClientOptions(opts...),
-		),
 		getInstanceStats: connect.NewClient[v1.GetInstanceStatsRequest, v1.InstanceStats](
 			httpClient,
 			baseURL+InstanceServiceGetInstanceStatsProcedure,
@@ -126,7 +114,6 @@ type instanceServiceClient struct {
 	getInstanceSetting       *connect.Client[v1.GetInstanceSettingRequest, v1.InstanceSetting]
 	batchGetInstanceSettings *connect.Client[v1.BatchGetInstanceSettingsRequest, v1.BatchGetInstanceSettingsResponse]
 	updateInstanceSetting    *connect.Client[v1.UpdateInstanceSettingRequest, v1.InstanceSetting]
-	testInstanceEmailSetting *connect.Client[v1.TestInstanceEmailSettingRequest, emptypb.Empty]
 	getInstanceStats         *connect.Client[v1.GetInstanceStatsRequest, v1.InstanceStats]
 }
 
@@ -150,11 +137,6 @@ func (c *instanceServiceClient) UpdateInstanceSetting(ctx context.Context, req *
 	return c.updateInstanceSetting.CallUnary(ctx, req)
 }
 
-// TestInstanceEmailSetting calls memos.api.v1.InstanceService.TestInstanceEmailSetting.
-func (c *instanceServiceClient) TestInstanceEmailSetting(ctx context.Context, req *connect.Request[v1.TestInstanceEmailSettingRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.testInstanceEmailSetting.CallUnary(ctx, req)
-}
-
 // GetInstanceStats calls memos.api.v1.InstanceService.GetInstanceStats.
 func (c *instanceServiceClient) GetInstanceStats(ctx context.Context, req *connect.Request[v1.GetInstanceStatsRequest]) (*connect.Response[v1.InstanceStats], error) {
 	return c.getInstanceStats.CallUnary(ctx, req)
@@ -170,8 +152,6 @@ type InstanceServiceHandler interface {
 	BatchGetInstanceSettings(context.Context, *connect.Request[v1.BatchGetInstanceSettingsRequest]) (*connect.Response[v1.BatchGetInstanceSettingsResponse], error)
 	// Updates an instance setting.
 	UpdateInstanceSetting(context.Context, *connect.Request[v1.UpdateInstanceSettingRequest]) (*connect.Response[v1.InstanceSetting], error)
-	// Tests notification email delivery with the provided or stored SMTP settings.
-	TestInstanceEmailSetting(context.Context, *connect.Request[v1.TestInstanceEmailSettingRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetInstanceStats returns resource usage statistics for the instance. Admin only.
 	GetInstanceStats(context.Context, *connect.Request[v1.GetInstanceStatsRequest]) (*connect.Response[v1.InstanceStats], error)
 }
@@ -207,12 +187,6 @@ func NewInstanceServiceHandler(svc InstanceServiceHandler, opts ...connect.Handl
 		connect.WithSchema(instanceServiceMethods.ByName("UpdateInstanceSetting")),
 		connect.WithHandlerOptions(opts...),
 	)
-	instanceServiceTestInstanceEmailSettingHandler := connect.NewUnaryHandler(
-		InstanceServiceTestInstanceEmailSettingProcedure,
-		svc.TestInstanceEmailSetting,
-		connect.WithSchema(instanceServiceMethods.ByName("TestInstanceEmailSetting")),
-		connect.WithHandlerOptions(opts...),
-	)
 	instanceServiceGetInstanceStatsHandler := connect.NewUnaryHandler(
 		InstanceServiceGetInstanceStatsProcedure,
 		svc.GetInstanceStats,
@@ -229,8 +203,6 @@ func NewInstanceServiceHandler(svc InstanceServiceHandler, opts ...connect.Handl
 			instanceServiceBatchGetInstanceSettingsHandler.ServeHTTP(w, r)
 		case InstanceServiceUpdateInstanceSettingProcedure:
 			instanceServiceUpdateInstanceSettingHandler.ServeHTTP(w, r)
-		case InstanceServiceTestInstanceEmailSettingProcedure:
-			instanceServiceTestInstanceEmailSettingHandler.ServeHTTP(w, r)
 		case InstanceServiceGetInstanceStatsProcedure:
 			instanceServiceGetInstanceStatsHandler.ServeHTTP(w, r)
 		default:
@@ -256,10 +228,6 @@ func (UnimplementedInstanceServiceHandler) BatchGetInstanceSettings(context.Cont
 
 func (UnimplementedInstanceServiceHandler) UpdateInstanceSetting(context.Context, *connect.Request[v1.UpdateInstanceSettingRequest]) (*connect.Response[v1.InstanceSetting], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.InstanceService.UpdateInstanceSetting is not implemented"))
-}
-
-func (UnimplementedInstanceServiceHandler) TestInstanceEmailSetting(context.Context, *connect.Request[v1.TestInstanceEmailSettingRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.InstanceService.TestInstanceEmailSetting is not implemented"))
 }
 
 func (UnimplementedInstanceServiceHandler) GetInstanceStats(context.Context, *connect.Request[v1.GetInstanceStatsRequest]) (*connect.Response[v1.InstanceStats], error) {

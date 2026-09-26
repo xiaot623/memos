@@ -87,14 +87,13 @@ describe("LandingRoute", () => {
         <Route path="/" element={<LandingRoute />}>
           <Route index element={<div data-testid="home">home</div>} />
         </Route>
-        <Route path="/explore" element={<LocationProbe />} />
       </Routes>,
     );
 
     expect(screen.getByTestId("home")).toHaveTextContent("home");
   });
 
-  it("sends an unauthenticated visitor from the entry to /explore", () => {
+  it("sends an unauthenticated visitor from the entry to /auth", () => {
     mockedUseCurrentUser.mockReturnValue(undefined);
 
     renderAt(
@@ -103,11 +102,11 @@ describe("LandingRoute", () => {
         <Route path="/" element={<LandingRoute />}>
           <Route index element={<div data-testid="home">home</div>} />
         </Route>
-        <Route path="/explore" element={<LocationProbe />} />
+        <Route path="/auth" element={<LocationProbe />} />
       </Routes>,
     );
 
-    expect(screen.getByTestId("location").textContent).toBe("/explore");
+    expect(screen.getByTestId("location").textContent).toBe("/auth?redirect=%2F");
   });
 
   it("preserves the query string and hash when redirecting an unauthenticated visitor", () => {
@@ -121,11 +120,11 @@ describe("LandingRoute", () => {
         <Route path="/" element={<LandingRoute />}>
           <Route index element={<div data-testid="home">home</div>} />
         </Route>
-        <Route path="/explore" element={<LocationProbe />} />
+        <Route path="/auth" element={<LocationProbe />} />
       </Routes>,
     );
 
-    expect(screen.getByTestId("location").textContent).toBe("/explore?filter=tag:work#latest");
+    expect(screen.getByTestId("location").textContent).toBe("/auth?redirect=%2F%3Ffilter%3Dtag%3Awork%23latest");
   });
 });
 

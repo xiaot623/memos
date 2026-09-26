@@ -1,8 +1,2 @@
-import type { MapPoint } from "@/components/map/types";
-
-export interface LocationState {
-  placeholder: string;
-  position?: MapPoint;
-  latInput: string;
-  lngInput: string;
-}
+/** Insert menu local state helpers. Location picker was removed. */
+export type InsertMenuOpenState = boolean;

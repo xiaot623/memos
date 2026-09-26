@@ -11,6 +11,30 @@ import (
 	"github.com/usememos/memos/store"
 )
 
+type rowQuerier interface {
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
+func insertUser(ctx context.Context, q rowQuerier, create *store.User) error {
+	stmt := "INSERT INTO user (`username`, `role`, `email`, `nickname`, `password_hash`, `avatar_url`) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, description, created_ts, updated_ts, row_status"
+	return q.QueryRowContext(
+		ctx,
+		stmt,
+		create.Username,
+		create.Role,
+		nullableEmail(create.Email),
+		create.Nickname,
+		create.PasswordHash,
+		create.AvatarURL,
+	).Scan(
+		&create.ID,
+		&create.Description,
+		&create.CreatedTs,
+		&create.UpdatedTs,
+		&create.RowStatus,
+	)
+}
+
 func (d *DB) CreateUser(ctx context.Context, create *store.User) (*store.User, error) {
 	if err := insertUser(ctx, d.db, create); err != nil {
 		return nil, err

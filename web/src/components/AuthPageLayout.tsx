@@ -1,17 +1,11 @@
-import { ArrowRightIcon, CompassIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useInstance } from "@/contexts/InstanceContext";
-import { ROUTES } from "@/router/routes";
-import { InstanceAccessMode } from "@/types/proto/api/v1/instance_service_pb";
-import { useTranslate } from "@/utils/i18n";
 import AuthFooter from "./AuthFooter";
 
 interface Props {
   chip?: React.ReactNode;
   title: string;
   subtitle?: string;
-  // Hide the explore band on pages that shouldn't offer an exit (e.g. first-run setup).
-  hideExplore?: boolean;
   children: React.ReactNode;
 }
 
@@ -21,7 +15,6 @@ export const AuthChip = ({ children }: { children: React.ReactNode }) => (
   </span>
 );
 
-// Centered icon + title + description block for states where a form cannot be shown.
 export const AuthEmptyState = ({
   icon,
   title,
@@ -41,7 +34,6 @@ export const AuthEmptyState = ({
   </div>
 );
 
-// "Already have an account? Sign in" style prompt for hopping between auth pages.
 export const AuthLinkPrompt = ({ prompt, to, label }: { prompt: string; to: string; label: string }) => (
   <p className="mt-5 text-center text-sm text-muted-foreground">
     {prompt}{" "}
@@ -53,10 +45,8 @@ export const AuthLinkPrompt = ({ prompt, to, label }: { prompt: string; to: stri
 
 export const AuthOptionsLoading = () => <div className="h-9 w-full animate-pulse rounded-md bg-muted/60" aria-hidden="true" />;
 
-const AuthPageLayout = ({ chip, title, subtitle, hideExplore, children }: Props) => {
-  const t = useTranslate();
-  const { generalSetting, profile } = useInstance();
-  const showExplore = profile.accessMode === InstanceAccessMode.PUBLIC && !hideExplore;
+const AuthPageLayout = ({ chip, title, subtitle, children }: Props) => {
+  const { generalSetting } = useInstance();
 
   return (
     <div className="min-h-svh w-full flex flex-col items-center px-4 py-4 sm:py-8">
@@ -70,19 +60,6 @@ const AuthPageLayout = ({ chip, title, subtitle, hideExplore, children }: Props)
           <h1 className="text-lg font-semibold tracking-tight text-foreground">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
           <div className="mt-6 w-full">{children}</div>
-          {showExplore && (
-            <div className="-mx-7 -mb-7 mt-6 rounded-b-xl border-t border-border bg-background/60">
-              <Link
-                to={ROUTES.EXPLORE}
-                className="group flex items-center justify-center gap-2 px-7 py-3 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
-                viewTransition
-              >
-                <CompassIcon className="h-3.5 w-3.5" />
-                {t("auth.explore-public-memos")}
-                <ArrowRightIcon className="-ms-1 h-3.5 w-3.5 opacity-0 transition-all group-hover:ms-0 group-hover:opacity-100 rtl:rotate-180" />
-              </Link>
-            </div>
-          )}
         </div>
       </div>
       <AuthFooter />

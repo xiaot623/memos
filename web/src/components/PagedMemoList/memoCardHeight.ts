@@ -1,7 +1,6 @@
 import { CLAMP_PREVIEW_HEIGHT_PX, CLAMP_TRIGGER_HEIGHT_PX } from "@/components/ClampedSection";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
-import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import { getAttachmentType, isMotionAttachment } from "@/utils/attachment";
 import { filterInlineManagedAttachments } from "@/utils/managed-attachment";
 import { buildAttachmentVisualItems } from "@/utils/media-item";
@@ -87,9 +86,7 @@ const estimateAttachmentSectionHeight = (attachments: Attachment[], columnWidth:
   return ATTACHMENT_SECTION_HEADER_HEIGHT + ATTACHMENT_SECTION_PADDING + contentHeight;
 };
 
-const countCommentRelations = (memo: Memo): number =>
-  (memo.relations ?? []).filter((relation) => relation.type === MemoRelation_Type.COMMENT && relation.relatedMemo?.name === memo.name)
-    .length;
+const countCommentRelations = (_memo: Memo): number => 0;
 
 const estimateCommentPreviewHeight = (memo: Memo): number => {
   const visibleCommentCount = Math.min(countCommentRelations(memo), MAX_VISIBLE_COMMENT_PREVIEWS);

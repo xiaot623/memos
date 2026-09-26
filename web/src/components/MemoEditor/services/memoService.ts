@@ -1,7 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { FieldMaskSchema, timestampDate, timestampFromDate } from "@bufbuild/protobuf/wkt";
 import { isEqual } from "lodash-es";
-import { getEditorReferenceRelations } from "@/components/MemoMetadata/Relation/relationHelpers";
 import { memoServiceClient } from "@/connect";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
@@ -41,19 +40,9 @@ function buildUpdateMask(
     mask.add("attachments");
     patch.attachments = toAttachmentReferences(allAttachments);
   }
-  const previousReferenceRelations = getEditorReferenceRelations(prevMemo.relations, prevMemo.name);
-  const nextReferenceRelations = getEditorReferenceRelations(state.metadata.relations, prevMemo.name);
-  if (!isEqual(nextReferenceRelations, previousReferenceRelations)) {
-    mask.add("relations");
-    patch.relations = nextReferenceRelations;
-  }
-  if (!isEqual(state.metadata.location, prevMemo.location)) {
-    mask.add("location");
-    patch.location = state.metadata.location;
-  }
 
   // Auto-update timestamp if content changed
-  if (["content", "attachments", "relations", "location"].some((key) => mask.has(key))) {
+  if (["content", "attachments"].some((key) => mask.has(key))) {
     mask.add("update_time");
   }
 
@@ -81,7 +70,6 @@ export const memoService = {
     state: EditorState,
     options: {
       memoName?: string;
-      parentMemoName?: string;
       space?: string;
     },
   ): Promise<{ memoName: string; hasChanges: boolean }> {
@@ -105,24 +93,17 @@ export const memoService = {
       return { memoName: memo.name, hasChanges: true };
     }
 
-    // 3. Create new memo or comment
+    // 3. Create new memo
     const memoData = create(MemoSchema, {
       content: state.content,
       visibility: state.metadata.visibility,
       attachments: toAttachmentReferences(allAttachments),
-      relations: state.metadata.relations,
-      location: state.metadata.location,
       createTime: state.timestamps.createTime ? timestampFromDate(state.timestamps.createTime) : undefined,
       updateTime: state.timestamps.updateTime ? timestampFromDate(state.timestamps.updateTime) : undefined,
-      space: options.parentMemoName ? undefined : options.space,
+      space: options.space,
     });
 
-    const memo = options.parentMemoName
-      ? await memoServiceClient.createMemoComment({
-          name: options.parentMemoName,
-          comment: memoData,
-        })
-      : await memoServiceClient.createMemo({ memo: memoData });
+    const memo = await memoServiceClient.createMemo({ memo: memoData });
 
     return { memoName: memo.name, hasChanges: true };
   },
@@ -138,8 +119,6 @@ export const memoService = {
       metadata: {
         visibility: memo.visibility,
         attachments: memo.attachments,
-        relations: memo.relations,
-        location: memo.location,
       },
       timestamps: {
         createTime: memo.createTime ? timestampDate(memo.createTime) : undefined,

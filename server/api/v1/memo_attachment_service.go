@@ -49,7 +49,7 @@ func (s *APIV1Service) SetMemoAttachments(ctx context.Context, request *v1pb.Set
 		return nil, err
 	}
 	updatedTsSec := time.Now().Unix()
-	if err := s.applyMemoMutation(ctx, memo, prepared, &store.UpdateMemo{ID: memo.ID, UpdatedTs: &updatedTsSec}, requiredAttachmentIDs, nil); err != nil {
+	if err := s.applyMemoMutation(ctx, memo, prepared, &store.UpdateMemo{ID: memo.ID, UpdatedTs: &updatedTsSec}, requiredAttachmentIDs); err != nil {
 		return nil, err
 	}
 	_, _, memoMessage, err := s.buildUpdatedMemoState(ctx, memo.ID)
@@ -158,34 +158,19 @@ func (s *APIV1Service) createMemoWithMutation(
 	ctx context.Context,
 	user *store.User,
 	create *store.Memo,
-	commentContextMemoID *int32,
 	prepared *preparedMemoAttachments,
 	requiredAttachmentIDs []int32,
-	referenceRelations []*store.MemoRelation,
 ) error {
 	if user == nil || create == nil || create.CreatorID != user.ID {
 		return store.ErrMemoPermissionDenied
 	}
 	bindings, _ := buildMemoAttachmentMutationBindings(prepared)
-	relations := make([]*store.MemoRelation, 0, len(referenceRelations))
-	for _, relation := range referenceRelations {
-		if relation == nil {
-			continue
-		}
-		relations = append(relations, &store.MemoRelation{
-			RelatedMemoID: relation.RelatedMemoID,
-			Type:          relation.Type,
-		})
-	}
 	return s.Store.ApplyMemoMutation(ctx, &store.MemoMutation{
-		MemoCreate:                create,
-		CommentContextMemoID:      commentContextMemoID,
-		MemoCreatorID:             create.CreatorID,
-		ExpectedMemoContent:       create.Content,
-		Bindings:                  bindings,
-		RequiredAttachmentIDs:     requiredAttachmentIDs,
-		ReplaceReferenceRelations: len(relations) > 0,
-		ReferenceRelations:        relations,
+		MemoCreate:            create,
+		MemoCreatorID:         create.CreatorID,
+		ExpectedMemoContent:   create.Content,
+		Bindings:              bindings,
+		RequiredAttachmentIDs: requiredAttachmentIDs,
 	})
 }
 
@@ -195,7 +180,6 @@ func (s *APIV1Service) applyMemoMutation(
 	prepared *preparedMemoAttachments,
 	memoUpdate *store.UpdateMemo,
 	requiredAttachmentIDs []int32,
-	referenceRelations *[]*store.MemoRelation,
 ) error {
 	user, err := s.fetchCurrentUser(ctx)
 	if err != nil {
@@ -222,30 +206,15 @@ func (s *APIV1Service) applyMemoMutation(
 		}
 	}
 	bindings, removedAttachmentIDs := buildMemoAttachmentMutationBindings(prepared)
-	if referenceRelations != nil {
-		relations := make([]*store.MemoRelation, 0, len(*referenceRelations))
-		for _, relation := range *referenceRelations {
-			relations = append(relations, &store.MemoRelation{
-				MemoID:        memo.ID,
-				RelatedMemoID: relation.RelatedMemoID,
-				Type:          relation.Type,
-			})
-		}
-		referenceRelations = &relations
-	}
 	mutation := &store.MemoMutation{
-		MemoID:                    memo.ID,
-		MemoCreatorID:             memo.CreatorID,
-		ExpectedMemoContent:       memo.Content,
-		MemoUpdate:                memoUpdate,
-		Bindings:                  bindings,
-		RemovedAttachmentIDs:      removedAttachmentIDs,
-		RequiredAttachmentIDs:     requiredAttachmentIDs,
-		ReplaceReferenceRelations: referenceRelations != nil,
-		Policy:                    policy,
-	}
-	if referenceRelations != nil {
-		mutation.ReferenceRelations = *referenceRelations
+		MemoID:                memo.ID,
+		MemoCreatorID:         memo.CreatorID,
+		ExpectedMemoContent:   memo.Content,
+		MemoUpdate:            memoUpdate,
+		Bindings:              bindings,
+		RemovedAttachmentIDs:  removedAttachmentIDs,
+		RequiredAttachmentIDs: requiredAttachmentIDs,
+		Policy:                policy,
 	}
 	if err := s.Store.ApplyMemoMutation(ctx, mutation); err != nil {
 		return mapMemoWriteError(err, "failed to apply memo mutation")

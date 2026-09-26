@@ -9,7 +9,6 @@ import { getThemeWithFallback } from "@/utils/theme";
 import { createMarkdownRuntime } from "./createRuntime";
 import { applyMarkdownEditable, type MarkdownCaretPoint } from "./focus";
 import { applyTagColors, useMarkdownViewClicks } from "./interaction";
-import { LinkPreviewHost } from "./LinkPreviewHost";
 import "./theme.css";
 
 interface MarkdownViewProps {
@@ -114,7 +113,6 @@ const MarkdownViewInner = ({
   return (
     <div ref={setHost} className="w-full">
       <Milkdown />
-      <LinkPreviewHost root={host} enabled={!loading && !editable} />
     </div>
   );
 };

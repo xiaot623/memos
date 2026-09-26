@@ -52,9 +52,8 @@ type AuthServiceClient interface {
 	// Validates the access token and returns user details.
 	// Similar to OIDC's /userinfo endpoint.
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
-	// SignIn authenticates a user with credentials and returns tokens.
+	// SignIn authenticates a user with a username and password and returns tokens.
 	// On success, returns an access token and sets a refresh token cookie.
-	// Supports password-based and SSO authentication methods.
 	SignIn(context.Context, *connect.Request[v1.SignInRequest]) (*connect.Response[v1.SignInResponse], error)
 	// SignOut terminates the user's authentication.
 	// Revokes the refresh token and clears the authentication cookie.
@@ -137,9 +136,8 @@ type AuthServiceHandler interface {
 	// Validates the access token and returns user details.
 	// Similar to OIDC's /userinfo endpoint.
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
-	// SignIn authenticates a user with credentials and returns tokens.
+	// SignIn authenticates a user with a username and password and returns tokens.
 	// On success, returns an access token and sets a refresh token cookie.
-	// Supports password-based and SSO authentication methods.
 	SignIn(context.Context, *connect.Request[v1.SignInRequest]) (*connect.Response[v1.SignInResponse], error)
 	// SignOut terminates the user's authentication.
 	// Revokes the refresh token and clears the authentication cookie.

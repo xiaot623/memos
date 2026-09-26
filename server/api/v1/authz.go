@@ -28,19 +28,13 @@ var ErrUnauthenticated = errors.New("authentication required")
 // governs only authentication and anonymous access.
 type Authorizer struct {
 	authenticator *auth.Authenticator
-	accessStore   anonymousAccessStore
 	limiter       ratelimit.Limiter
-}
-
-type anonymousAccessStore interface {
-	AllowsAnonymousAccess(ctx context.Context) (bool, error)
 }
 
 // NewAuthorizer creates an Authorizer backed by the given store and token secret.
 func NewAuthorizer(store *store.Store, secret string) *Authorizer {
 	return &Authorizer{
 		authenticator: auth.NewAuthenticator(store, secret),
-		accessStore:   store,
 	}
 }
 
@@ -92,25 +86,13 @@ func (a *Authorizer) Authenticate(ctx context.Context, authHeader string) *auth.
 //
 // Policy:
 //   - Authenticated caller (access token or PAT): always permitted here.
-//   - Anonymous + protected method: denied.
-//   - Anonymous + auth-bootstrap method: permitted on every instance.
-//   - Anonymous + other public method: permitted only when the stored access mode
-//     is PUBLIC.
-func (a *Authorizer) CheckAccess(ctx context.Context, procedure string, result *auth.AuthResult) error {
+//   - Anonymous + public method: permitted (auth, instance profile, share links).
+//   - Anonymous + any other method: denied.
+func (a *Authorizer) CheckAccess(_ context.Context, procedure string, result *auth.AuthResult) error {
 	if result != nil {
 		return nil
 	}
-	if !IsPublicMethod(procedure) {
-		return ErrUnauthenticated
-	}
-	if IsAuthBootstrapMethod(procedure) {
-		return nil
-	}
-	allowsAnonymous, err := a.accessStore.AllowsAnonymousAccess(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to resolve instance access policy")
-	}
-	if allowsAnonymous {
+	if IsPublicMethod(procedure) {
 		return nil
 	}
 	return ErrUnauthenticated

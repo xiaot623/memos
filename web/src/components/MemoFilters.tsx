@@ -16,13 +16,10 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import MemoViewIcon from "@/components/MemoViewIcon";
 import { Button } from "@/components/ui/button";
 import { useAppSidebar } from "@/contexts/AppSidebarContext";
 import { type FilterFactor, getMemoFilterKey, type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
-import useCurrentUser from "@/hooks/useCurrentUser";
-import { useMemoViews } from "@/hooks/useUserQueries";
-import { BUILTIN_TASKS_VIEW_ID, getMemoViewId, isMemoCollectionRoute } from "@/lib/memo-views";
+import { BUILTIN_TASKS_VIEW_ID, isMemoCollectionRoute } from "@/lib/memo-views";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 
@@ -136,12 +133,10 @@ const FilterChip = ({ icon: Icon, customIcon, label, onRemove, onEdit }: FilterC
 const MemoFilters = ({ className }: { className?: string }) => {
   const t = useTranslate();
   const location = useLocation();
-  const currentUser = useCurrentUser();
   const { filters, memoView, removeFilter, setMemoView } = useMemoFilterContext();
   const { setQuickFindOpen } = useAppSidebar();
   // A remembered view only narrows the collection routes; elsewhere it is dormant and must not be echoed.
   const viewApplies = memoView !== undefined && isMemoCollectionRoute(location.pathname);
-  const { data: memoViews = [] } = useMemoViews(viewApplies ? currentUser?.name : undefined);
 
   const handleRemoveFilter = (filter: MemoFilter) => {
     removeFilter((f: MemoFilter) => isEqual(f, filter));
@@ -155,17 +150,7 @@ const MemoFilters = ({ className }: { className?: string }) => {
     return config.getLabel(filter.value, t);
   };
 
-  const viewChip = (() => {
-    if (!viewApplies) return null;
-    if (memoView === BUILTIN_TASKS_VIEW_ID) return { icon: SquareCheckIcon, label: t("common.tasks") };
-    const view = memoViews.find((item) => getMemoViewId(item.name) === memoView);
-    return view?.title
-      ? {
-          customIcon: <MemoViewIcon icon={view.icon} className="size-3.5 text-sm text-muted-foreground" />,
-          label: view.title,
-        }
-      : null;
-  })();
+  const viewChip = viewApplies && memoView === BUILTIN_TASKS_VIEW_ID ? { icon: SquareCheckIcon, label: t("common.tasks") } : null;
 
   if (filters.length === 0 && !viewChip) {
     return null;
@@ -173,9 +158,7 @@ const MemoFilters = ({ className }: { className?: string }) => {
 
   return (
     <div className={cn("w-full flex flex-row justify-start items-center flex-wrap gap-2", className)}>
-      {viewChip && (
-        <FilterChip icon={viewChip.icon} customIcon={viewChip.customIcon} label={viewChip.label} onRemove={() => setMemoView(undefined)} />
-      )}
+      {viewChip && <FilterChip icon={viewChip.icon} label={viewChip.label} onRemove={() => setMemoView(undefined)} />}
       {filters.map((filter) => (
         <FilterChip
           key={getMemoFilterKey(filter)}

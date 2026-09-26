@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 import { useInstance } from "@/contexts/InstanceContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
-import { memoKeys, useDeleteMemo, useUpdateMemo } from "@/hooks/useMemoQueries";
+import { useDeleteMemo, useUpdateMemo } from "@/hooks/useMemoQueries";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
@@ -146,15 +146,11 @@ export const useMemoActionHandlers = ({ memo, parentPage, onEdit, setDeleteDialo
       return;
     }
     toast.success(t("message.deleted-successfully"));
-    if (memo.parent) {
-      queryClient.invalidateQueries({ queryKey: memoKeys.comments(memo.parent) });
-      queryClient.invalidateQueries({ queryKey: memoKeys.detail(memo.parent) });
-    }
     if (isInMemoDetailPage) {
       navigateTo(parentPage || ROUTES.HOME);
     }
     memoUpdatedCallback();
-  }, [memo.name, memo.parent, t, isInMemoDetailPage, parentPage, navigateTo, memoUpdatedCallback, deleteMemo, queryClient]);
+  }, [memo.name, t, isInMemoDetailPage, parentPage, navigateTo, memoUpdatedCallback, deleteMemo, queryClient]);
 
   return {
     canMove,

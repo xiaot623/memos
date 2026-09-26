@@ -5,7 +5,6 @@ import { UserSetting_Key } from "@/types/proto/api/v1/user_service_pb";
 export const instanceSettingNamePrefix = "instance/settings/";
 export const userNamePrefix = "users/";
 export const memoNamePrefix = "memos/";
-export const identityProviderNamePrefix = "identity-providers/";
 
 export const buildMemoCreatorFilter = (name: string) => {
   if (!name) {
@@ -21,10 +20,6 @@ export const extractMemoIdFromName = (name: string) => {
 
 export const extractUsernameFromName = (name: string) => {
   return name.startsWith(userNamePrefix) ? name.slice(userNamePrefix.length) : name;
-};
-
-export const extractIdentityProviderUidFromName = (name: string) => {
-  return name.split(identityProviderNamePrefix).pop() || "";
 };
 
 // Helper function to convert InstanceSetting_Key enum value to string name
@@ -49,16 +44,14 @@ export const buildUserSettingName = (username: string, key: UserSetting_Key): st
   return `${username}/settings/${getUserSettingKeyName(key)}`;
 };
 
-// Helper function to convert Visibility enum value to string name
-// Used when building filter expressions that require string enum names instead of numeric values
-// Example: visibility in ["PUBLIC", "PROTECTED"] instead of visibility in ["3", "2"]
+// Helper function to convert Visibility enum value to string name.
+// Used when building filter expressions that require string enum names instead of numeric values.
+// Example: visibility == "PRIVATE" instead of visibility == 1.
 export const getVisibilityName = (visibility: Visibility): string => {
-  // TypeScript enum reverse mapping: converts numeric value to string name
-  // e.g., Visibility.PUBLIC (3) -> "PUBLIC"
   const name = Visibility[visibility];
   if (!name) {
-    console.warn(`Invalid visibility value: ${visibility}, defaulting to PUBLIC`);
-    return "PUBLIC";
+    console.warn(`Invalid visibility value: ${visibility}, defaulting to PRIVATE`);
+    return "PRIVATE";
   }
   return name;
 };

@@ -9,7 +9,7 @@ Memos is a self-hosted note-taking app.
 
 - Backend: Go 1.27.0, Echo v5, Connect RPC, gRPC-Gateway, Protocol Buffers.
 - Frontend: React 19, TypeScript 6, Vite 8, Tailwind CSS v4, React Query v5.
-- Storage: SQLite, MySQL, PostgreSQL.
+- Storage: SQLite.
 - Generated API outputs: `proto/gen/` for Go/OpenAPI, `web/src/types/proto/` for TypeScript.
 
 ## Working Rules
@@ -65,7 +65,7 @@ Every root folder is named for what it holds. Read the folder's `doc.go` or `REA
 | `server/mcp/` | Model Context Protocol server | |
 | `server/auth/` | JWT access tokens, refresh tokens, PAT handling | |
 | `core/` | Business rules with no HTTP and no SQL: `access`, `notification`, `memopayload` | store, provider, markdown, filter, internal |
-| `store/` | Store facade, cache, migrations, `Driver` interface; `store/db/{sqlite,mysql,postgres}/` implement it | provider, markdown, filter, internal |
+| `store/` | Store facade, cache, migrations, `Driver` interface; `store/db/sqlite/` implements it | provider, markdown, filter, internal |
 | `markdown/` | Markdown engine: parser, AST, memos syntax extensions, renderer, memo payload | proto/gen, internal |
 | `filter/` | CEL filter compiler: parse to IR, render to SQL per driver, filterable field schema | internal |
 | `provider/` | Backends configured by instance settings: `ai`, `idp`, `storage` | proto/gen, internal |
@@ -90,7 +90,7 @@ Black-box service tests live in `server/api/v1/test/`, unit tests next to the co
 | Change | Update | Verify |
 | --- | --- | --- |
 | Go service or router behavior | Handlers under `server/`, rules under `core/`, tests near package | `go test -v -race ./server/... ./core/...` |
-| Store or migration behavior | `store/`, all three DB driver migrations, `LATEST.sql` | `go test -v ./store/...` |
+| Store or migration behavior | `store/`, SQLite `LATEST.sql` | `go test -v ./store/...` |
 | Markdown, filter, or provider logic | `markdown/`, `filter/`, `provider/` | `go test -v -race ./markdown/... ./filter/... ./provider/...` |
 | Internal package logic | Relevant `internal/` package tests | `go test -v -race ./internal/...` |
 | Frontend behavior | Components/hooks/contexts under `web/src/` | `cd web && pnpm lint && pnpm test` |
@@ -117,7 +117,7 @@ Black-box service tests live in `server/api/v1/test/`, unit tests next to the co
 
 ## Database And Proto Rules
 
-- Schema changes require SQLite, MySQL, and PostgreSQL migrations plus `LATEST.sql` updates.
+- Schema changes update the SQLite `LATEST.sql`. This branch does not keep versioned upgrades or other database drivers.
 - Fresh-install SQL and incremental migrations must stay equivalent.
 - Proto field changes must preserve compatibility unless the task explicitly allows a breaking API change.
 - Regenerate after proto edits and include both Go/OpenAPI and TypeScript generated outputs.

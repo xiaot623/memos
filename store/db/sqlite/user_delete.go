@@ -18,7 +18,6 @@ type deleteUserTargetSet struct {
 	attachments     []*store.Attachment
 	attachmentIDs   []int32
 	userSettingKeys []storepb.UserSetting_Key
-	inboxIDs        []int32
 }
 
 func (d *DB) DeleteUser(ctx context.Context, delete *store.DeleteUser) (*store.DeleteUserResult, error) {
@@ -91,12 +90,6 @@ func collectDeleteUserTargets(ctx context.Context, tx dbExecutor, userID int32) 
 	}
 	targets.userSettingKeys = userSettingKeys
 
-	inboxIDs, err := listDeleteUserInboxIDs(ctx, tx, userID)
-	if err != nil {
-		return nil, err
-	}
-	targets.inboxIDs = inboxIDs
-
 	return targets, nil
 }
 
@@ -121,16 +114,7 @@ func deleteUserTargetsTx(ctx context.Context, tx dbExecutor, userID int32, targe
 	if err := deleteMemoSharesTx(ctx, tx, userID, memoIDs); err != nil {
 		return err
 	}
-	if err := deleteInboxesByIDsTx(ctx, tx, targets.inboxIDs); err != nil {
-		return err
-	}
-	if err := deleteUserIdentitiesTx(ctx, tx, userID); err != nil {
-		return err
-	}
 	if err := deleteUserSettingsTx(ctx, tx, userID); err != nil {
-		return err
-	}
-	if err := deleteMemoRelationsTx(ctx, tx, memoIDs); err != nil {
 		return err
 	}
 	if err := deleteUserRowTx(ctx, tx, userID); err != nil {
@@ -260,32 +244,6 @@ func deleteUserSettingKeysQuery() string {
 	return `SELECT key FROM user_setting WHERE user_id = ` + deleteUserPlaceholder(1)
 }
 
-func listDeleteUserInboxIDs(ctx context.Context, tx dbExecutor, userID int32) ([]int32, error) {
-	rows, err := tx.QueryContext(ctx, `
-		SELECT id
-		FROM inbox
-		WHERE sender_id = `+deleteUserPlaceholder(1)+`
-			OR receiver_id = `+deleteUserPlaceholder(2), userID, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	inboxIDs := make([]int32, 0)
-	for rows.Next() {
-		var inboxID int32
-		if err := rows.Scan(&inboxID); err != nil {
-			return nil, err
-		}
-		inboxIDs = append(inboxIDs, inboxID)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return inboxIDs, nil
-}
-
 func deleteReactionsByMemoIDsTx(ctx context.Context, tx dbExecutor, memoIDs []int32) error {
 	for _, batch := range deleteUserBatches(memoIDs, deleteUserBatchSize) {
 		clause, args := deleteUserInClause(1, batch)
@@ -324,37 +282,9 @@ func deleteMemoSharesTx(ctx context.Context, tx dbExecutor, userID int32, memoID
 	return nil
 }
 
-func deleteInboxesByIDsTx(ctx context.Context, tx dbExecutor, inboxIDs []int32) error {
-	for _, batch := range deleteUserBatches(inboxIDs, deleteUserBatchSize) {
-		clause, args := deleteUserInClause(1, batch)
-		if _, err := tx.ExecContext(ctx, `DELETE FROM inbox WHERE id IN `+clause, args...); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func deleteUserIdentitiesTx(ctx context.Context, tx dbExecutor, userID int32) error {
-	_, err := tx.ExecContext(ctx, `DELETE FROM user_identity WHERE user_id = `+deleteUserPlaceholder(1), userID)
-	return err
-}
-
 func deleteUserSettingsTx(ctx context.Context, tx dbExecutor, userID int32) error {
 	_, err := tx.ExecContext(ctx, `DELETE FROM user_setting WHERE user_id = `+deleteUserPlaceholder(1), userID)
 	return err
-}
-
-func deleteMemoRelationsTx(ctx context.Context, tx dbExecutor, memoIDs []int32) error {
-	for _, batch := range deleteUserBatches(memoIDs, deleteUserBatchSize) {
-		memoClause, args := deleteUserInClause(1, batch)
-		relatedClause, relatedArgs := deleteUserInClause(len(args)+1, batch)
-		query := `DELETE FROM memo_relation WHERE memo_id IN ` + memoClause + ` OR related_memo_id IN ` + relatedClause
-		args = append(args, relatedArgs...)
-		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func deleteMemosTx(ctx context.Context, tx dbExecutor, memoIDs []int32) error {

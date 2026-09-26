@@ -97,17 +97,10 @@ func getTestingProfileForDriver(t *testing.T, driver string) *profile.Profile {
 	mode := "prod"
 	port := getUnusedPort()
 
-	var dsn string
-	switch driver {
-	case "sqlite":
-		dsn = fmt.Sprintf("%s/memos_%s.db", dir, mode)
-	case "mysql":
-		dsn = GetMySQLDSN(t)
-	case "postgres":
-		dsn = GetPostgresDSN(t)
-	default:
+	if driver != "sqlite" {
 		t.Fatalf("unsupported driver: %s", driver)
 	}
+	dsn := fmt.Sprintf("%s/memos_%s.db", dir, mode)
 
 	return &profile.Profile{
 		Port:    port,

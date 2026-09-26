@@ -5,16 +5,13 @@ import {
   CogIcon,
   DatabaseIcon,
   HeartHandshakeIcon,
-  KeyIcon,
   KeyRoundIcon,
   LibraryIcon,
   type LucideIcon,
-  MailIcon,
   Settings2Icon,
   TagsIcon,
   UserIcon,
   UsersIcon,
-  WebhookIcon,
 } from "lucide-react";
 import { type ComponentType } from "react";
 import AccessTokenSection from "@/components/Settings/AccessTokenSection";
@@ -24,14 +21,11 @@ import MemberSection from "@/components/Settings/MemberSection";
 import MemoExportSection from "@/components/Settings/MemoExportSection";
 import MemoRelatedSettings from "@/components/Settings/MemoRelatedSettings";
 import MyAccountSection from "@/components/Settings/MyAccountSection";
-import NotificationSection from "@/components/Settings/NotificationSection";
 import PreferencesSection from "@/components/Settings/PreferencesSection";
 import ResourceStatsSection from "@/components/Settings/ResourceStatsSection";
 import SpacesSection from "@/components/Settings/SpacesSection";
-import SSOSection from "@/components/Settings/SSOSection";
 import StorageSection from "@/components/Settings/StorageSection";
 import TagsSection from "@/components/Settings/TagsSection";
-import WebhookSection from "@/components/Settings/WebhookSection";
 import { InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
 
 export type SettingSectionKey =
@@ -40,13 +34,10 @@ export type SettingSectionKey =
   | "spaces"
   | "access-token"
   | "preference"
-  | "webhook"
   | "member"
   | "system"
   | "memo"
   | "storage"
-  | "notification"
-  | "sso"
   | "tags"
   | "ai"
   | "resource-stats";
@@ -92,13 +83,6 @@ export const SETTINGS_SECTIONS: SettingSectionDefinition[] = [
     component: PreferencesSection,
   },
   {
-    key: "webhook",
-    scope: "basic",
-    labelKey: "setting.webhook.label",
-    icon: WebhookIcon,
-    component: WebhookSection,
-  },
-  {
     key: "member",
     scope: "admin",
     labelKey: "setting.member.label",
@@ -140,21 +124,6 @@ export const SETTINGS_SECTIONS: SettingSectionDefinition[] = [
     icon: DatabaseIcon,
     component: StorageSection,
     preloadSettingKeys: [InstanceSetting_Key.STORAGE],
-  },
-  {
-    key: "notification",
-    scope: "admin",
-    labelKey: "setting.notification.label",
-    icon: MailIcon,
-    component: NotificationSection,
-    preloadSettingKeys: [InstanceSetting_Key.NOTIFICATION],
-  },
-  {
-    key: "sso",
-    scope: "admin",
-    labelKey: "setting.sso.label",
-    icon: KeyIcon,
-    component: SSOSection,
   },
   {
     key: "ai",

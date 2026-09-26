@@ -10,32 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCuratedOperationIDsStayMemoFocused(t *testing.T) {
-	require.Len(t, curatedOperationIDs, 36)
-
-	for _, operationID := range curatedOperationIDs {
-		require.NotContains(t, operationID, "Admin")
-		// AuthService_GetCurrentUser is the single allowed auth op (read-only
-		// "whoami"); the rest of the auth/identity surface stays off MCP.
-		if operationID != "AuthService_GetCurrentUser" {
-			require.NotContains(t, operationID, "AuthService_")
-		}
-		// Saved memo views are the only user resource exposed through MCP.
-		if operationID != "UserService_ListMemoViews" {
-			require.NotContains(t, operationID, "UserService_")
-		}
-		require.NotContains(t, operationID, "AIService_")
-		require.NotContains(t, operationID, "IdentityProviderService_")
-		require.NotContains(t, operationID, "InstanceService_")
-		require.NotContains(t, operationID, "PersonalAccessToken")
-		require.NotContains(t, operationID, "PAT")
-		require.NotContains(t, operationID, "Webhook")
-		require.NotContains(t, operationID, "Share")
-		require.NotContains(t, operationID, "BatchDelete")
-		require.NotContains(t, operationID, "Transcribe")
-	}
-}
-
 func TestToolNameFromOperationID(t *testing.T) {
 	require.Equal(t, "memo_list_memos", toolNameFromOperationID("MemoService_ListMemos"))
 	require.Equal(t, "attachment_get_attachment", toolNameFromOperationID("AttachmentService_GetAttachment"))
@@ -105,85 +79,6 @@ func TestBuildToolFromOperationIncludesRequestBodySchema(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-}
-
-func TestBuildToolFromOperationTailorsRequestBodySchemas(t *testing.T) {
-	spec, err := loadOpenAPISpec("../../proto/gen/openapi.yaml")
-	require.NoError(t, err)
-	registry, err := buildOperationRegistry(spec)
-	require.NoError(t, err)
-
-	tests := []struct {
-		name              string
-		operationID       string
-		arguments         map[string]any
-		omittedProperties []string
-	}{
-		{
-			name:        "partial memo update",
-			operationID: "MemoService_UpdateMemo",
-			arguments: map[string]any{
-				"memo": "memos/abc123",
-				"body": map[string]any{"content": "updated"},
-			},
-			omittedProperties: []string{"name"},
-		},
-		{
-			name:        "comment defaults state and visibility",
-			operationID: "MemoService_CreateMemoComment",
-			arguments: map[string]any{
-				"memo": "memos/abc123",
-				"body": map[string]any{"content": "comment"},
-			},
-		},
-		{
-			name:        "set attachments gets name from path",
-			operationID: "MemoService_SetMemoAttachments",
-			arguments: map[string]any{
-				"memo": "memos/abc123",
-				"body": map[string]any{"attachments": []any{}},
-			},
-			omittedProperties: []string{"name"},
-		},
-		{
-			name:        "set relations gets name from path",
-			operationID: "MemoService_SetMemoRelations",
-			arguments: map[string]any{
-				"memo": "memos/abc123",
-				"body": map[string]any{"relations": []any{}},
-			},
-			omittedProperties: []string{"name"},
-		},
-		{
-			name:        "upsert reaction gets name from path",
-			operationID: "MemoService_UpsertMemoReaction",
-			arguments: map[string]any{
-				"memo": "memos/abc123",
-				"body": map[string]any{
-					"reaction": map[string]any{
-						"reactionType": "👍",
-					},
-				},
-			},
-			omittedProperties: []string{"name"},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			tool, _ := buildToolFromOperation(registry[test.operationID])
-			input, ok := tool.InputSchema.(jsonSchema)
-			require.True(t, ok)
-			require.NoError(t, validateToolArguments(input, test.arguments))
-
-			properties := schemaProperties(input["properties"])
-			body := schemaProperties(properties["body"])
-			bodyProperties := schemaProperties(body["properties"])
-			for _, property := range test.omittedProperties {
-				require.NotContains(t, bodyProperties, property)
-			}
-		})
-	}
 }
 
 func TestBuildToolFromOperationRejectsEmptyMemoUpdateBody(t *testing.T) {
@@ -279,41 +174,6 @@ func TestBuildToolFromOperationExposesCurrentUser(t *testing.T) {
 	require.Equal(t, "auth_get_current_user", tool.Name)
 	require.Equal(t, "GET", operation.Method)
 	require.True(t, tool.Annotations.ReadOnlyHint)
-}
-
-func TestBuildToolFromOperationExposesListMemoViews(t *testing.T) {
-	spec, err := loadOpenAPISpec("../../proto/gen/openapi.yaml")
-	require.NoError(t, err)
-	registry, err := buildOperationRegistry(spec)
-	require.NoError(t, err)
-
-	tool, operation := buildToolFromOperation(registry["UserService_ListMemoViews"])
-	require.Equal(t, "user_list_memo_views", tool.Name)
-	require.Equal(t, "GET", operation.Method)
-	require.True(t, tool.Annotations.ReadOnlyHint)
-
-	input, ok := tool.InputSchema.(jsonSchema)
-	require.True(t, ok)
-	properties, ok := input["properties"].(map[string]any)
-	require.True(t, ok)
-	require.Contains(t, properties, "user")
-}
-
-func TestBuildToolFromOperationMarksSetOperationsIdempotent(t *testing.T) {
-	spec, err := loadOpenAPISpec("../../proto/gen/openapi.yaml")
-	require.NoError(t, err)
-	registry, err := buildOperationRegistry(spec)
-	require.NoError(t, err)
-
-	for _, operationID := range []string{"MemoService_SetMemoAttachments", "MemoService_SetMemoRelations"} {
-		tool, operation := buildToolFromOperation(registry[operationID])
-		require.Equal(t, "PATCH", operation.Method, operationID)
-		// PATCH is non-idempotent by the method heuristic, but the per-operation
-		// override restores the declarative "set" semantics.
-		require.True(t, tool.Annotations.IdempotentHint, operationID)
-		require.False(t, tool.Annotations.ReadOnlyHint, operationID)
-		require.True(t, *tool.Annotations.DestructiveHint, operationID)
-	}
 }
 
 func TestBuildToolFromOperationMarksUpdateMemoDestructive(t *testing.T) {

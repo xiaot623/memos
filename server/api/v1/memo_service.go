@@ -76,7 +76,7 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 		return nil, err
 	}
 
-	if err := s.createMemoWithMutation(ctx, user, prepared.memo, nil, prepared.attachments, prepared.requiredAttachmentIDs, prepared.referenceRelations); err != nil {
+	if err := s.createMemoWithMutation(ctx, user, prepared.memo, prepared.attachments, prepared.requiredAttachmentIDs); err != nil {
 		return nil, mapMemoCreateError(err, memoUID, "failed to create memo")
 	}
 	memo := prepared.memo
@@ -88,38 +88,26 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 		return nil, errors.Wrap(err, "failed to get memo attachments")
 	}
 
-	relations, err := s.loadMemoRelations(ctx, memo)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to load memo relations")
-	}
-	memoMessage, err := s.convertMemoFromStore(ctx, memo, nil, attachments, relations)
+	memoMessage, err := s.convertMemoFromStore(ctx, memo, nil, attachments)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert memo")
-	}
-	// Try to dispatch webhook when memo is created.
-	if err := s.DispatchMemoCreatedWebhook(ctx, memoMessage); err != nil {
-		slog.Warn("Failed to dispatch memo created webhook", slog.Any("err", err))
 	}
 
 	s.SSEHub.publishMemoChanged()
 
-	s.dispatchMemoMentionNotificationsBestEffort(ctx, memo, nil, "")
 	s.enqueueSemanticMemo(memo.ID)
 
 	return memoMessage, nil
 }
 
 func (s *APIV1Service) ListMemos(ctx context.Context, request *v1pb.ListMemosRequest) (*v1pb.ListMemosResponse, error) {
-	memoFind := &store.FindMemo{
-		// Exclude comments by default.
-		ExcludeComments: true,
-	}
+	memoFind := &store.FindMemo{}
 	accessScope, currentUser, err := s.resolveMemoAccessScope(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	// An anonymous caller may only list at all when the instance permits it.
-	if currentUser == nil && !accessScope.AllowPublic {
+	// An anonymous caller cannot list memos.
+	if currentUser == nil {
 		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
 	}
 	memoFind.Access = accessScope
@@ -219,11 +207,6 @@ func (s *APIV1Service) ListMemos(ctx context.Context, request *v1pb.ListMemosReq
 		attachmentMap[*attachment.MemoID] = append(attachmentMap[*attachment.MemoID], attachment)
 	}
 
-	// RELATIONS (batch load to avoid N+1)
-	relationMap, err := s.batchConvertMemoRelations(ctx, memos, false)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to batch load memo relations")
-	}
 	creatorIDs := make([]int32, 0, len(memos)+len(reactions))
 	for _, memo := range memos {
 		creatorIDs = append(creatorIDs, memo.CreatorID)
@@ -238,9 +221,8 @@ func (s *APIV1Service) ListMemos(ctx context.Context, request *v1pb.ListMemosReq
 	for _, memo := range memos {
 		reactions := reactionMap[memo.ID]
 		attachments := attachmentMap[memo.ID]
-		relations := relationMap[memo.ID]
 
-		memoMessage, err := s.convertMemoFromStoreWithCreators(ctx, memo, reactions, attachments, relations, creatorMap)
+		memoMessage, err := s.convertMemoFromStoreWithCreators(ctx, memo, reactions, attachments, creatorMap)
 		if err != nil {
 			if stderrors.Is(err, errMemoCreatorNotFound) {
 				slog.Warn("Skipping memo with missing creator",
@@ -296,11 +278,7 @@ func (s *APIV1Service) GetMemo(ctx context.Context, request *v1pb.GetMemoRequest
 		return nil, status.Errorf(codes.Internal, "failed to list attachments")
 	}
 
-	relations, err := s.loadMemoRelations(ctx, memo)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to load memo relations")
-	}
-	memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments, relations)
+	memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments)
 	if err != nil {
 		if stderrors.Is(err, errMemoCreatorNotFound) {
 			return nil, status.Errorf(codes.NotFound, "memo creator not found")
@@ -394,10 +372,8 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 		return nil, status.Errorf(codes.InvalidArgument, "unassigning a memo with SPACE visibility requires a replacement visibility")
 	}
 	update.Policy = memoWritePolicy(user.ID, lifecycleOnly)
-	previousContent := memo.Content
 	contentUpdated := false
 	attachmentsUpdated := false
-	relationsUpdated := false
 	nextMemo := *memo
 	if memo.Payload != nil {
 		nextMemo.Payload = &storepb.MemoPayload{}
@@ -447,16 +423,8 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 			update.UpdatedTs = &updatedTsSec
 		} else if path == "display_time" {
 			return nil, status.Errorf(codes.InvalidArgument, "display_time is not supported")
-		} else if path == "location" {
-			if nextMemo.Payload == nil {
-				nextMemo.Payload = &storepb.MemoPayload{}
-			}
-			nextMemo.Payload.Location = convertLocationToStore(request.Memo.Location)
-			update.Payload = nextMemo.Payload
 		} else if path == "attachments" {
 			attachmentsUpdated = true
-		} else if path == "relations" {
-			relationsUpdated = true
 		} else {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid update path: %s", path)
 		}
@@ -465,13 +433,6 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 	var preparedAttachments *preparedMemoAttachments
 	if attachmentsUpdated {
 		preparedAttachments, err = s.prepareMemoAttachments(ctx, user, memo, request.Memo.Attachments)
-		if err != nil {
-			return nil, err
-		}
-	}
-	var preparedRelations []*store.MemoRelation
-	if relationsUpdated {
-		preparedRelations, err = s.prepareMemoRelations(ctx, memo, request.Memo.Relations)
 		if err != nil {
 			return nil, err
 		}
@@ -493,24 +454,17 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 		}
 	}
 
-	if contentUpdated || attachmentsUpdated || relationsUpdated {
-		var relations *[]*store.MemoRelation
-		if relationsUpdated {
-			relations = &preparedRelations
-		}
-		if err := s.applyMemoMutation(ctx, memo, preparedAttachments, update, requiredAttachmentIDs, relations); err != nil {
+	if contentUpdated || attachmentsUpdated {
+		if err := s.applyMemoMutation(ctx, memo, preparedAttachments, update, requiredAttachmentIDs); err != nil {
 			return nil, err
 		}
 	} else if err = s.Store.UpdateMemo(ctx, update); err != nil {
 		return nil, mapMemoWriteError(err, "failed to update memo")
 	}
 
-	memo, commentContext, memoMessage, err := s.buildUpdatedMemoState(ctx, memo.ID)
+	memo, _, memoMessage, err := s.buildUpdatedMemoState(ctx, memo.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build updated memo state")
-	}
-	if contentUpdated {
-		s.dispatchMemoMentionNotificationsBestEffort(ctx, memo, commentContext, previousContent)
 	}
 	s.dispatchMemoUpdatedSideEffects(ctx, memoMessage)
 	s.enqueueSemanticMemo(memo.ID)
@@ -543,25 +497,6 @@ func (s *APIV1Service) DeleteMemo(ctx context.Context, request *v1pb.DeleteMemoR
 	if !access.CanManageMemo(user, memo) {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
-	var deletedMemoMessage *v1pb.Memo
-	// Deletion is a narrow lifecycle capability and may remain available after
-	// the author loses read access to a memo with the SPACE audience. Only
-	// build a content-bearing webhook payload when the actor can still read the
-	// memo immediately before deletion.
-	if s.checkMemoReadAccess(ctx, memo) == nil {
-		reactions, err := s.Store.ListReactions(ctx, &store.FindReaction{MemoID: &memo.ID})
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to list reactions")
-		}
-		attachments, err := s.Store.ListAttachments(ctx, &store.FindAttachment{MemoID: &memo.ID})
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to list attachments")
-		}
-		deleteRelations, _ := s.loadMemoRelations(ctx, memo)
-		if memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments, deleteRelations); err == nil {
-			deletedMemoMessage = memoMessage
-		}
-	}
 
 	deleteResult, err := s.Store.DeleteMemoWithPolicy(ctx, &store.DeleteMemoWithPolicy{MemoID: memo.ID, ActorUserID: user.ID})
 	if err != nil {
@@ -579,11 +514,6 @@ func (s *APIV1Service) DeleteMemo(ctx context.Context, request *v1pb.DeleteMemoR
 	}
 
 	s.SSEHub.publishMemoChanged()
-	if deletedMemoMessage != nil && deleteResult.ActorCanRead {
-		if err := s.DispatchMemoDeletedWebhook(ctx, deletedMemoMessage); err != nil {
-			slog.Warn("Failed to dispatch memo deleted webhook", slog.Any("err", err))
-		}
-	}
 	if err := s.cleanupDeletedAttachmentStorage(ctx, deleteResult.Attachments); err != nil {
 		return nil, status.Errorf(codes.Internal, "memo was deleted but attachment storage cleanup failed: %v", err)
 	}
@@ -599,5 +529,3 @@ func (s *APIV1Service) getContentLengthLimit(ctx context.Context) (int, error) {
 	}
 	return int(instanceMemoRelatedSetting.ContentLengthLimit), nil
 }
-
-// DispatchMemoCreatedWebhook dispatches webhook when memo is created.

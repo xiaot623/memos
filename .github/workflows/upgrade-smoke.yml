@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        driver: [sqlite, mysql, postgres]
+        driver: [sqlite]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

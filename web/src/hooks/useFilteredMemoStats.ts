@@ -5,7 +5,6 @@ import { useMemo } from "react";
 import { type MemoTimeBasis, useView } from "@/contexts/ViewContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useAllUserStats, useUserStats } from "@/hooks/useUserQueries";
-import { combineCELFilters } from "@/lib/cel-filter";
 import { mergeTagCounts } from "@/lib/tag";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { UserStats } from "@/types/proto/api/v1/user_service_pb";
@@ -17,7 +16,7 @@ export interface FilteredMemoStats {
   loading: boolean;
 }
 
-export type MemoStatsContext = "home" | "explore" | "archived" | "profile";
+export type MemoStatsContext = "home" | "archived";
 
 export interface UseFilteredMemoStatsOptions {
   userName?: string;
@@ -44,29 +43,19 @@ export const useFilteredMemoStats = (options: UseFilteredMemoStatsOptions = {}):
   const currentUser = useCurrentUser();
   const { timeBasis } = useView();
 
-  // home/profile: use backend per-user stats (full tag set, not page-limited)
   const { data: userStats, isLoading: isLoadingUserStats } = useUserStats(userName, { enabled, filter });
-  // explore/archived: fetch backend grouped stats and aggregate them locally.
-  // ListAllUserStats AND's the request filter with the server's auth filter, so
-  // private memos are not included unless explicitly visible to the current user.
-  const exploreVisibilityFilter = currentUser != null ? 'visibility in ["PUBLIC", "PROTECTED", "SPACE"]' : 'visibility in ["PUBLIC"]';
-  const allUserStatsRequest =
-    context === "explore"
-      ? { state: State.NORMAL, filter: combineCELFilters(filter, exploreVisibilityFilter) }
-      : context === "archived"
-        ? { state: State.ARCHIVED, filter }
-        : {};
-  const shouldFetchAllUserStats = context === "explore" || (context === "archived" && !!currentUser?.name);
-  const { data: allUserStats = [], isLoading: isLoadingAllUserStats } = useAllUserStats(allUserStatsRequest, {
-    enabled: enabled && shouldFetchAllUserStats,
-  });
+  const shouldFetchAllUserStats = context === "archived" && !!currentUser?.name;
+  const { data: allUserStats = [], isLoading: isLoadingAllUserStats } = useAllUserStats(
+    { state: State.ARCHIVED, filter },
+    { enabled: enabled && shouldFetchAllUserStats },
+  );
 
   const data = useMemo(() => {
     const loading = isLoadingUserStats || isLoadingAllUserStats;
     let activityStats: Record<string, number> = {};
     let tagCount: Record<string, number> = mergeTagCounts();
 
-    if (context === "explore" || context === "archived") {
+    if (context === "archived") {
       const displayDates: string[] = [];
       tagCount = mergeTagCounts(...allUserStats.map((stats) => stats.tagCount));
       for (const stats of allUserStats) {
@@ -78,24 +67,22 @@ export const useFilteredMemoStats = (options: UseFilteredMemoStatsOptions = {}):
         );
       }
       activityStats = countBy(displayDates);
-    } else if (userName && userStats) {
-      // home/profile: use backend per-user stats.
-      const sourceArray = timestampsForBasis(userStats, timeBasis);
-      if (sourceArray.length > 0) {
-        activityStats = countBy(
-          sourceArray
-            .map((ts) => (ts ? timestampDate(ts) : undefined))
-            .filter((date): date is Date => date !== undefined)
-            .map(toDateString),
-        );
-      }
-      if (userStats.tagCount) {
-        tagCount = mergeTagCounts(userStats.tagCount);
-      }
+    } else if (userStats) {
+      tagCount = mergeTagCounts(userStats.tagCount);
+      activityStats = countBy(
+        timestampsForBasis(userStats, timeBasis)
+          .map((ts) => (ts ? timestampDate(ts) : undefined))
+          .filter((date): date is Date => date !== undefined)
+          .map(toDateString),
+      );
     }
 
-    return { statistics: { activityStats, timeBasis }, tags: tagCount, loading };
-  }, [context, userName, userStats, allUserStats, isLoadingUserStats, isLoadingAllUserStats, timeBasis]);
+    return {
+      statistics: { activityStats, timeBasis },
+      tags: tagCount,
+      loading,
+    };
+  }, [allUserStats, context, isLoadingAllUserStats, isLoadingUserStats, timeBasis, userStats]);
 
   return data;
 };

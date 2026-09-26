@@ -30,13 +30,9 @@ var ErrMemoShareConflict = errors.New("active memo share conflicts with audience
 type Visibility string
 
 const (
-	// Public is the PUBLIC visibility.
-	Public Visibility = "PUBLIC"
-	// Protected is the PROTECTED visibility.
-	Protected Visibility = "PROTECTED"
-	// Private is the PRIVATE visibility.
+	// Private is the PRIVATE visibility — creator only.
 	Private Visibility = "PRIVATE"
-	// SpaceAudience is visible only to active members of its space.
+	// SpaceAudience is visible to the creator and active members of its space.
 	SpaceAudience Visibility = "SPACE"
 )
 
@@ -62,9 +58,6 @@ type Memo struct {
 	Pinned     bool
 	Payload    *storepb.MemoPayload
 	SpaceID    *int32
-
-	// Composed fields
-	ParentUID *string
 }
 
 type FindMemo struct {
@@ -79,12 +72,10 @@ type FindMemo struct {
 	CreatorID *int32
 
 	// Domain specific fields
-	VisibilityList       []Visibility
-	CommentContextMemoID *int32
-	Access               *MemoAccessScope
-	ExcludeContent       bool
-	ExcludeComments      bool
-	Filters              []string
+	VisibilityList []Visibility
+	Access         *MemoAccessScope
+	ExcludeContent bool
+	Filters        []string
 
 	// Pagination
 	Limit  *int
@@ -173,9 +164,9 @@ type MemoWriteSnapshot struct {
 // MemoAccessScope is a typed, fail-closed read authorization predicate. When
 // present on FindMemo, drivers apply it in SQL before pagination.
 type MemoAccessScope struct {
-	UserID         *int32
-	AllowPublic    bool
-	AllowProtected bool
+	// UserID is the authenticated viewer. Nil means no readable rows (there is
+	// no anonymous public audience).
+	UserID *int32
 }
 
 type DeleteMemo struct {
@@ -187,26 +178,6 @@ func (s *Store) CreateMemo(ctx context.Context, create *Memo) (*Memo, error) {
 		return nil, err
 	}
 	return s.driver.CreateMemo(ctx, create)
-}
-
-// CreateMemoComment atomically creates one independent memo and its immutable
-// COMMENT relation to a context memo.
-func (s *Store) CreateMemoComment(ctx context.Context, create *Memo, contextMemoID, actorUserID int32) (*Memo, error) {
-	if create == nil || contextMemoID <= 0 || actorUserID <= 0 || create.CreatorID != actorUserID {
-		return nil, errors.New("comment creation requires memo, context, and matching actor")
-	}
-	if create.Visibility == "" {
-		create.Visibility = Private
-	}
-	if err := s.ApplyMemoMutation(ctx, &MemoMutation{
-		MemoCreate:           create,
-		CommentContextMemoID: &contextMemoID,
-		MemoCreatorID:        actorUserID,
-		ExpectedMemoContent:  create.Content,
-	}); err != nil {
-		return nil, err
-	}
-	return create, nil
 }
 
 func validateMemoCreate(create *Memo) error {
@@ -386,7 +357,7 @@ func sameMemoSpace(left, right *int32) bool {
 }
 
 func isValidVisibility(visibility Visibility) bool {
-	return visibility == Public || visibility == Protected || visibility == Private || visibility == SpaceAudience
+	return visibility == Private || visibility == SpaceAudience
 }
 
 func (s *Store) DeleteMemo(ctx context.Context, delete *DeleteMemo) error {

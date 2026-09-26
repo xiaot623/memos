@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/usememos/memos/internal/version"
 	storepb "github.com/usememos/memos/proto/gen/store"
@@ -133,31 +132,6 @@ func (s *Store) Migrate(ctx context.Context) error {
 		if err := s.seed(ctx); err != nil {
 			return errors.Wrap(err, "failed to seed")
 		}
-	}
-	if err := s.initializeInstanceAccessSetting(ctx); err != nil {
-		return errors.Wrap(err, "failed to initialize instance access setting")
-	}
-	return nil
-}
-
-// initializeInstanceAccessSetting captures the pre-ACCESS behavior exactly once.
-// Existing installations that configured an external URL were public; all others
-// were private. Once persisted, later URL changes do not alter the access policy.
-func (s *Store) initializeInstanceAccessSetting(ctx context.Context) error {
-	accessMode := storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE
-	if strings.TrimSpace(s.profile.InstanceURL) != "" {
-		accessMode = storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC
-	}
-	value, err := protojson.Marshal(&storepb.InstanceAccessSetting{AccessMode: accessMode})
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal initial instance access setting")
-	}
-	_, err = s.driver.CreateInstanceSettingIfNotExists(ctx, &InstanceSetting{
-		Name:  storepb.InstanceSettingKey_ACCESS.String(),
-		Value: string(value),
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to conditionally create initial instance access setting")
 	}
 	return nil
 }
@@ -328,6 +302,10 @@ func (s *Store) seed(ctx context.Context) error {
 // no versioned migration files. LATEST.sql describes the same schema on every
 // driver, so such a driver reports the highest version any driver's migration
 // directory defines and picks up future migrations from there.
+//
+// When no versioned migration files remain (LATEST-only), the binary version
+// is used as the schema stamp so fresh installs clear the minimum-upgrade
+// guard and match the product version.
 func (s *Store) GetCurrentSchemaVersion() (string, error) {
 	filePaths, err := fs.Glob(migrationFS, fmt.Sprintf("%s*/*.sql", s.getMigrationBasePath()))
 	if err != nil {
@@ -340,7 +318,7 @@ func (s *Store) GetCurrentSchemaVersion() (string, error) {
 		}
 	}
 	if len(filePaths) == 0 {
-		return defaultSchemaVersion, nil
+		return schemaVersionFromBinary(s.profile.Version), nil
 	}
 
 	currentSchemaVersion := defaultSchemaVersion
@@ -354,6 +332,18 @@ func (s *Store) GetCurrentSchemaVersion() (string, error) {
 		}
 	}
 	return currentSchemaVersion, nil
+}
+
+// latestOnlySchemaVersion stamps fresh LATEST.sql installs when the binary
+// has no release version (for example "dev" during local builds).
+const latestOnlySchemaVersion = "0.31.0"
+
+func schemaVersionFromBinary(binaryVersion string) string {
+	v := strings.TrimPrefix(strings.TrimSpace(binaryVersion), "v")
+	if v == "" || v == "dev" || !version.IsVersionGreaterOrEqualThan(v, "0.22.0") {
+		return latestOnlySchemaVersion
+	}
+	return v
 }
 
 // getSchemaVersionOfMigrateScript extracts the schema version from the migration script file path.

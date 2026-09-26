@@ -320,7 +320,7 @@ export function useAcceptSpaceInvitation(viewerName: string) {
       void queryClient.invalidateQueries({ queryKey: spaceKeys.list(viewerName), exact: true });
       invalidateMembershipSensitiveQueries(queryClient);
       // The server resolves the matching inbox notification.
-      void queryClient.invalidateQueries({ queryKey: userKeys.notifications() });
+      // notifications removed
     },
   });
 }
@@ -344,7 +344,7 @@ export function useDeclineSpaceInvitation(viewerName: string) {
         );
       }
       // The server removes the matching inbox notification.
-      void queryClient.invalidateQueries({ queryKey: userKeys.notifications() });
+      // notifications removed
     },
   });
 }

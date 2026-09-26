@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import ClampedSection from "@/components/ClampedSection";
 import { AttachmentGallery, MemoMetadataRows } from "@/components/MemoMetadata";
 import { separateAttachments } from "@/components/MemoMetadata/Attachment/attachmentHelpers";
-import { isReferenceRelation } from "@/components/MemoMetadata/Relation/relationHelpers";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
@@ -45,8 +44,6 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
 
   const { handleMemoContentClick } = useMemoHandlers({ openPreview });
 
-  const referencedMemos = memo.relations.filter(isReferenceRelation);
-  // Memoized so AttachmentListView's own useMemo chain keeps its cache across body renders.
   const attachmentOnlyItems = useMemo(
     () => filterInlineManagedAttachments(memo.content, memo.attachments),
     [memo.content, memo.attachments],
@@ -62,8 +59,6 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
             blurred && !showBlurredContent && "blur-lg transition-all duration-200",
           )}
         >
-          {/* Compact bounds the whole body — attachments included — behind one Show more.
-              Reactions stay outside so they never hide under the fade. */}
           <ClampedSection enabled={Boolean(compact)}>
             <MemoContent
               memoName={memo.name}
@@ -80,14 +75,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
               onBlur={saveEditor}
             />
             <AttachmentGallery visual={visual} onImagePreview={openPreview} />
-            <MemoMetadataRows
-              audio={audio}
-              docs={docs}
-              relations={referencedMemos}
-              currentMemoName={memo.name}
-              parentPage={parentPage}
-              location={memo.location}
-            />
+            <MemoMetadataRows audio={audio} docs={docs} currentMemoName={memo.name} parentPage={parentPage} />
           </ClampedSection>
         </div>
 

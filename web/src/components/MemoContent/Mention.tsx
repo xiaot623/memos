@@ -1,41 +1,16 @@
-import type { Element } from "hast";
-import { mentionStyles } from "@/lib/markdownStyles";
 import { cn } from "@/lib/utils";
 
-interface MentionProps extends React.HTMLAttributes<HTMLSpanElement> {
-  node?: Element;
-  "data-mention"?: string;
+interface MentionProps {
+  username?: string;
+  className?: string;
   children?: React.ReactNode;
   resolved?: boolean;
+  "data-mention"?: string;
+  [key: string]: unknown;
 }
 
-export const Mention: React.FC<MentionProps> = ({
-  "data-mention": dataMention,
-  children,
-  className,
-  node: _node,
-  resolved = false,
-  ...props
-}) => {
-  const username = dataMention || "";
-
-  if (!resolved) {
-    return (
-      <span data-mention={username} title={`@${username}`} className={className} {...props}>
-        {children}
-      </span>
-    );
-  }
-
-  return (
-    <a
-      href={`/u/${username}`}
-      className={cn(mentionStyles.base, "hover:underline", className)}
-      data-mention={username}
-      title={`@${username}`}
-      {...props}
-    >
-      {children}
-    </a>
-  );
+/** Mentions render as plain text; interactive @mention UI was removed. */
+export const Mention = ({ username, className, children, "data-mention": dataMention }: MentionProps) => {
+  const name = (typeof username === "string" && username) || (typeof dataMention === "string" && dataMention) || "";
+  return <span className={cn("font-medium text-foreground", className)}>{children ?? (name ? `@${name}` : null)}</span>;
 };

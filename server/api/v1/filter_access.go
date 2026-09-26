@@ -143,3 +143,7 @@ func valueReferencesSpace(value filterpkg.ValueExpr) bool {
 	}
 	return false
 }
+
+func (*APIV1Service) filterDialect() filterpkg.DialectName {
+	return filterpkg.DialectSQLite
+}

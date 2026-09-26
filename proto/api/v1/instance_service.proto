@@ -7,7 +7,6 @@ import "google/api/annotations.proto";
 import "google/api/client.proto";
 import "google/api/field_behavior.proto";
 import "google/api/resource.proto";
-import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "google/type/color.proto";
@@ -43,25 +42,10 @@ service InstanceService {
     option (google.api.method_signature) = "setting,update_mask";
   }
 
-  // Tests notification email delivery with the provided or stored SMTP settings.
-  rpc TestInstanceEmailSetting(TestInstanceEmailSettingRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post: "/api/v1/instance/settings/notification:testEmail"
-      body: "*"
-    };
-  }
-
   // GetInstanceStats returns resource usage statistics for the instance. Admin only.
   rpc GetInstanceStats(GetInstanceStatsRequest) returns (InstanceStats) {
     option (google.api.http) = {get: "/api/v1/instance/stats"};
   }
-}
-
-// InstanceAccessMode controls whether unauthenticated users may access instance content.
-enum InstanceAccessMode {
-  INSTANCE_ACCESS_MODE_UNSPECIFIED = 0;
-  INSTANCE_ACCESS_MODE_PRIVATE = 1;
-  INSTANCE_ACCESS_MODE_PUBLIC = 2;
 }
 
 // Instance profile message containing basic instance information.
@@ -89,8 +73,8 @@ message InstanceProfile {
   // mistaken for a fresh install.
   bool needs_setup = 9;
 
-  // Access mode controls whether unauthenticated users may access instance content.
-  InstanceAccessMode access_mode = 10;
+  reserved 10;
+  reserved "access_mode";
 
   // SemanticSearchAvailable is true when this process has a vector driver and
   // an embedding provider and model are configured. It exposes no connection
@@ -130,9 +114,7 @@ message InstanceSetting {
     StorageSetting storage_setting = 3;
     MemoRelatedSetting memo_related_setting = 4;
     TagsSetting tags_setting = 5;
-    NotificationSetting notification_setting = 6;
     AISetting ai_setting = 7;
-    AccessSetting access_setting = 8;
   }
 
   // Enumeration of instance setting keys.
@@ -146,12 +128,10 @@ message InstanceSetting {
     MEMO_RELATED = 3;
     // TAGS is the key for tag metadata.
     TAGS = 4;
-    // NOTIFICATION is the key for notification transport settings.
-    NOTIFICATION = 5;
+    reserved 5, 7;
+    reserved "NOTIFICATION", "ACCESS";
     // AI is the key for AI provider settings.
     AI = 6;
-    // ACCESS is the key for instance access policy settings.
-    ACCESS = 7;
   }
 
   // General instance settings configuration.
@@ -296,33 +276,13 @@ message InstanceSetting {
     map<string, TagMetadata> tags = 1;
   }
 
-  // Notification transport configuration.
-  message NotificationSetting {
-    EmailSetting email = 1;
-
-    // Email delivery configuration for notifications.
-    message EmailSetting {
-      bool enabled = 1;
-      string smtp_host = 2;
-      int32 smtp_port = 3;
-      string smtp_username = 4;
-      string smtp_password = 5 [(google.api.field_behavior) = INPUT_ONLY];
-      string from_email = 6;
-      string from_name = 7;
-      string reply_to = 8;
-      bool use_tls = 9;
-      bool use_ssl = 10;
-    }
-  }
-
   // AI provider configuration settings.
   message AISetting {
     // providers is the list of AI provider configurations available instance-wide.
     repeated AIProviderConfig providers = 1;
 
-    // transcription is the speech-to-text feature configuration.
-    // When unset or transcription.provider_id is empty, transcription is disabled.
-    TranscriptionConfig transcription = 2;
+    reserved 2;
+    reserved "transcription";
 
     // embedding selects the provider and model used for semantic search.
     // When unset, or when provider_id or model is empty, embedding is disabled.
@@ -364,30 +324,6 @@ message InstanceSetting {
     // dimensions is the output vector size. Zero uses 768.
     int32 dimensions = 3;
   }
-
-  // TranscriptionConfig configures the speech-to-text feature.
-  message TranscriptionConfig {
-    // provider_id references an entry in AISetting.providers[].id.
-    // Empty string means transcription is disabled.
-    string provider_id = 1;
-
-    // model is the provider-specific model identifier.
-    // Empty string falls back to the engine default
-    // (whisper-1 for OPENAI providers, gemini-2.5-flash for GEMINI providers).
-    string model = 2;
-
-    // language is the default ISO 639-1 language hint sent to the provider.
-    // Empty string lets the provider auto-detect.
-    string language = 3;
-
-    // prompt is a default spelling/vocabulary hint passed to the provider.
-    string prompt = 4;
-  }
-
-  // Access policy configuration for the instance.
-  message AccessSetting {
-    InstanceAccessMode access_mode = 1;
-  }
 }
 
 // Request message for GetInstanceSetting method.
@@ -423,15 +359,6 @@ message UpdateInstanceSettingRequest {
 
   // The list of fields to update.
   google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = OPTIONAL];
-}
-
-// Request message for TestInstanceEmailSetting method.
-message TestInstanceEmailSettingRequest {
-  // Optional. SMTP email settings to test. If omitted, the stored notification email setting is used.
-  InstanceSetting.NotificationSetting.EmailSetting email = 1 [(google.api.field_behavior) = OPTIONAL];
-
-  // Optional. Recipient email address. If omitted, the current user's email address is used.
-  string recipient_email = 2 [(google.api.field_behavior) = OPTIONAL];
 }
 
 // Request message for GetInstanceStats.

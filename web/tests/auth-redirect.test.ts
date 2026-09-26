@@ -63,7 +63,7 @@ describe("redirectOnAuthFailure", () => {
   });
 
   it("does nothing on a public route by default", () => {
-    const nav = installLocation("http://localhost/explore");
+    const nav = installLocation("http://localhost/about");
 
     redirectOnAuthFailure();
 
@@ -81,12 +81,12 @@ describe("redirectOnAuthFailure", () => {
   });
 
   it("honours forceRedirect even on a public route", () => {
-    const nav = installLocation("http://localhost/explore");
+    const nav = installLocation("http://localhost/about");
 
     redirectOnAuthFailure(true);
 
     expect(mockedClearAccessToken).toHaveBeenCalledTimes(1);
-    expect(nav.replace).toHaveBeenCalledWith("/auth?redirect=%2Fexplore");
+    expect(nav.replace).toHaveBeenCalledWith("/auth?redirect=%2Fabout");
   });
 
   it("embeds the reason parameter when provided", () => {

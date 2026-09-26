@@ -11,7 +11,6 @@ import (
 	color "google.golang.org/genproto/googleapis/type/color"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
@@ -26,56 +25,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// InstanceAccessMode controls whether unauthenticated users may access instance content.
-type InstanceAccessMode int32
-
-const (
-	InstanceAccessMode_INSTANCE_ACCESS_MODE_UNSPECIFIED InstanceAccessMode = 0
-	InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE     InstanceAccessMode = 1
-	InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC      InstanceAccessMode = 2
-)
-
-// Enum value maps for InstanceAccessMode.
-var (
-	InstanceAccessMode_name = map[int32]string{
-		0: "INSTANCE_ACCESS_MODE_UNSPECIFIED",
-		1: "INSTANCE_ACCESS_MODE_PRIVATE",
-		2: "INSTANCE_ACCESS_MODE_PUBLIC",
-	}
-	InstanceAccessMode_value = map[string]int32{
-		"INSTANCE_ACCESS_MODE_UNSPECIFIED": 0,
-		"INSTANCE_ACCESS_MODE_PRIVATE":     1,
-		"INSTANCE_ACCESS_MODE_PUBLIC":      2,
-	}
-)
-
-func (x InstanceAccessMode) Enum() *InstanceAccessMode {
-	p := new(InstanceAccessMode)
-	*p = x
-	return p
-}
-
-func (x InstanceAccessMode) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (InstanceAccessMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_instance_service_proto_enumTypes[0].Descriptor()
-}
-
-func (InstanceAccessMode) Type() protoreflect.EnumType {
-	return &file_api_v1_instance_service_proto_enumTypes[0]
-}
-
-func (x InstanceAccessMode) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use InstanceAccessMode.Descriptor instead.
-func (InstanceAccessMode) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{0}
-}
-
 // Enumeration of instance setting keys.
 type InstanceSetting_Key int32
 
@@ -89,12 +38,8 @@ const (
 	InstanceSetting_MEMO_RELATED InstanceSetting_Key = 3
 	// TAGS is the key for tag metadata.
 	InstanceSetting_TAGS InstanceSetting_Key = 4
-	// NOTIFICATION is the key for notification transport settings.
-	InstanceSetting_NOTIFICATION InstanceSetting_Key = 5
 	// AI is the key for AI provider settings.
 	InstanceSetting_AI InstanceSetting_Key = 6
-	// ACCESS is the key for instance access policy settings.
-	InstanceSetting_ACCESS InstanceSetting_Key = 7
 )
 
 // Enum value maps for InstanceSetting_Key.
@@ -105,9 +50,7 @@ var (
 		2: "STORAGE",
 		3: "MEMO_RELATED",
 		4: "TAGS",
-		5: "NOTIFICATION",
 		6: "AI",
-		7: "ACCESS",
 	}
 	InstanceSetting_Key_value = map[string]int32{
 		"KEY_UNSPECIFIED": 0,
@@ -115,9 +58,7 @@ var (
 		"STORAGE":         2,
 		"MEMO_RELATED":    3,
 		"TAGS":            4,
-		"NOTIFICATION":    5,
 		"AI":              6,
-		"ACCESS":          7,
 	}
 )
 
@@ -132,11 +73,11 @@ func (x InstanceSetting_Key) String() string {
 }
 
 func (InstanceSetting_Key) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_instance_service_proto_enumTypes[1].Descriptor()
+	return file_api_v1_instance_service_proto_enumTypes[0].Descriptor()
 }
 
 func (InstanceSetting_Key) Type() protoreflect.EnumType {
-	return &file_api_v1_instance_service_proto_enumTypes[1]
+	return &file_api_v1_instance_service_proto_enumTypes[0]
 }
 
 func (x InstanceSetting_Key) Number() protoreflect.EnumNumber {
@@ -187,11 +128,11 @@ func (x InstanceSetting_StorageType) String() string {
 }
 
 func (InstanceSetting_StorageType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_instance_service_proto_enumTypes[2].Descriptor()
+	return file_api_v1_instance_service_proto_enumTypes[1].Descriptor()
 }
 
 func (InstanceSetting_StorageType) Type() protoreflect.EnumType {
-	return &file_api_v1_instance_service_proto_enumTypes[2]
+	return &file_api_v1_instance_service_proto_enumTypes[1]
 }
 
 func (x InstanceSetting_StorageType) Number() protoreflect.EnumNumber {
@@ -240,11 +181,11 @@ func (x InstanceSetting_AIProviderType) String() string {
 }
 
 func (InstanceSetting_AIProviderType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_instance_service_proto_enumTypes[3].Descriptor()
+	return file_api_v1_instance_service_proto_enumTypes[2].Descriptor()
 }
 
 func (InstanceSetting_AIProviderType) Type() protoreflect.EnumType {
-	return &file_api_v1_instance_service_proto_enumTypes[3]
+	return &file_api_v1_instance_service_proto_enumTypes[2]
 }
 
 func (x InstanceSetting_AIProviderType) Number() protoreflect.EnumNumber {
@@ -296,11 +237,11 @@ func (x InstanceSetting_StorageSetting_StorageType) String() string {
 }
 
 func (InstanceSetting_StorageSetting_StorageType) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_instance_service_proto_enumTypes[4].Descriptor()
+	return file_api_v1_instance_service_proto_enumTypes[3].Descriptor()
 }
 
 func (InstanceSetting_StorageSetting_StorageType) Type() protoreflect.EnumType {
-	return &file_api_v1_instance_service_proto_enumTypes[4]
+	return &file_api_v1_instance_service_proto_enumTypes[3]
 }
 
 func (x InstanceSetting_StorageSetting_StorageType) Number() protoreflect.EnumNumber {
@@ -332,8 +273,6 @@ type InstanceProfile struct {
 	// false once any user exists, so an instance that has lost its admins is not
 	// mistaken for a fresh install.
 	NeedsSetup bool `protobuf:"varint,9,opt,name=needs_setup,json=needsSetup,proto3" json:"needs_setup,omitempty"`
-	// Access mode controls whether unauthenticated users may access instance content.
-	AccessMode InstanceAccessMode `protobuf:"varint,10,opt,name=access_mode,json=accessMode,proto3,enum=memos.api.v1.InstanceAccessMode" json:"access_mode,omitempty"`
 	// SemanticSearchAvailable is true when this process has a vector driver and
 	// an embedding provider and model are configured. It exposes no connection
 	// details.
@@ -415,13 +354,6 @@ func (x *InstanceProfile) GetNeedsSetup() bool {
 	return false
 }
 
-func (x *InstanceProfile) GetAccessMode() InstanceAccessMode {
-	if x != nil {
-		return x.AccessMode
-	}
-	return InstanceAccessMode_INSTANCE_ACCESS_MODE_UNSPECIFIED
-}
-
 func (x *InstanceProfile) GetSemanticSearchAvailable() bool {
 	if x != nil {
 		return x.SemanticSearchAvailable
@@ -485,9 +417,7 @@ type InstanceSetting struct {
 	//	*InstanceSetting_StorageSetting_
 	//	*InstanceSetting_MemoRelatedSetting_
 	//	*InstanceSetting_TagsSetting_
-	//	*InstanceSetting_NotificationSetting_
 	//	*InstanceSetting_AiSetting
-	//	*InstanceSetting_AccessSetting_
 	Value         isInstanceSetting_Value `protobuf_oneof:"value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -573,28 +503,10 @@ func (x *InstanceSetting) GetTagsSetting() *InstanceSetting_TagsSetting {
 	return nil
 }
 
-func (x *InstanceSetting) GetNotificationSetting() *InstanceSetting_NotificationSetting {
-	if x != nil {
-		if x, ok := x.Value.(*InstanceSetting_NotificationSetting_); ok {
-			return x.NotificationSetting
-		}
-	}
-	return nil
-}
-
 func (x *InstanceSetting) GetAiSetting() *InstanceSetting_AISetting {
 	if x != nil {
 		if x, ok := x.Value.(*InstanceSetting_AiSetting); ok {
 			return x.AiSetting
-		}
-	}
-	return nil
-}
-
-func (x *InstanceSetting) GetAccessSetting() *InstanceSetting_AccessSetting {
-	if x != nil {
-		if x, ok := x.Value.(*InstanceSetting_AccessSetting_); ok {
-			return x.AccessSetting
 		}
 	}
 	return nil
@@ -620,16 +532,8 @@ type InstanceSetting_TagsSetting_ struct {
 	TagsSetting *InstanceSetting_TagsSetting `protobuf:"bytes,5,opt,name=tags_setting,json=tagsSetting,proto3,oneof"`
 }
 
-type InstanceSetting_NotificationSetting_ struct {
-	NotificationSetting *InstanceSetting_NotificationSetting `protobuf:"bytes,6,opt,name=notification_setting,json=notificationSetting,proto3,oneof"`
-}
-
 type InstanceSetting_AiSetting struct {
 	AiSetting *InstanceSetting_AISetting `protobuf:"bytes,7,opt,name=ai_setting,json=aiSetting,proto3,oneof"`
-}
-
-type InstanceSetting_AccessSetting_ struct {
-	AccessSetting *InstanceSetting_AccessSetting `protobuf:"bytes,8,opt,name=access_setting,json=accessSetting,proto3,oneof"`
 }
 
 func (*InstanceSetting_GeneralSetting_) isInstanceSetting_Value() {}
@@ -640,11 +544,7 @@ func (*InstanceSetting_MemoRelatedSetting_) isInstanceSetting_Value() {}
 
 func (*InstanceSetting_TagsSetting_) isInstanceSetting_Value() {}
 
-func (*InstanceSetting_NotificationSetting_) isInstanceSetting_Value() {}
-
 func (*InstanceSetting_AiSetting) isInstanceSetting_Value() {}
-
-func (*InstanceSetting_AccessSetting_) isInstanceSetting_Value() {}
 
 // Request message for GetInstanceSetting method.
 type GetInstanceSettingRequest struct {
@@ -841,61 +741,6 @@ func (x *UpdateInstanceSettingRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
-// Request message for TestInstanceEmailSetting method.
-type TestInstanceEmailSettingRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Optional. SMTP email settings to test. If omitted, the stored notification email setting is used.
-	Email *InstanceSetting_NotificationSetting_EmailSetting `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	// Optional. Recipient email address. If omitted, the current user's email address is used.
-	RecipientEmail string `protobuf:"bytes,2,opt,name=recipient_email,json=recipientEmail,proto3" json:"recipient_email,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *TestInstanceEmailSettingRequest) Reset() {
-	*x = TestInstanceEmailSettingRequest{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TestInstanceEmailSettingRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TestInstanceEmailSettingRequest) ProtoMessage() {}
-
-func (x *TestInstanceEmailSettingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TestInstanceEmailSettingRequest.ProtoReflect.Descriptor instead.
-func (*TestInstanceEmailSettingRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *TestInstanceEmailSettingRequest) GetEmail() *InstanceSetting_NotificationSetting_EmailSetting {
-	if x != nil {
-		return x.Email
-	}
-	return nil
-}
-
-func (x *TestInstanceEmailSettingRequest) GetRecipientEmail() string {
-	if x != nil {
-		return x.RecipientEmail
-	}
-	return ""
-}
-
 // Request message for GetInstanceStats.
 type GetInstanceStatsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -905,7 +750,7 @@ type GetInstanceStatsRequest struct {
 
 func (x *GetInstanceStatsRequest) Reset() {
 	*x = GetInstanceStatsRequest{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[8]
+	mi := &file_api_v1_instance_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -917,7 +762,7 @@ func (x *GetInstanceStatsRequest) String() string {
 func (*GetInstanceStatsRequest) ProtoMessage() {}
 
 func (x *GetInstanceStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[8]
+	mi := &file_api_v1_instance_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -930,7 +775,7 @@ func (x *GetInstanceStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInstanceStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetInstanceStatsRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{8}
+	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{7}
 }
 
 // Resource usage statistics for the instance.
@@ -947,7 +792,7 @@ type InstanceStats struct {
 
 func (x *InstanceStats) Reset() {
 	*x = InstanceStats{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[9]
+	mi := &file_api_v1_instance_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +804,7 @@ func (x *InstanceStats) String() string {
 func (*InstanceStats) ProtoMessage() {}
 
 func (x *InstanceStats) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[9]
+	mi := &file_api_v1_instance_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,7 +817,7 @@ func (x *InstanceStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstanceStats.ProtoReflect.Descriptor instead.
 func (*InstanceStats) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{9}
+	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *InstanceStats) GetDatabase() *InstanceStats_DatabaseStats {
@@ -1011,7 +856,7 @@ type InstanceProfile_Challenge struct {
 
 func (x *InstanceProfile_Challenge) Reset() {
 	*x = InstanceProfile_Challenge{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[10]
+	mi := &file_api_v1_instance_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1023,7 +868,7 @@ func (x *InstanceProfile_Challenge) String() string {
 func (*InstanceProfile_Challenge) ProtoMessage() {}
 
 func (x *InstanceProfile_Challenge) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[10]
+	mi := &file_api_v1_instance_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1080,7 +925,7 @@ type InstanceSetting_GeneralSetting struct {
 
 func (x *InstanceSetting_GeneralSetting) Reset() {
 	*x = InstanceSetting_GeneralSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[11]
+	mi := &file_api_v1_instance_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1092,7 +937,7 @@ func (x *InstanceSetting_GeneralSetting) String() string {
 func (*InstanceSetting_GeneralSetting) ProtoMessage() {}
 
 func (x *InstanceSetting_GeneralSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[11]
+	mi := &file_api_v1_instance_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1182,7 +1027,7 @@ type InstanceSetting_Storage struct {
 
 func (x *InstanceSetting_Storage) Reset() {
 	*x = InstanceSetting_Storage{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[12]
+	mi := &file_api_v1_instance_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1194,7 +1039,7 @@ func (x *InstanceSetting_Storage) String() string {
 func (*InstanceSetting_Storage) ProtoMessage() {}
 
 func (x *InstanceSetting_Storage) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[12]
+	mi := &file_api_v1_instance_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1279,7 +1124,7 @@ type InstanceSetting_StorageSetting struct {
 
 func (x *InstanceSetting_StorageSetting) Reset() {
 	*x = InstanceSetting_StorageSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[13]
+	mi := &file_api_v1_instance_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1291,7 +1136,7 @@ func (x *InstanceSetting_StorageSetting) String() string {
 func (*InstanceSetting_StorageSetting) ProtoMessage() {}
 
 func (x *InstanceSetting_StorageSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[13]
+	mi := &file_api_v1_instance_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1364,7 +1209,7 @@ type InstanceSetting_MemoRelatedSetting struct {
 
 func (x *InstanceSetting_MemoRelatedSetting) Reset() {
 	*x = InstanceSetting_MemoRelatedSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[14]
+	mi := &file_api_v1_instance_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1376,7 +1221,7 @@ func (x *InstanceSetting_MemoRelatedSetting) String() string {
 func (*InstanceSetting_MemoRelatedSetting) ProtoMessage() {}
 
 func (x *InstanceSetting_MemoRelatedSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[14]
+	mi := &file_api_v1_instance_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1427,7 +1272,7 @@ type InstanceSetting_TagMetadata struct {
 
 func (x *InstanceSetting_TagMetadata) Reset() {
 	*x = InstanceSetting_TagMetadata{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[15]
+	mi := &file_api_v1_instance_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1439,7 +1284,7 @@ func (x *InstanceSetting_TagMetadata) String() string {
 func (*InstanceSetting_TagMetadata) ProtoMessage() {}
 
 func (x *InstanceSetting_TagMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[15]
+	mi := &file_api_v1_instance_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1485,7 +1330,7 @@ type InstanceSetting_TagsSetting struct {
 
 func (x *InstanceSetting_TagsSetting) Reset() {
 	*x = InstanceSetting_TagsSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[16]
+	mi := &file_api_v1_instance_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1497,7 +1342,7 @@ func (x *InstanceSetting_TagsSetting) String() string {
 func (*InstanceSetting_TagsSetting) ProtoMessage() {}
 
 func (x *InstanceSetting_TagsSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[16]
+	mi := &file_api_v1_instance_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1520,59 +1365,11 @@ func (x *InstanceSetting_TagsSetting) GetTags() map[string]*InstanceSetting_TagM
 	return nil
 }
 
-// Notification transport configuration.
-type InstanceSetting_NotificationSetting struct {
-	state         protoimpl.MessageState                            `protogen:"open.v1"`
-	Email         *InstanceSetting_NotificationSetting_EmailSetting `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InstanceSetting_NotificationSetting) Reset() {
-	*x = InstanceSetting_NotificationSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InstanceSetting_NotificationSetting) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InstanceSetting_NotificationSetting) ProtoMessage() {}
-
-func (x *InstanceSetting_NotificationSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InstanceSetting_NotificationSetting.ProtoReflect.Descriptor instead.
-func (*InstanceSetting_NotificationSetting) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 6}
-}
-
-func (x *InstanceSetting_NotificationSetting) GetEmail() *InstanceSetting_NotificationSetting_EmailSetting {
-	if x != nil {
-		return x.Email
-	}
-	return nil
-}
-
 // AI provider configuration settings.
 type InstanceSetting_AISetting struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// providers is the list of AI provider configurations available instance-wide.
 	Providers []*InstanceSetting_AIProviderConfig `protobuf:"bytes,1,rep,name=providers,proto3" json:"providers,omitempty"`
-	// transcription is the speech-to-text feature configuration.
-	// When unset or transcription.provider_id is empty, transcription is disabled.
-	Transcription *InstanceSetting_TranscriptionConfig `protobuf:"bytes,2,opt,name=transcription,proto3" json:"transcription,omitempty"`
 	// embedding selects the provider and model used for semantic search.
 	// When unset, or when provider_id or model is empty, embedding is disabled.
 	Embedding     *InstanceSetting_EmbeddingConfig `protobuf:"bytes,3,opt,name=embedding,proto3" json:"embedding,omitempty"`
@@ -1582,7 +1379,7 @@ type InstanceSetting_AISetting struct {
 
 func (x *InstanceSetting_AISetting) Reset() {
 	*x = InstanceSetting_AISetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[18]
+	mi := &file_api_v1_instance_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1594,7 +1391,7 @@ func (x *InstanceSetting_AISetting) String() string {
 func (*InstanceSetting_AISetting) ProtoMessage() {}
 
 func (x *InstanceSetting_AISetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[18]
+	mi := &file_api_v1_instance_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1607,19 +1404,12 @@ func (x *InstanceSetting_AISetting) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstanceSetting_AISetting.ProtoReflect.Descriptor instead.
 func (*InstanceSetting_AISetting) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 7}
+	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 6}
 }
 
 func (x *InstanceSetting_AISetting) GetProviders() []*InstanceSetting_AIProviderConfig {
 	if x != nil {
 		return x.Providers
-	}
-	return nil
-}
-
-func (x *InstanceSetting_AISetting) GetTranscription() *InstanceSetting_TranscriptionConfig {
-	if x != nil {
-		return x.Transcription
 	}
 	return nil
 }
@@ -1650,7 +1440,7 @@ type InstanceSetting_AIProviderConfig struct {
 
 func (x *InstanceSetting_AIProviderConfig) Reset() {
 	*x = InstanceSetting_AIProviderConfig{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[19]
+	mi := &file_api_v1_instance_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1662,7 +1452,7 @@ func (x *InstanceSetting_AIProviderConfig) String() string {
 func (*InstanceSetting_AIProviderConfig) ProtoMessage() {}
 
 func (x *InstanceSetting_AIProviderConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[19]
+	mi := &file_api_v1_instance_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1675,7 +1465,7 @@ func (x *InstanceSetting_AIProviderConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstanceSetting_AIProviderConfig.ProtoReflect.Descriptor instead.
 func (*InstanceSetting_AIProviderConfig) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 8}
+	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 7}
 }
 
 func (x *InstanceSetting_AIProviderConfig) GetId() string {
@@ -1744,7 +1534,7 @@ type InstanceSetting_EmbeddingConfig struct {
 
 func (x *InstanceSetting_EmbeddingConfig) Reset() {
 	*x = InstanceSetting_EmbeddingConfig{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[20]
+	mi := &file_api_v1_instance_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1756,7 +1546,7 @@ func (x *InstanceSetting_EmbeddingConfig) String() string {
 func (*InstanceSetting_EmbeddingConfig) ProtoMessage() {}
 
 func (x *InstanceSetting_EmbeddingConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[20]
+	mi := &file_api_v1_instance_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1769,7 +1559,7 @@ func (x *InstanceSetting_EmbeddingConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstanceSetting_EmbeddingConfig.ProtoReflect.Descriptor instead.
 func (*InstanceSetting_EmbeddingConfig) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 9}
+	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 8}
 }
 
 func (x *InstanceSetting_EmbeddingConfig) GetProviderId() string {
@@ -1793,128 +1583,6 @@ func (x *InstanceSetting_EmbeddingConfig) GetDimensions() int32 {
 	return 0
 }
 
-// TranscriptionConfig configures the speech-to-text feature.
-type InstanceSetting_TranscriptionConfig struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// provider_id references an entry in AISetting.providers[].id.
-	// Empty string means transcription is disabled.
-	ProviderId string `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"`
-	// model is the provider-specific model identifier.
-	// Empty string falls back to the engine default
-	// (whisper-1 for OPENAI providers, gemini-2.5-flash for GEMINI providers).
-	Model string `protobuf:"bytes,2,opt,name=model,proto3" json:"model,omitempty"`
-	// language is the default ISO 639-1 language hint sent to the provider.
-	// Empty string lets the provider auto-detect.
-	Language string `protobuf:"bytes,3,opt,name=language,proto3" json:"language,omitempty"`
-	// prompt is a default spelling/vocabulary hint passed to the provider.
-	Prompt        string `protobuf:"bytes,4,opt,name=prompt,proto3" json:"prompt,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InstanceSetting_TranscriptionConfig) Reset() {
-	*x = InstanceSetting_TranscriptionConfig{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InstanceSetting_TranscriptionConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InstanceSetting_TranscriptionConfig) ProtoMessage() {}
-
-func (x *InstanceSetting_TranscriptionConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InstanceSetting_TranscriptionConfig.ProtoReflect.Descriptor instead.
-func (*InstanceSetting_TranscriptionConfig) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 10}
-}
-
-func (x *InstanceSetting_TranscriptionConfig) GetProviderId() string {
-	if x != nil {
-		return x.ProviderId
-	}
-	return ""
-}
-
-func (x *InstanceSetting_TranscriptionConfig) GetModel() string {
-	if x != nil {
-		return x.Model
-	}
-	return ""
-}
-
-func (x *InstanceSetting_TranscriptionConfig) GetLanguage() string {
-	if x != nil {
-		return x.Language
-	}
-	return ""
-}
-
-func (x *InstanceSetting_TranscriptionConfig) GetPrompt() string {
-	if x != nil {
-		return x.Prompt
-	}
-	return ""
-}
-
-// Access policy configuration for the instance.
-type InstanceSetting_AccessSetting struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessMode    InstanceAccessMode     `protobuf:"varint,1,opt,name=access_mode,json=accessMode,proto3,enum=memos.api.v1.InstanceAccessMode" json:"access_mode,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InstanceSetting_AccessSetting) Reset() {
-	*x = InstanceSetting_AccessSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InstanceSetting_AccessSetting) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InstanceSetting_AccessSetting) ProtoMessage() {}
-
-func (x *InstanceSetting_AccessSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InstanceSetting_AccessSetting.ProtoReflect.Descriptor instead.
-func (*InstanceSetting_AccessSetting) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 11}
-}
-
-func (x *InstanceSetting_AccessSetting) GetAccessMode() InstanceAccessMode {
-	if x != nil {
-		return x.AccessMode
-	}
-	return InstanceAccessMode_INSTANCE_ACCESS_MODE_UNSPECIFIED
-}
-
 // Custom profile configuration for instance branding.
 type InstanceSetting_GeneralSetting_CustomProfile struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1927,7 +1595,7 @@ type InstanceSetting_GeneralSetting_CustomProfile struct {
 
 func (x *InstanceSetting_GeneralSetting_CustomProfile) Reset() {
 	*x = InstanceSetting_GeneralSetting_CustomProfile{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[23]
+	mi := &file_api_v1_instance_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1939,7 +1607,7 @@ func (x *InstanceSetting_GeneralSetting_CustomProfile) String() string {
 func (*InstanceSetting_GeneralSetting_CustomProfile) ProtoMessage() {}
 
 func (x *InstanceSetting_GeneralSetting_CustomProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[23]
+	mi := &file_api_v1_instance_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1996,7 +1664,7 @@ type InstanceSetting_Storage_S3Config struct {
 
 func (x *InstanceSetting_Storage_S3Config) Reset() {
 	*x = InstanceSetting_Storage_S3Config{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[24]
+	mi := &file_api_v1_instance_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2008,7 +1676,7 @@ func (x *InstanceSetting_Storage_S3Config) String() string {
 func (*InstanceSetting_Storage_S3Config) ProtoMessage() {}
 
 func (x *InstanceSetting_Storage_S3Config) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[24]
+	mi := &file_api_v1_instance_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2093,7 +1761,7 @@ type InstanceSetting_StorageSetting_S3Config struct {
 
 func (x *InstanceSetting_StorageSetting_S3Config) Reset() {
 	*x = InstanceSetting_StorageSetting_S3Config{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[25]
+	mi := &file_api_v1_instance_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2105,7 +1773,7 @@ func (x *InstanceSetting_StorageSetting_S3Config) String() string {
 func (*InstanceSetting_StorageSetting_S3Config) ProtoMessage() {}
 
 func (x *InstanceSetting_StorageSetting_S3Config) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[25]
+	mi := &file_api_v1_instance_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2170,123 +1838,6 @@ func (x *InstanceSetting_StorageSetting_S3Config) GetInsecureSkipTlsVerify() boo
 	return false
 }
 
-// Email delivery configuration for notifications.
-type InstanceSetting_NotificationSetting_EmailSetting struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	SmtpHost      string                 `protobuf:"bytes,2,opt,name=smtp_host,json=smtpHost,proto3" json:"smtp_host,omitempty"`
-	SmtpPort      int32                  `protobuf:"varint,3,opt,name=smtp_port,json=smtpPort,proto3" json:"smtp_port,omitempty"`
-	SmtpUsername  string                 `protobuf:"bytes,4,opt,name=smtp_username,json=smtpUsername,proto3" json:"smtp_username,omitempty"`
-	SmtpPassword  string                 `protobuf:"bytes,5,opt,name=smtp_password,json=smtpPassword,proto3" json:"smtp_password,omitempty"`
-	FromEmail     string                 `protobuf:"bytes,6,opt,name=from_email,json=fromEmail,proto3" json:"from_email,omitempty"`
-	FromName      string                 `protobuf:"bytes,7,opt,name=from_name,json=fromName,proto3" json:"from_name,omitempty"`
-	ReplyTo       string                 `protobuf:"bytes,8,opt,name=reply_to,json=replyTo,proto3" json:"reply_to,omitempty"`
-	UseTls        bool                   `protobuf:"varint,9,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty"`
-	UseSsl        bool                   `protobuf:"varint,10,opt,name=use_ssl,json=useSsl,proto3" json:"use_ssl,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) Reset() {
-	*x = InstanceSetting_NotificationSetting_EmailSetting{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[27]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*InstanceSetting_NotificationSetting_EmailSetting) ProtoMessage() {}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[27]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use InstanceSetting_NotificationSetting_EmailSetting.ProtoReflect.Descriptor instead.
-func (*InstanceSetting_NotificationSetting_EmailSetting) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{2, 6, 0}
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetEnabled() bool {
-	if x != nil {
-		return x.Enabled
-	}
-	return false
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetSmtpHost() string {
-	if x != nil {
-		return x.SmtpHost
-	}
-	return ""
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetSmtpPort() int32 {
-	if x != nil {
-		return x.SmtpPort
-	}
-	return 0
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetSmtpUsername() string {
-	if x != nil {
-		return x.SmtpUsername
-	}
-	return ""
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetSmtpPassword() string {
-	if x != nil {
-		return x.SmtpPassword
-	}
-	return ""
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetFromEmail() string {
-	if x != nil {
-		return x.FromEmail
-	}
-	return ""
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetFromName() string {
-	if x != nil {
-		return x.FromName
-	}
-	return ""
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetReplyTo() string {
-	if x != nil {
-		return x.ReplyTo
-	}
-	return ""
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetUseTls() bool {
-	if x != nil {
-		return x.UseTls
-	}
-	return false
-}
-
-func (x *InstanceSetting_NotificationSetting_EmailSetting) GetUseSsl() bool {
-	if x != nil {
-		return x.UseSsl
-	}
-	return false
-}
-
 // Database size statistics.
 type InstanceStats_DatabaseStats struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -2300,7 +1851,7 @@ type InstanceStats_DatabaseStats struct {
 
 func (x *InstanceStats_DatabaseStats) Reset() {
 	*x = InstanceStats_DatabaseStats{}
-	mi := &file_api_v1_instance_service_proto_msgTypes[28]
+	mi := &file_api_v1_instance_service_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2312,7 +1863,7 @@ func (x *InstanceStats_DatabaseStats) String() string {
 func (*InstanceStats_DatabaseStats) ProtoMessage() {}
 
 func (x *InstanceStats_DatabaseStats) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_instance_service_proto_msgTypes[28]
+	mi := &file_api_v1_instance_service_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2325,7 +1876,7 @@ func (x *InstanceStats_DatabaseStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstanceStats_DatabaseStats.ProtoReflect.Descriptor instead.
 func (*InstanceStats_DatabaseStats) Descriptor() ([]byte, []int) {
-	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{9, 0}
+	return file_api_v1_instance_service_proto_rawDescGZIP(), []int{8, 0}
 }
 
 func (x *InstanceStats_DatabaseStats) GetDriver() string {
@@ -2346,7 +1897,7 @@ var File_api_v1_instance_service_proto protoreflect.FileDescriptor
 
 const file_api_v1_instance_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1dapi/v1/instance_service.proto\x12\fmemos.api.v1\x1a\x19api/v1/user_service.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x17google/api/client.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/api/resource.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/type/color.proto\"\xcf\x03\n" +
+	"\x1dapi/v1/instance_service.proto\x12\fmemos.api.v1\x1a\x19api/v1/user_service.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x17google/api/client.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/api/resource.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x17google/type/color.proto\"\x9f\x03\n" +
 	"\x0fInstanceProfile\x12\x18\n" +
 	"\aversion\x18\x02 \x01(\tR\aversion\x12\x12\n" +
 	"\x04demo\x18\x03 \x01(\bR\x04demo\x12!\n" +
@@ -2354,26 +1905,22 @@ const file_api_v1_instance_service_proto_rawDesc = "" +
 	"\x05admin\x18\a \x01(\v2\x12.memos.api.v1.UserR\x05admin\x12\x16\n" +
 	"\x06commit\x18\b \x01(\tR\x06commit\x12\x1f\n" +
 	"\vneeds_setup\x18\t \x01(\bR\n" +
-	"needsSetup\x12A\n" +
-	"\vaccess_mode\x18\n" +
-	" \x01(\x0e2 .memos.api.v1.InstanceAccessModeR\n" +
-	"accessMode\x12:\n" +
+	"needsSetup\x12:\n" +
 	"\x19semantic_search_available\x18\f \x01(\bR\x17semanticSearchAvailable\x12E\n" +
 	"\tchallenge\x18\v \x01(\v2'.memos.api.v1.InstanceProfile.ChallengeR\tchallenge\x1aB\n" +
 	"\tChallenge\x12\x1a\n" +
 	"\bprovider\x18\x01 \x01(\tR\bprovider\x12\x19\n" +
-	"\bsite_key\x18\x02 \x01(\tR\asiteKey\"\x1b\n" +
-	"\x19GetInstanceProfileRequest\"\x97$\n" +
+	"\bsite_key\x18\x02 \x01(\tR\asiteKeyJ\x04\b\n" +
+	"\x10\vR\vaccess_mode\"\x1b\n" +
+	"\x19GetInstanceProfileRequest\"\x97\x1d\n" +
 	"\x0fInstanceSetting\x12\x17\n" +
 	"\x04name\x18\x01 \x01(\tB\x03\xe0A\bR\x04name\x12W\n" +
 	"\x0fgeneral_setting\x18\x02 \x01(\v2,.memos.api.v1.InstanceSetting.GeneralSettingH\x00R\x0egeneralSetting\x12W\n" +
 	"\x0fstorage_setting\x18\x03 \x01(\v2,.memos.api.v1.InstanceSetting.StorageSettingH\x00R\x0estorageSetting\x12d\n" +
 	"\x14memo_related_setting\x18\x04 \x01(\v20.memos.api.v1.InstanceSetting.MemoRelatedSettingH\x00R\x12memoRelatedSetting\x12N\n" +
-	"\ftags_setting\x18\x05 \x01(\v2).memos.api.v1.InstanceSetting.TagsSettingH\x00R\vtagsSetting\x12f\n" +
-	"\x14notification_setting\x18\x06 \x01(\v21.memos.api.v1.InstanceSetting.NotificationSettingH\x00R\x13notificationSetting\x12H\n" +
+	"\ftags_setting\x18\x05 \x01(\v2).memos.api.v1.InstanceSetting.TagsSettingH\x00R\vtagsSetting\x12H\n" +
 	"\n" +
-	"ai_setting\x18\a \x01(\v2'.memos.api.v1.InstanceSetting.AISettingH\x00R\taiSetting\x12T\n" +
-	"\x0eaccess_setting\x18\b \x01(\v2+.memos.api.v1.InstanceSetting.AccessSettingH\x00R\raccessSetting\x1a\xca\x04\n" +
+	"ai_setting\x18\a \x01(\v2'.memos.api.v1.InstanceSetting.AISettingH\x00R\taiSetting\x1a\xca\x04\n" +
 	"\x0eGeneralSetting\x12<\n" +
 	"\x1adisallow_user_registration\x18\x02 \x01(\bR\x18disallowUserRegistration\x124\n" +
 	"\x16disallow_password_auth\x18\x03 \x01(\bR\x14disallowPasswordAuth\x12+\n" +
@@ -2433,26 +1980,10 @@ const file_api_v1_instance_service_proto_rawDesc = "" +
 	"\x04tags\x18\x01 \x03(\v23.memos.api.v1.InstanceSetting.TagsSetting.TagsEntryR\x04tags\x1ab\n" +
 	"\tTagsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12?\n" +
-	"\x05value\x18\x02 \x01(\v2).memos.api.v1.InstanceSetting.TagMetadataR\x05value:\x028\x01\x1a\xa8\x03\n" +
-	"\x13NotificationSetting\x12T\n" +
-	"\x05email\x18\x01 \x01(\v2>.memos.api.v1.InstanceSetting.NotificationSetting.EmailSettingR\x05email\x1a\xba\x02\n" +
-	"\fEmailSetting\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x1b\n" +
-	"\tsmtp_host\x18\x02 \x01(\tR\bsmtpHost\x12\x1b\n" +
-	"\tsmtp_port\x18\x03 \x01(\x05R\bsmtpPort\x12#\n" +
-	"\rsmtp_username\x18\x04 \x01(\tR\fsmtpUsername\x12(\n" +
-	"\rsmtp_password\x18\x05 \x01(\tB\x03\xe0A\x04R\fsmtpPassword\x12\x1d\n" +
-	"\n" +
-	"from_email\x18\x06 \x01(\tR\tfromEmail\x12\x1b\n" +
-	"\tfrom_name\x18\a \x01(\tR\bfromName\x12\x19\n" +
-	"\breply_to\x18\b \x01(\tR\areplyTo\x12\x17\n" +
-	"\ause_tls\x18\t \x01(\bR\x06useTls\x12\x17\n" +
-	"\ause_ssl\x18\n" +
-	" \x01(\bR\x06useSsl\x1a\xff\x01\n" +
+	"\x05value\x18\x02 \x01(\v2).memos.api.v1.InstanceSetting.TagMetadataR\x05value:\x028\x01\x1a\xbb\x01\n" +
 	"\tAISetting\x12L\n" +
-	"\tproviders\x18\x01 \x03(\v2..memos.api.v1.InstanceSetting.AIProviderConfigR\tproviders\x12W\n" +
-	"\rtranscription\x18\x02 \x01(\v21.memos.api.v1.InstanceSetting.TranscriptionConfigR\rtranscription\x12K\n" +
-	"\tembedding\x18\x03 \x01(\v2-.memos.api.v1.InstanceSetting.EmbeddingConfigR\tembedding\x1a\x80\x02\n" +
+	"\tproviders\x18\x01 \x03(\v2..memos.api.v1.InstanceSetting.AIProviderConfigR\tproviders\x12K\n" +
+	"\tembedding\x18\x03 \x01(\v2-.memos.api.v1.InstanceSetting.EmbeddingConfigR\tembeddingJ\x04\b\x02\x10\x03R\rtranscription\x1a\x80\x02\n" +
 	"\x10AIProviderConfig\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12@\n" +
@@ -2468,26 +1999,14 @@ const file_api_v1_instance_service_proto_rawDesc = "" +
 	"\x05model\x18\x02 \x01(\tR\x05model\x12\x1e\n" +
 	"\n" +
 	"dimensions\x18\x03 \x01(\x05R\n" +
-	"dimensions\x1a\x80\x01\n" +
-	"\x13TranscriptionConfig\x12\x1f\n" +
-	"\vprovider_id\x18\x01 \x01(\tR\n" +
-	"providerId\x12\x14\n" +
-	"\x05model\x18\x02 \x01(\tR\x05model\x12\x1a\n" +
-	"\blanguage\x18\x03 \x01(\tR\blanguage\x12\x16\n" +
-	"\x06prompt\x18\x04 \x01(\tR\x06prompt\x1aR\n" +
-	"\rAccessSetting\x12A\n" +
-	"\vaccess_mode\x18\x01 \x01(\x0e2 .memos.api.v1.InstanceAccessModeR\n" +
-	"accessMode\"v\n" +
+	"dimensions\"z\n" +
 	"\x03Key\x12\x13\n" +
 	"\x0fKEY_UNSPECIFIED\x10\x00\x12\v\n" +
 	"\aGENERAL\x10\x01\x12\v\n" +
 	"\aSTORAGE\x10\x02\x12\x10\n" +
 	"\fMEMO_RELATED\x10\x03\x12\b\n" +
-	"\x04TAGS\x10\x04\x12\x10\n" +
-	"\fNOTIFICATION\x10\x05\x12\x06\n" +
-	"\x02AI\x10\x06\x12\n" +
-	"\n" +
-	"\x06ACCESS\x10\a\"L\n" +
+	"\x04TAGS\x10\x04\x12\x06\n" +
+	"\x02AI\x10\x06\"\x04\b\x05\x10\x05\"\x04\b\a\x10\a*\fNOTIFICATION*\x06ACCESS\"L\n" +
 	"\vStorageType\x12\x1c\n" +
 	"\x18STORAGE_TYPE_UNSPECIFIED\x10\x00\x12\f\n" +
 	"\bDATABASE\x10\x01\x12\t\n" +
@@ -2514,10 +2033,7 @@ const file_api_v1_instance_service_proto_rawDesc = "" +
 	"\x1cUpdateInstanceSettingRequest\x12<\n" +
 	"\asetting\x18\x01 \x01(\v2\x1d.memos.api.v1.InstanceSettingB\x03\xe0A\x02R\asetting\x12@\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskB\x03\xe0A\x01R\n" +
-	"updateMask\"\xaa\x01\n" +
-	"\x1fTestInstanceEmailSettingRequest\x12Y\n" +
-	"\x05email\x18\x01 \x01(\v2>.memos.api.v1.InstanceSetting.NotificationSetting.EmailSettingB\x03\xe0A\x01R\x05email\x12,\n" +
-	"\x0frecipient_email\x18\x02 \x01(\tB\x03\xe0A\x01R\x0erecipientEmail\"\x19\n" +
+	"updateMask\"\x19\n" +
 	"\x17GetInstanceStatsRequest\"\x91\x02\n" +
 	"\rInstanceStats\x12E\n" +
 	"\bdatabase\x18\x01 \x01(\v2).memos.api.v1.InstanceStats.DatabaseStatsR\bdatabase\x12.\n" +
@@ -2526,17 +2042,12 @@ const file_api_v1_instance_service_proto_rawDesc = "" +
 	"\rDatabaseStats\x12\x16\n" +
 	"\x06driver\x18\x01 \x01(\tR\x06driver\x12\x1d\n" +
 	"\n" +
-	"size_bytes\x18\x02 \x01(\x03R\tsizeBytes*}\n" +
-	"\x12InstanceAccessMode\x12$\n" +
-	" INSTANCE_ACCESS_MODE_UNSPECIFIED\x10\x00\x12 \n" +
-	"\x1cINSTANCE_ACCESS_MODE_PRIVATE\x10\x01\x12\x1f\n" +
-	"\x1bINSTANCE_ACCESS_MODE_PUBLIC\x10\x022\x9f\a\n" +
+	"size_bytes\x18\x02 \x01(\x03R\tsizeBytes2\xfe\x05\n" +
 	"\x0fInstanceService\x12~\n" +
 	"\x12GetInstanceProfile\x12'.memos.api.v1.GetInstanceProfileRequest\x1a\x1d.memos.api.v1.InstanceProfile\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/instance/profile\x12\x8f\x01\n" +
 	"\x12GetInstanceSetting\x12'.memos.api.v1.GetInstanceSettingRequest\x1a\x1d.memos.api.v1.InstanceSetting\"1\xdaA\x04name\x82\xd3\xe4\x93\x02$\x12\"/api/v1/{name=instance/settings/*}\x12\xa8\x01\n" +
 	"\x18BatchGetInstanceSettings\x12-.memos.api.v1.BatchGetInstanceSettingsRequest\x1a..memos.api.v1.BatchGetInstanceSettingsResponse\"-\x82\xd3\xe4\x93\x02':\x01*\"\"/api/v1/instance/settings:batchGet\x12\xb5\x01\n" +
-	"\x15UpdateInstanceSetting\x12*.memos.api.v1.UpdateInstanceSettingRequest\x1a\x1d.memos.api.v1.InstanceSetting\"Q\xdaA\x13setting,update_mask\x82\xd3\xe4\x93\x025:\asetting2*/api/v1/{setting.name=instance/settings/*}\x12\x9e\x01\n" +
-	"\x18TestInstanceEmailSetting\x12-.memos.api.v1.TestInstanceEmailSettingRequest\x1a\x16.google.protobuf.Empty\";\x82\xd3\xe4\x93\x025:\x01*\"0/api/v1/instance/settings/notification:testEmail\x12v\n" +
+	"\x15UpdateInstanceSetting\x12*.memos.api.v1.UpdateInstanceSettingRequest\x1a\x1d.memos.api.v1.InstanceSetting\"Q\xdaA\x13setting,update_mask\x82\xd3\xe4\x93\x025:\asetting2*/api/v1/{setting.name=instance/settings/*}\x12v\n" +
 	"\x10GetInstanceStats\x12%.memos.api.v1.GetInstanceStatsRequest\x1a\x1b.memos.api.v1.InstanceStats\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/api/v1/instance/statsB\xac\x01\n" +
 	"\x10com.memos.api.v1B\x14InstanceServiceProtoP\x01Z0github.com/usememos/memos/proto/gen/api/v1;apiv1\xa2\x02\x03MAX\xaa\x02\fMemos.Api.V1\xca\x02\fMemos\\Api\\V1\xe2\x02\x18Memos\\Api\\V1\\GPBMetadata\xea\x02\x0eMemos::Api::V1b\x06proto3"
 
@@ -2552,98 +2063,82 @@ func file_api_v1_instance_service_proto_rawDescGZIP() []byte {
 	return file_api_v1_instance_service_proto_rawDescData
 }
 
-var file_api_v1_instance_service_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_api_v1_instance_service_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_api_v1_instance_service_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_api_v1_instance_service_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_api_v1_instance_service_proto_goTypes = []any{
-	(InstanceAccessMode)(0),                              // 0: memos.api.v1.InstanceAccessMode
-	(InstanceSetting_Key)(0),                             // 1: memos.api.v1.InstanceSetting.Key
-	(InstanceSetting_StorageType)(0),                     // 2: memos.api.v1.InstanceSetting.StorageType
-	(InstanceSetting_AIProviderType)(0),                  // 3: memos.api.v1.InstanceSetting.AIProviderType
-	(InstanceSetting_StorageSetting_StorageType)(0),      // 4: memos.api.v1.InstanceSetting.StorageSetting.StorageType
-	(*InstanceProfile)(nil),                              // 5: memos.api.v1.InstanceProfile
-	(*GetInstanceProfileRequest)(nil),                    // 6: memos.api.v1.GetInstanceProfileRequest
-	(*InstanceSetting)(nil),                              // 7: memos.api.v1.InstanceSetting
-	(*GetInstanceSettingRequest)(nil),                    // 8: memos.api.v1.GetInstanceSettingRequest
-	(*BatchGetInstanceSettingsRequest)(nil),              // 9: memos.api.v1.BatchGetInstanceSettingsRequest
-	(*BatchGetInstanceSettingsResponse)(nil),             // 10: memos.api.v1.BatchGetInstanceSettingsResponse
-	(*UpdateInstanceSettingRequest)(nil),                 // 11: memos.api.v1.UpdateInstanceSettingRequest
-	(*TestInstanceEmailSettingRequest)(nil),              // 12: memos.api.v1.TestInstanceEmailSettingRequest
-	(*GetInstanceStatsRequest)(nil),                      // 13: memos.api.v1.GetInstanceStatsRequest
-	(*InstanceStats)(nil),                                // 14: memos.api.v1.InstanceStats
-	(*InstanceProfile_Challenge)(nil),                    // 15: memos.api.v1.InstanceProfile.Challenge
-	(*InstanceSetting_GeneralSetting)(nil),               // 16: memos.api.v1.InstanceSetting.GeneralSetting
-	(*InstanceSetting_Storage)(nil),                      // 17: memos.api.v1.InstanceSetting.Storage
-	(*InstanceSetting_StorageSetting)(nil),               // 18: memos.api.v1.InstanceSetting.StorageSetting
-	(*InstanceSetting_MemoRelatedSetting)(nil),           // 19: memos.api.v1.InstanceSetting.MemoRelatedSetting
-	(*InstanceSetting_TagMetadata)(nil),                  // 20: memos.api.v1.InstanceSetting.TagMetadata
-	(*InstanceSetting_TagsSetting)(nil),                  // 21: memos.api.v1.InstanceSetting.TagsSetting
-	(*InstanceSetting_NotificationSetting)(nil),          // 22: memos.api.v1.InstanceSetting.NotificationSetting
-	(*InstanceSetting_AISetting)(nil),                    // 23: memos.api.v1.InstanceSetting.AISetting
-	(*InstanceSetting_AIProviderConfig)(nil),             // 24: memos.api.v1.InstanceSetting.AIProviderConfig
-	(*InstanceSetting_EmbeddingConfig)(nil),              // 25: memos.api.v1.InstanceSetting.EmbeddingConfig
-	(*InstanceSetting_TranscriptionConfig)(nil),          // 26: memos.api.v1.InstanceSetting.TranscriptionConfig
-	(*InstanceSetting_AccessSetting)(nil),                // 27: memos.api.v1.InstanceSetting.AccessSetting
-	(*InstanceSetting_GeneralSetting_CustomProfile)(nil), // 28: memos.api.v1.InstanceSetting.GeneralSetting.CustomProfile
-	(*InstanceSetting_Storage_S3Config)(nil),             // 29: memos.api.v1.InstanceSetting.Storage.S3Config
-	(*InstanceSetting_StorageSetting_S3Config)(nil),      // 30: memos.api.v1.InstanceSetting.StorageSetting.S3Config
-	nil, // 31: memos.api.v1.InstanceSetting.TagsSetting.TagsEntry
-	(*InstanceSetting_NotificationSetting_EmailSetting)(nil), // 32: memos.api.v1.InstanceSetting.NotificationSetting.EmailSetting
-	(*InstanceStats_DatabaseStats)(nil),                      // 33: memos.api.v1.InstanceStats.DatabaseStats
-	(*User)(nil),                                             // 34: memos.api.v1.User
-	(*fieldmaskpb.FieldMask)(nil),                            // 35: google.protobuf.FieldMask
-	(*timestamppb.Timestamp)(nil),                            // 36: google.protobuf.Timestamp
-	(*color.Color)(nil),                                      // 37: google.type.Color
-	(*emptypb.Empty)(nil),                                    // 38: google.protobuf.Empty
+	(InstanceSetting_Key)(0),                             // 0: memos.api.v1.InstanceSetting.Key
+	(InstanceSetting_StorageType)(0),                     // 1: memos.api.v1.InstanceSetting.StorageType
+	(InstanceSetting_AIProviderType)(0),                  // 2: memos.api.v1.InstanceSetting.AIProviderType
+	(InstanceSetting_StorageSetting_StorageType)(0),      // 3: memos.api.v1.InstanceSetting.StorageSetting.StorageType
+	(*InstanceProfile)(nil),                              // 4: memos.api.v1.InstanceProfile
+	(*GetInstanceProfileRequest)(nil),                    // 5: memos.api.v1.GetInstanceProfileRequest
+	(*InstanceSetting)(nil),                              // 6: memos.api.v1.InstanceSetting
+	(*GetInstanceSettingRequest)(nil),                    // 7: memos.api.v1.GetInstanceSettingRequest
+	(*BatchGetInstanceSettingsRequest)(nil),              // 8: memos.api.v1.BatchGetInstanceSettingsRequest
+	(*BatchGetInstanceSettingsResponse)(nil),             // 9: memos.api.v1.BatchGetInstanceSettingsResponse
+	(*UpdateInstanceSettingRequest)(nil),                 // 10: memos.api.v1.UpdateInstanceSettingRequest
+	(*GetInstanceStatsRequest)(nil),                      // 11: memos.api.v1.GetInstanceStatsRequest
+	(*InstanceStats)(nil),                                // 12: memos.api.v1.InstanceStats
+	(*InstanceProfile_Challenge)(nil),                    // 13: memos.api.v1.InstanceProfile.Challenge
+	(*InstanceSetting_GeneralSetting)(nil),               // 14: memos.api.v1.InstanceSetting.GeneralSetting
+	(*InstanceSetting_Storage)(nil),                      // 15: memos.api.v1.InstanceSetting.Storage
+	(*InstanceSetting_StorageSetting)(nil),               // 16: memos.api.v1.InstanceSetting.StorageSetting
+	(*InstanceSetting_MemoRelatedSetting)(nil),           // 17: memos.api.v1.InstanceSetting.MemoRelatedSetting
+	(*InstanceSetting_TagMetadata)(nil),                  // 18: memos.api.v1.InstanceSetting.TagMetadata
+	(*InstanceSetting_TagsSetting)(nil),                  // 19: memos.api.v1.InstanceSetting.TagsSetting
+	(*InstanceSetting_AISetting)(nil),                    // 20: memos.api.v1.InstanceSetting.AISetting
+	(*InstanceSetting_AIProviderConfig)(nil),             // 21: memos.api.v1.InstanceSetting.AIProviderConfig
+	(*InstanceSetting_EmbeddingConfig)(nil),              // 22: memos.api.v1.InstanceSetting.EmbeddingConfig
+	(*InstanceSetting_GeneralSetting_CustomProfile)(nil), // 23: memos.api.v1.InstanceSetting.GeneralSetting.CustomProfile
+	(*InstanceSetting_Storage_S3Config)(nil),             // 24: memos.api.v1.InstanceSetting.Storage.S3Config
+	(*InstanceSetting_StorageSetting_S3Config)(nil),      // 25: memos.api.v1.InstanceSetting.StorageSetting.S3Config
+	nil,                                 // 26: memos.api.v1.InstanceSetting.TagsSetting.TagsEntry
+	(*InstanceStats_DatabaseStats)(nil), // 27: memos.api.v1.InstanceStats.DatabaseStats
+	(*User)(nil),                        // 28: memos.api.v1.User
+	(*fieldmaskpb.FieldMask)(nil),       // 29: google.protobuf.FieldMask
+	(*timestamppb.Timestamp)(nil),       // 30: google.protobuf.Timestamp
+	(*color.Color)(nil),                 // 31: google.type.Color
 }
 var file_api_v1_instance_service_proto_depIdxs = []int32{
-	34, // 0: memos.api.v1.InstanceProfile.admin:type_name -> memos.api.v1.User
-	0,  // 1: memos.api.v1.InstanceProfile.access_mode:type_name -> memos.api.v1.InstanceAccessMode
-	15, // 2: memos.api.v1.InstanceProfile.challenge:type_name -> memos.api.v1.InstanceProfile.Challenge
-	16, // 3: memos.api.v1.InstanceSetting.general_setting:type_name -> memos.api.v1.InstanceSetting.GeneralSetting
-	18, // 4: memos.api.v1.InstanceSetting.storage_setting:type_name -> memos.api.v1.InstanceSetting.StorageSetting
-	19, // 5: memos.api.v1.InstanceSetting.memo_related_setting:type_name -> memos.api.v1.InstanceSetting.MemoRelatedSetting
-	21, // 6: memos.api.v1.InstanceSetting.tags_setting:type_name -> memos.api.v1.InstanceSetting.TagsSetting
-	22, // 7: memos.api.v1.InstanceSetting.notification_setting:type_name -> memos.api.v1.InstanceSetting.NotificationSetting
-	23, // 8: memos.api.v1.InstanceSetting.ai_setting:type_name -> memos.api.v1.InstanceSetting.AISetting
-	27, // 9: memos.api.v1.InstanceSetting.access_setting:type_name -> memos.api.v1.InstanceSetting.AccessSetting
-	7,  // 10: memos.api.v1.BatchGetInstanceSettingsResponse.settings:type_name -> memos.api.v1.InstanceSetting
-	7,  // 11: memos.api.v1.UpdateInstanceSettingRequest.setting:type_name -> memos.api.v1.InstanceSetting
-	35, // 12: memos.api.v1.UpdateInstanceSettingRequest.update_mask:type_name -> google.protobuf.FieldMask
-	32, // 13: memos.api.v1.TestInstanceEmailSettingRequest.email:type_name -> memos.api.v1.InstanceSetting.NotificationSetting.EmailSetting
-	33, // 14: memos.api.v1.InstanceStats.database:type_name -> memos.api.v1.InstanceStats.DatabaseStats
-	36, // 15: memos.api.v1.InstanceStats.generated_time:type_name -> google.protobuf.Timestamp
-	28, // 16: memos.api.v1.InstanceSetting.GeneralSetting.custom_profile:type_name -> memos.api.v1.InstanceSetting.GeneralSetting.CustomProfile
-	2,  // 17: memos.api.v1.InstanceSetting.Storage.type:type_name -> memos.api.v1.InstanceSetting.StorageType
-	29, // 18: memos.api.v1.InstanceSetting.Storage.s3_config:type_name -> memos.api.v1.InstanceSetting.Storage.S3Config
-	4,  // 19: memos.api.v1.InstanceSetting.StorageSetting.storage_type:type_name -> memos.api.v1.InstanceSetting.StorageSetting.StorageType
-	30, // 20: memos.api.v1.InstanceSetting.StorageSetting.s3_config:type_name -> memos.api.v1.InstanceSetting.StorageSetting.S3Config
-	17, // 21: memos.api.v1.InstanceSetting.StorageSetting.storages:type_name -> memos.api.v1.InstanceSetting.Storage
-	37, // 22: memos.api.v1.InstanceSetting.TagMetadata.background_color:type_name -> google.type.Color
-	31, // 23: memos.api.v1.InstanceSetting.TagsSetting.tags:type_name -> memos.api.v1.InstanceSetting.TagsSetting.TagsEntry
-	32, // 24: memos.api.v1.InstanceSetting.NotificationSetting.email:type_name -> memos.api.v1.InstanceSetting.NotificationSetting.EmailSetting
-	24, // 25: memos.api.v1.InstanceSetting.AISetting.providers:type_name -> memos.api.v1.InstanceSetting.AIProviderConfig
-	26, // 26: memos.api.v1.InstanceSetting.AISetting.transcription:type_name -> memos.api.v1.InstanceSetting.TranscriptionConfig
-	25, // 27: memos.api.v1.InstanceSetting.AISetting.embedding:type_name -> memos.api.v1.InstanceSetting.EmbeddingConfig
-	3,  // 28: memos.api.v1.InstanceSetting.AIProviderConfig.type:type_name -> memos.api.v1.InstanceSetting.AIProviderType
-	0,  // 29: memos.api.v1.InstanceSetting.AccessSetting.access_mode:type_name -> memos.api.v1.InstanceAccessMode
-	20, // 30: memos.api.v1.InstanceSetting.TagsSetting.TagsEntry.value:type_name -> memos.api.v1.InstanceSetting.TagMetadata
-	6,  // 31: memos.api.v1.InstanceService.GetInstanceProfile:input_type -> memos.api.v1.GetInstanceProfileRequest
-	8,  // 32: memos.api.v1.InstanceService.GetInstanceSetting:input_type -> memos.api.v1.GetInstanceSettingRequest
-	9,  // 33: memos.api.v1.InstanceService.BatchGetInstanceSettings:input_type -> memos.api.v1.BatchGetInstanceSettingsRequest
-	11, // 34: memos.api.v1.InstanceService.UpdateInstanceSetting:input_type -> memos.api.v1.UpdateInstanceSettingRequest
-	12, // 35: memos.api.v1.InstanceService.TestInstanceEmailSetting:input_type -> memos.api.v1.TestInstanceEmailSettingRequest
-	13, // 36: memos.api.v1.InstanceService.GetInstanceStats:input_type -> memos.api.v1.GetInstanceStatsRequest
-	5,  // 37: memos.api.v1.InstanceService.GetInstanceProfile:output_type -> memos.api.v1.InstanceProfile
-	7,  // 38: memos.api.v1.InstanceService.GetInstanceSetting:output_type -> memos.api.v1.InstanceSetting
-	10, // 39: memos.api.v1.InstanceService.BatchGetInstanceSettings:output_type -> memos.api.v1.BatchGetInstanceSettingsResponse
-	7,  // 40: memos.api.v1.InstanceService.UpdateInstanceSetting:output_type -> memos.api.v1.InstanceSetting
-	38, // 41: memos.api.v1.InstanceService.TestInstanceEmailSetting:output_type -> google.protobuf.Empty
-	14, // 42: memos.api.v1.InstanceService.GetInstanceStats:output_type -> memos.api.v1.InstanceStats
-	37, // [37:43] is the sub-list for method output_type
-	31, // [31:37] is the sub-list for method input_type
-	31, // [31:31] is the sub-list for extension type_name
-	31, // [31:31] is the sub-list for extension extendee
-	0,  // [0:31] is the sub-list for field type_name
+	28, // 0: memos.api.v1.InstanceProfile.admin:type_name -> memos.api.v1.User
+	13, // 1: memos.api.v1.InstanceProfile.challenge:type_name -> memos.api.v1.InstanceProfile.Challenge
+	14, // 2: memos.api.v1.InstanceSetting.general_setting:type_name -> memos.api.v1.InstanceSetting.GeneralSetting
+	16, // 3: memos.api.v1.InstanceSetting.storage_setting:type_name -> memos.api.v1.InstanceSetting.StorageSetting
+	17, // 4: memos.api.v1.InstanceSetting.memo_related_setting:type_name -> memos.api.v1.InstanceSetting.MemoRelatedSetting
+	19, // 5: memos.api.v1.InstanceSetting.tags_setting:type_name -> memos.api.v1.InstanceSetting.TagsSetting
+	20, // 6: memos.api.v1.InstanceSetting.ai_setting:type_name -> memos.api.v1.InstanceSetting.AISetting
+	6,  // 7: memos.api.v1.BatchGetInstanceSettingsResponse.settings:type_name -> memos.api.v1.InstanceSetting
+	6,  // 8: memos.api.v1.UpdateInstanceSettingRequest.setting:type_name -> memos.api.v1.InstanceSetting
+	29, // 9: memos.api.v1.UpdateInstanceSettingRequest.update_mask:type_name -> google.protobuf.FieldMask
+	27, // 10: memos.api.v1.InstanceStats.database:type_name -> memos.api.v1.InstanceStats.DatabaseStats
+	30, // 11: memos.api.v1.InstanceStats.generated_time:type_name -> google.protobuf.Timestamp
+	23, // 12: memos.api.v1.InstanceSetting.GeneralSetting.custom_profile:type_name -> memos.api.v1.InstanceSetting.GeneralSetting.CustomProfile
+	1,  // 13: memos.api.v1.InstanceSetting.Storage.type:type_name -> memos.api.v1.InstanceSetting.StorageType
+	24, // 14: memos.api.v1.InstanceSetting.Storage.s3_config:type_name -> memos.api.v1.InstanceSetting.Storage.S3Config
+	3,  // 15: memos.api.v1.InstanceSetting.StorageSetting.storage_type:type_name -> memos.api.v1.InstanceSetting.StorageSetting.StorageType
+	25, // 16: memos.api.v1.InstanceSetting.StorageSetting.s3_config:type_name -> memos.api.v1.InstanceSetting.StorageSetting.S3Config
+	15, // 17: memos.api.v1.InstanceSetting.StorageSetting.storages:type_name -> memos.api.v1.InstanceSetting.Storage
+	31, // 18: memos.api.v1.InstanceSetting.TagMetadata.background_color:type_name -> google.type.Color
+	26, // 19: memos.api.v1.InstanceSetting.TagsSetting.tags:type_name -> memos.api.v1.InstanceSetting.TagsSetting.TagsEntry
+	21, // 20: memos.api.v1.InstanceSetting.AISetting.providers:type_name -> memos.api.v1.InstanceSetting.AIProviderConfig
+	22, // 21: memos.api.v1.InstanceSetting.AISetting.embedding:type_name -> memos.api.v1.InstanceSetting.EmbeddingConfig
+	2,  // 22: memos.api.v1.InstanceSetting.AIProviderConfig.type:type_name -> memos.api.v1.InstanceSetting.AIProviderType
+	18, // 23: memos.api.v1.InstanceSetting.TagsSetting.TagsEntry.value:type_name -> memos.api.v1.InstanceSetting.TagMetadata
+	5,  // 24: memos.api.v1.InstanceService.GetInstanceProfile:input_type -> memos.api.v1.GetInstanceProfileRequest
+	7,  // 25: memos.api.v1.InstanceService.GetInstanceSetting:input_type -> memos.api.v1.GetInstanceSettingRequest
+	8,  // 26: memos.api.v1.InstanceService.BatchGetInstanceSettings:input_type -> memos.api.v1.BatchGetInstanceSettingsRequest
+	10, // 27: memos.api.v1.InstanceService.UpdateInstanceSetting:input_type -> memos.api.v1.UpdateInstanceSettingRequest
+	11, // 28: memos.api.v1.InstanceService.GetInstanceStats:input_type -> memos.api.v1.GetInstanceStatsRequest
+	4,  // 29: memos.api.v1.InstanceService.GetInstanceProfile:output_type -> memos.api.v1.InstanceProfile
+	6,  // 30: memos.api.v1.InstanceService.GetInstanceSetting:output_type -> memos.api.v1.InstanceSetting
+	9,  // 31: memos.api.v1.InstanceService.BatchGetInstanceSettings:output_type -> memos.api.v1.BatchGetInstanceSettingsResponse
+	6,  // 32: memos.api.v1.InstanceService.UpdateInstanceSetting:output_type -> memos.api.v1.InstanceSetting
+	12, // 33: memos.api.v1.InstanceService.GetInstanceStats:output_type -> memos.api.v1.InstanceStats
+	29, // [29:34] is the sub-list for method output_type
+	24, // [24:29] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_instance_service_proto_init() }
@@ -2657,11 +2152,9 @@ func file_api_v1_instance_service_proto_init() {
 		(*InstanceSetting_StorageSetting_)(nil),
 		(*InstanceSetting_MemoRelatedSetting_)(nil),
 		(*InstanceSetting_TagsSetting_)(nil),
-		(*InstanceSetting_NotificationSetting_)(nil),
 		(*InstanceSetting_AiSetting)(nil),
-		(*InstanceSetting_AccessSetting_)(nil),
 	}
-	file_api_v1_instance_service_proto_msgTypes[12].OneofWrappers = []any{
+	file_api_v1_instance_service_proto_msgTypes[11].OneofWrappers = []any{
 		(*InstanceSetting_Storage_S3Config_)(nil),
 	}
 	type x struct{}
@@ -2669,8 +2162,8 @@ func file_api_v1_instance_service_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_instance_service_proto_rawDesc), len(file_api_v1_instance_service_proto_rawDesc)),
-			NumEnums:      5,
-			NumMessages:   29,
+			NumEnums:      4,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -81,69 +81,6 @@ func TestSQLiteRelationshipWriteSerializesWithParentDelete(t *testing.T) {
 	require.Zero(t, relationshipCount)
 }
 
-func TestSpaceInvitationWaitsForConcurrentUserDelete(t *testing.T) {
-	driver := getDriverFromEnv()
-	if driver == "sqlite" || driver == "d1" {
-		t.Skip("SQLite transactions begin IMMEDIATE and serialize competing writes without row locks; D1 has no row locks")
-	}
-
-	setupCtx := context.Background()
-	ts := NewTestingStore(setupCtx, t)
-	t.Cleanup(func() { require.NoError(t, ts.Close()) })
-	ctx, cancel := context.WithTimeout(setupCtx, 10*time.Second)
-	defer cancel()
-
-	owner, err := ts.CreateUser(ctx, &store.User{Username: "user-delete-lock-owner", Role: store.RoleUser, PasswordHash: "hash"})
-	require.NoError(t, err)
-	target, err := ts.CreateUser(ctx, &store.User{Username: "user-delete-lock-target", Role: store.RoleUser, PasswordHash: "hash"})
-	require.NoError(t, err)
-	space, err := ts.CreateSpace(ctx, &store.Space{UID: "user-delete-lock-space", Title: "User Delete Lock"}, owner.ID)
-	require.NoError(t, err)
-	memo, err := ts.CreateMemo(ctx, &store.Memo{UID: "user-delete-lock-memo", CreatorID: target.ID, Content: "lock", Visibility: store.Public})
-	require.NoError(t, err)
-
-	blocker, err := ts.GetDriver().GetDB().BeginTx(ctx, nil)
-	require.NoError(t, err)
-	blockerOpen := true
-	defer func() {
-		if blockerOpen {
-			_ = blocker.Rollback()
-		}
-	}()
-	require.NoError(t, lockMemoRow(ctx, blocker, driver, memo.ID))
-
-	deleteDone := make(chan error, 1)
-	go func() {
-		_, deleteErr := ts.DeleteUser(ctx, &store.DeleteUser{ID: target.ID})
-		deleteDone <- deleteErr
-	}()
-	waitForLockedParentRow(ctx, t, ts.GetDriver().GetDB(), driver, "user", target.ID)
-
-	inviteCtx, inviteCancel := context.WithTimeout(ctx, 300*time.Millisecond)
-	started := time.Now()
-	_, inviteErr := ts.CreateSpaceInvitation(inviteCtx, &store.SpaceInvitation{
-		SpaceID: space.ID,
-		UserID:  target.ID,
-		Role:    store.SpaceMemberRoleUser,
-	}, owner.ID)
-	inviteCancel()
-	require.Error(t, inviteErr)
-	require.GreaterOrEqual(t, time.Since(started), 250*time.Millisecond, "invitation creation must wait for the deleting user's row lock")
-
-	require.NoError(t, blocker.Commit())
-	blockerOpen = false
-	select {
-	case deleteErr := <-deleteDone:
-		require.NoError(t, deleteErr)
-	case <-ctx.Done():
-		require.FailNow(t, "timed out waiting for user deletion")
-	}
-
-	var relationshipCount int
-	require.NoError(t, ts.GetDriver().GetDB().QueryRowContext(ctx, relationshipCountQuery(driver, "user_id"), target.ID).Scan(&relationshipCount))
-	require.Zero(t, relationshipCount, "deleting a user must not leave a concurrent invitation behind")
-}
-
 func TestSpaceInvitationWaitsForConcurrentSpaceDelete(t *testing.T) {
 	driver := getDriverFromEnv()
 	if driver == "sqlite" || driver == "d1" {

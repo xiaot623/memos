@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { instanceServiceClient } from "@/connect";
-import { InstanceSetting, InstanceSetting_AccessSetting, InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
+import { InstanceSetting, InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
 
 // Query keys factory
 export const instanceKeys = {
@@ -92,14 +92,6 @@ export function useUpdateInstanceSetting() {
       });
     },
   });
-}
-
-// Derived hooks for common settings
-export function useAccessSetting() {
-  const { data: setting, ...rest } = useInstanceSetting(InstanceSetting_Key.ACCESS);
-  const accessSetting: InstanceSetting_AccessSetting | undefined =
-    setting?.value.case === "accessSetting" ? setting.value.value : undefined;
-  return { data: accessSetting, ...rest };
 }
 
 export function useGeneralSetting() {

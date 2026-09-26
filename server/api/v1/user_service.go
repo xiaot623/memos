@@ -3,10 +3,8 @@ package v1
 import (
 	"context"
 	stderrors "errors"
-	"fmt"
 	"log/slog"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -557,55 +555,3 @@ func (s *APIV1Service) resolveUserAndSettingKeyFromName(ctx context.Context, nam
 	return user, parts[3], nil
 }
 
-func (s *APIV1Service) resolveUserAndWebhookIDFromName(ctx context.Context, name string) (*store.User, string, error) {
-	parts := strings.Split(name, "/")
-	if len(parts) != 4 || parts[0] != "users" || parts[2] != "webhooks" {
-		return nil, "", errors.New("invalid webhook name format")
-	}
-
-	user, err := s.resolveUserFromName(ctx, BuildUserName(parts[1]))
-	if err != nil {
-		return nil, "", err
-	}
-	return user, parts[3], nil
-}
-
-func (s *APIV1Service) resolveUserAndLinkedIdentityProviderFromName(ctx context.Context, name string) (*store.User, string, error) {
-	parts := strings.Split(name, "/")
-	if len(parts) != 4 || parts[0] != "users" || parts[2] != "linkedIdentities" {
-		return nil, "", errors.Errorf("invalid linked identity name: %s", name)
-	}
-
-	user, err := s.resolveUserFromName(ctx, BuildUserName(parts[1]))
-	if err != nil {
-		return nil, "", err
-	}
-	return user, parts[3], nil
-}
-
-func convertLinkedIdentityFromStore(user *store.User, identity *store.UserIdentity) *v1pb.LinkedIdentity {
-	return &v1pb.LinkedIdentity{
-		Name:      fmt.Sprintf("%s/linkedIdentities/%s", BuildUserName(user.Username), identity.Provider),
-		IdpName:   IdentityProviderNamePrefix + identity.Provider,
-		ExternUid: identity.ExternUID,
-	}
-}
-
-func (s *APIV1Service) resolveUserAndNotificationIDFromName(ctx context.Context, name string) (*store.User, int32, error) {
-	parts := strings.Split(name, "/")
-	if len(parts) != 4 || parts[0] != "users" || parts[2] != "notifications" {
-		return nil, 0, errors.Errorf("invalid notification name: %s", name)
-	}
-
-	user, err := s.resolveUserFromName(ctx, BuildUserName(parts[1]))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	id, err := strconv.Atoi(parts[3])
-	if err != nil {
-		return nil, 0, errors.Errorf("invalid notification id: %s", parts[3])
-	}
-
-	return user, int32(id), nil
-}

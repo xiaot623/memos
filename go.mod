@@ -11,15 +11,14 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.2
 	github.com/aws/smithy-go v1.27.8
 	github.com/disintegration/imaging v1.6.2
-	github.com/go-sql-driver/mysql v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/cel-go v0.31.0
 	github.com/google/jsonschema-go v0.4.3
+	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0
 	github.com/johannesboyne/gofakes3 v1.2.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v5 v5.3.1
-	github.com/lib/pq v1.12.3
 	github.com/lithammer/shortuuid/v4 v4.2.0
 	github.com/moby/moby/api v1.55.0
 	github.com/modelcontextprotocol/go-sdk v1.7.0
@@ -30,8 +29,6 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.44.0
-	github.com/testcontainers/testcontainers-go/modules/mysql v0.44.0
-	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0
 	github.com/yuin/goldmark v1.8.5
 	golang.org/x/crypto v0.56.0
 	golang.org/x/mod v0.40.0
@@ -55,7 +52,6 @@ require (
 	cloud.google.com/go/auth v0.23.1 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	dario.cat/mergo v1.0.2 // indirect
-	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
@@ -93,7 +89,6 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.21 // indirect
 	github.com/googleapis/gax-go/v2 v2.23.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect

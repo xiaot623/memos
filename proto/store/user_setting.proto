@@ -12,10 +12,8 @@ message UserSetting {
     KEY_UNSPECIFIED = 0;
     // General user settings.
     GENERAL = 1;
-    // The memo views of the user.
-    MEMO_VIEWS = 4;
-    // The webhooks of the user.
-    WEBHOOKS = 5;
+    reserved 4, 5;
+    reserved "MEMO_VIEWS", "WEBHOOKS";
     // Refresh tokens for the user.
     REFRESH_TOKENS = 6;
     // Personal access tokens for the user.
@@ -29,8 +27,6 @@ message UserSetting {
   Key key = 2;
   oneof value {
     GeneralUserSetting general = 3;
-    MemoViewsUserSetting memo_views = 6;
-    WebhooksUserSetting webhooks = 7;
     RefreshTokensUserSetting refresh_tokens = 8;
     PersonalAccessTokensUserSetting personal_access_tokens = 9;
     TagsUserSetting tags = 10;
@@ -123,37 +119,4 @@ message PersonalAccessTokensUserSetting {
     google.protobuf.Timestamp last_used_at = 6;
   }
   repeated PersonalAccessToken tokens = 1;
-}
-
-message MemoViewsUserSetting {
-  message MemoView {
-    string id = 1;
-    string title = 2;
-    string filter = 3;
-    Icon icon = 4;
-
-    message Icon {
-      oneof value {
-        // A Unicode emoji sequence.
-        string emoji = 1;
-        // A canonical Lucide icon name, such as "leaf".
-        string lucide = 2;
-      }
-    }
-  }
-  repeated MemoView memo_views = 1;
-}
-
-message WebhooksUserSetting {
-  message Webhook {
-    // Unique identifier for the webhook
-    string id = 1;
-    // Descriptive title for the webhook
-    string title = 2;
-    // The webhook URL endpoint
-    string url = 3;
-    // Optional signing secret for webhook authentication.
-    string signing_secret = 4;
-  }
-  repeated Webhook webhooks = 1;
 }

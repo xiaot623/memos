@@ -33,8 +33,6 @@ func validateInstanceSetting(setting *v1pb.InstanceSetting) error {
 		return validateInstanceMemoRelatedSetting(setting.GetMemoRelatedSetting())
 	case storepb.InstanceSettingKey_TAGS.String():
 		return validateInstanceTagsSetting(setting.GetTagsSetting())
-	case storepb.InstanceSettingKey_ACCESS.String():
-		return validateInstanceAccessSetting(setting.GetAccessSetting())
 	default:
 		return nil
 	}
@@ -48,18 +46,6 @@ func validateInstanceMemoRelatedSetting(setting *v1pb.InstanceSetting_MemoRelate
 		return errors.Errorf("content_length_limit must be at least %d bytes", store.DefaultContentLengthLimit)
 	}
 	return nil
-}
-
-func validateInstanceAccessSetting(setting *v1pb.InstanceSetting_AccessSetting) error {
-	if setting == nil {
-		return errors.New("access setting is required")
-	}
-	switch setting.AccessMode {
-	case v1pb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE, v1pb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC:
-		return nil
-	default:
-		return errors.New("access_mode must be PRIVATE or PUBLIC")
-	}
 }
 
 func (s *APIV1Service) prepareInstanceAISettingForUpdate(ctx context.Context, setting *storepb.InstanceAISetting) error {
@@ -124,54 +110,8 @@ func (s *APIV1Service) prepareInstanceAISettingForUpdate(ctx context.Context, se
 		}
 	}
 
-	if err := preparePersistedTranscriptionConfig(setting, existing); err != nil {
-		return err
-	}
 	if err := preparePersistedEmbeddingConfig(setting, existing); err != nil {
 		return err
-	}
-	return nil
-}
-
-func preparePersistedTranscriptionConfig(setting *storepb.InstanceAISetting, existing *storepb.InstanceAISetting) error {
-	// Preserve the previously stored transcription config when the request omits it,
-	// matching the same "absence == keep" semantics used for API keys. The preserved
-	// config still falls through to validation below, so a stale provider_id is
-	// rejected if the same update removed or renamed its referenced provider.
-	if setting.Transcription == nil && existing != nil {
-		setting.Transcription = existing.GetTranscription()
-	}
-	if setting.Transcription == nil {
-		return nil
-	}
-
-	cfg := setting.Transcription
-	cfg.ProviderId = strings.TrimSpace(cfg.ProviderId)
-	cfg.Model = strings.TrimSpace(cfg.Model)
-	cfg.Language = strings.TrimSpace(cfg.Language)
-	cfg.Prompt = strings.TrimSpace(cfg.Prompt)
-
-	if cfg.ProviderId != "" {
-		referenced := false
-		for _, provider := range setting.Providers {
-			if provider != nil && provider.Id == cfg.ProviderId {
-				referenced = true
-				break
-			}
-		}
-		if !referenced {
-			return errors.Errorf("transcription provider_id %q does not reference any configured provider", cfg.ProviderId)
-		}
-	}
-
-	if len(cfg.Model) > maxTranscriptionConfigModelLength {
-		return errors.Errorf("transcription model is too long; maximum length is %d characters", maxTranscriptionConfigModelLength)
-	}
-	if len(cfg.Language) > maxTranscriptionConfigLanguageLength {
-		return errors.Errorf("transcription language is too long; maximum length is %d characters", maxTranscriptionConfigLanguageLength)
-	}
-	if len(cfg.Prompt) > maxTranscriptionConfigPromptLength {
-		return errors.Errorf("transcription prompt is too long; maximum length is %d characters", maxTranscriptionConfigPromptLength)
 	}
 	return nil
 }
@@ -189,8 +129,8 @@ func preparePersistedEmbeddingConfig(setting *storepb.InstanceAISetting, existin
 	if cfg.Dimensions < 0 {
 		return errors.New("embedding dimensions must be positive")
 	}
-	if len(cfg.Model) > maxTranscriptionConfigModelLength {
-		return errors.Errorf("embedding model is too long; maximum length is %d characters", maxTranscriptionConfigModelLength)
+	if len(cfg.Model) > maxEmbeddingConfigModelLength {
+		return errors.Errorf("embedding model is too long; maximum length is %d characters", maxEmbeddingConfigModelLength)
 	}
 	if cfg.ProviderId == "" {
 		return nil

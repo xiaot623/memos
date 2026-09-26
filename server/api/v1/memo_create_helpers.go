@@ -26,7 +26,6 @@ type preparedMemoCreate struct {
 	memo                  *store.Memo
 	attachments           *preparedMemoAttachments
 	requiredAttachmentIDs []int32
-	referenceRelations    []*store.MemoRelation
 }
 
 // prepareMemoCreate validates and prepares the fields shared by top-level
@@ -72,10 +71,6 @@ func (s *APIV1Service) prepareMemoCreate(ctx context.Context, user *store.User, 
 	if err := memopayload.RebuildMemoPayload(ctx, memo, s.MarkdownService); err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to rebuild memo payload: %v", err)
 	}
-	if input.Location != nil {
-		memo.Payload.Location = convertLocationToStore(input.Location)
-	}
-
 	attachments, err := s.prepareMemoAttachments(ctx, user, memo, input.Attachments)
 	if err != nil {
 		return nil, err
@@ -84,14 +79,9 @@ func (s *APIV1Service) prepareMemoCreate(ctx context.Context, user *store.User, 
 	if err != nil {
 		return nil, err
 	}
-	relations, err := s.prepareMemoRelations(ctx, memo, input.Relations)
-	if err != nil {
-		return nil, err
-	}
 	return &preparedMemoCreate{
 		memo:                  memo,
 		attachments:           attachments,
 		requiredAttachmentIDs: requiredAttachmentIDs,
-		referenceRelations:    relations,
 	}, nil
 }

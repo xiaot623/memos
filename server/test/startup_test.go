@@ -26,7 +26,6 @@ import (
 
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/version"
-	storepb "github.com/usememos/memos/proto/gen/store"
 	"github.com/usememos/memos/server"
 	"github.com/usememos/memos/store"
 	"github.com/usememos/memos/store/db"
@@ -351,98 +350,18 @@ func TestStartupRestartPreservesData(t *testing.T) {
 
 // TestStartupPrivateInstance verifies a private instance still exposes the auth
 // bootstrap surface and refuses anonymous callers on non-bootstrap procedures.
-func TestStartupPrivateInstance(t *testing.T) {
-	ctx := context.Background()
-	inst := bootInstance(ctx, t, instanceOptions{instanceURL: ""})
-
-	accessSetting, err := inst.server.Store.GetInstanceAccessSetting(ctx)
-	require.NoError(t, err)
-	require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE, accessSetting.AccessMode)
-
-	// Bootstrap methods stay reachable so the sign-in page can render.
-	status, body := inst.do(t, http.MethodGet, "/api/v1/instance/profile", "", nil)
-	require.Equal(t, http.StatusOK, status, "instance profile is an auth bootstrap method: %s", body)
-
-	// Protected procedures are refused for anonymous callers.
-	status, _ = inst.do(t, http.MethodGet, "/api/v1/users", "", nil)
-	require.Equal(t, http.StatusUnauthorized, status, "anonymous ListUsers should be refused")
-
-	// ListMemos is public but not a bootstrap method, so the private-instance
-	// policy must refuse anonymous callers. The Connect transport enforces this.
-	status, _ = inst.do(t, http.MethodPost, "/memos.api.v1.MemoService/ListMemos", "", map[string]any{})
-	require.Equal(t, http.StatusUnauthorized, status,
-		"anonymous ListMemos over Connect should be refused on a private instance")
-
-	// Authenticated access is never affected by private mode.
-	inst.createAdmin(t)
-	token := inst.signIn(t)
-	inst.createMemo(t, token, "startup-private", "private instance sentinel")
-	inst.requireMemo(t, token, "startup-private", "private instance sentinel")
-}
-
-// TestStartupInitializesLegacyAccessOnce verifies the compatibility bridge from
-// the former instance-URL-derived policy to the database-backed ACCESS setting.
-// Later URL changes must not silently change authorization behavior.
-func TestStartupInitializesLegacyAccessOnce(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("public remains public after URL removal", func(t *testing.T) {
-		dataDir := t.TempDir()
-		first := bootInstance(ctx, t, instanceOptions{instanceURL: "https://memos.example.com", dataDir: dataDir})
-		accessSetting, err := first.server.Store.GetInstanceAccessSetting(ctx)
-		require.NoError(t, err)
-		require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC, accessSetting.AccessMode)
-		first.shutdown(ctx)
-
-		second := bootInstance(ctx, t, instanceOptions{instanceURL: "", dataDir: dataDir})
-		accessSetting, err = second.server.Store.GetInstanceAccessSetting(ctx)
-		require.NoError(t, err)
-		require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC, accessSetting.AccessMode)
-
-		status, body := second.do(t, http.MethodGet, "/api/v1/memos", "", nil)
-		require.Equal(t, http.StatusOK, status, "persisted PUBLIC mode should still allow anonymous access: %s", body)
-	})
-
-	t.Run("private remains private after URL addition", func(t *testing.T) {
-		dataDir := t.TempDir()
-		first := bootInstance(ctx, t, instanceOptions{instanceURL: "", dataDir: dataDir})
-		accessSetting, err := first.server.Store.GetInstanceAccessSetting(ctx)
-		require.NoError(t, err)
-		require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE, accessSetting.AccessMode)
-		first.shutdown(ctx)
-
-		second := bootInstance(ctx, t, instanceOptions{instanceURL: "https://memos.example.com", dataDir: dataDir})
-		accessSetting, err = second.server.Store.GetInstanceAccessSetting(ctx)
-		require.NoError(t, err)
-		require.Equal(t, storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE, accessSetting.AccessMode)
-
-		status, _ := second.do(t, http.MethodGet, "/api/v1/memos", "", nil)
-		require.Equal(t, http.StatusUnauthorized, status, "canonical URL must not reopen a persisted PRIVATE instance")
-	})
-}
-
-// TestStartupPrivateInstanceGatewayPolicy asserts the private-instance policy is
-// enforced on the gRPC-Gateway transport, not just on Connect.
-//
-// This is a regression test for a real gap: the middleware used to read
-// runtime.RPCMethod(ctx) to decide the procedure, but grpc-gateway wraps
-// middlewares *around* the generated handler, and it is the generated handler
-// that annotates the context with the RPC method. runtime.RPCMethod therefore
-// always reported "not set", the guard skipped Authorizer.CheckAccess entirely,
-// and anonymous callers could read PUBLIC memos over REST on a private instance.
-// The gateway now resolves the procedure from the proto HTTP bindings instead.
 func TestStartupPrivateInstanceGatewayPolicy(t *testing.T) {
 	ctx := context.Background()
 	inst := bootInstance(ctx, t, instanceOptions{instanceURL: ""})
 
 	inst.createAdmin(t)
 	token := inst.signIn(t)
-	inst.createMemo(t, token, "startup-private-public", "public on a private instance")
+	inst.createMemo(t, token, "startup-private-public", "private on a private instance")
 	status, body := inst.do(t, http.MethodPatch,
 		"/api/v1/memos/startup-private-public?updateMask=visibility", token, map[string]any{
-			"visibility": "PUBLIC",
+			"visibility": "PRIVATE",
 		})
-	require.Equal(t, http.StatusOK, status, "should be able to make the memo public: %s", body)
+	require.Equal(t, http.StatusOK, status, "should be able to keep the memo private: %s", body)
 
 	status, _ = inst.do(t, http.MethodGet, "/api/v1/memos", "", nil)
 	require.Equal(t, http.StatusUnauthorized, status,
@@ -495,8 +414,8 @@ func TestStartupGatewayOmitsNullMessageFields(t *testing.T) {
 	require.Equal(t, "image/gif", fetched["type"])
 }
 
-// TestStartupDemoMode verifies demo mode boots, which exercises the seed path
-// in store.Migrate that prod-mode startups never touch.
+// TestStartupDemoMode verifies demo mode boots and seeds memos that an
+// authenticated caller can list.
 func TestStartupDemoMode(t *testing.T) {
 	ctx := context.Background()
 	inst := bootInstance(ctx, t, instanceOptions{
@@ -505,7 +424,10 @@ func TestStartupDemoMode(t *testing.T) {
 	})
 
 	status, body := inst.do(t, http.MethodGet, "/api/v1/memos", "", nil)
-	require.Equal(t, http.StatusOK, status, "demo instances serve memos anonymously: %s", body)
+	require.Equal(t, http.StatusUnauthorized, status, "anonymous callers cannot list memos: %s", body)
+
+	status, body = inst.do(t, http.MethodGet, "/api/v1/memos", "memos_pat_demo", nil)
+	require.Equal(t, http.StatusOK, status, "the demo access token should list seeded memos: %s", body)
 
 	var listed struct {
 		Memos []struct {

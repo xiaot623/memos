@@ -1,5 +1,5 @@
 // Package store is the persistence layer: the Store facade, the Driver
-// interface implemented by store/db/{sqlite,mysql,postgres,d1}, the vector
+// interface implemented by store/db/sqlite, the vector
 // drivers in store/vector, migrations, seed data, and the in-memory cache.
 //
 // Layering: store may import provider, markdown, filter, proto/gen, and

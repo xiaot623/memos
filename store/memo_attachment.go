@@ -22,25 +22,21 @@ type MemoAttachmentBinding struct {
 	WasBoundToMemo bool
 }
 
-// MemoMutation atomically updates a memo, its attachment bindings, and its
-// reference relations. Removed attachment rows are deleted in the same
-// transaction; callers may clean up external objects after the commit.
+// MemoMutation atomically updates a memo and its attachment bindings.
+// Removed attachment rows are deleted in the same transaction; callers may
+// clean up external objects after the commit.
 type MemoMutation struct {
 	// MemoCreate requests that the memo row be created in this same transaction
-	// before attachments and relations are applied. CommentContextMemoID creates
-	// one immutable COMMENT relation from the new memo to the named context memo.
-	MemoCreate                *Memo
-	CommentContextMemoID      *int32
-	MemoID                    int32
-	MemoCreatorID             int32
-	ExpectedMemoContent       string
-	MemoUpdate                *UpdateMemo
-	Bindings                  []*MemoAttachmentBinding
-	RemovedAttachmentIDs      []int32
-	RequiredAttachmentIDs     []int32
-	ReplaceReferenceRelations bool
-	ReferenceRelations        []*MemoRelation
-	Policy                    *MemoWritePolicy
+	// before attachments are applied.
+	MemoCreate            *Memo
+	MemoID                int32
+	MemoCreatorID         int32
+	ExpectedMemoContent   string
+	MemoUpdate            *UpdateMemo
+	Bindings              []*MemoAttachmentBinding
+	RemovedAttachmentIDs  []int32
+	RequiredAttachmentIDs []int32
+	Policy                *MemoWritePolicy
 }
 
 // MemoAttachmentBindingOwnerAllowed reports whether an unbound attachment may
@@ -85,8 +81,8 @@ func (m *MemoMutation) ActorUserID() int32 {
 	return m.MemoCreatorID
 }
 
-// ApplyMemoMutation atomically applies memo fields, attachment bindings, and
-// reference relations after rechecking the state used by API validation.
+// ApplyMemoMutation atomically applies memo fields and attachment bindings
+// after rechecking the state used by API validation.
 func (s *Store) ApplyMemoMutation(ctx context.Context, mutation *MemoMutation) error {
 	if mutation == nil {
 		return errors.New("memo mutation is required")
@@ -101,9 +97,6 @@ func (s *Store) ApplyMemoMutation(ctx context.Context, mutation *MemoMutation) e
 		}
 		if err := validateMemoCreate(create); err != nil {
 			return err
-		}
-		if mutation.CommentContextMemoID != nil && *mutation.CommentContextMemoID <= 0 {
-			return errors.New("comment creation mutation requires a valid context memo")
 		}
 		mutation.MemoCreatorID = create.CreatorID
 		mutation.ExpectedMemoContent = create.Content
@@ -138,29 +131,8 @@ func (s *Store) ApplyMemoMutation(ctx context.Context, mutation *MemoMutation) e
 		}
 	}
 	if policy != nil && policy.LifecycleOnly &&
-		(len(mutation.Bindings) != 0 || len(mutation.RemovedAttachmentIDs) != 0 || len(mutation.RequiredAttachmentIDs) != 0 || mutation.ReplaceReferenceRelations) {
+		(len(mutation.Bindings) != 0 || len(mutation.RemovedAttachmentIDs) != 0 || len(mutation.RequiredAttachmentIDs) != 0) {
 		return ErrMemoSpaceMembershipRequired
-	}
-	if mutation.ReplaceReferenceRelations {
-		if mutation.MemoCreatorID <= 0 {
-			return errors.New("reference relation mutation requires an actor")
-		}
-		seenRelatedMemoIDs := make(map[int32]struct{}, len(mutation.ReferenceRelations))
-		for _, relation := range mutation.ReferenceRelations {
-			if relation == nil || relation.RelatedMemoID <= 0 || relation.Type != MemoRelationReference {
-				return errors.New("only REFERENCE memo relations may be mutated")
-			}
-			if mutation.MemoCreate == nil && relation.MemoID != mutation.MemoID {
-				return errors.New("reference relation source does not match memo mutation")
-			}
-			if mutation.MemoID > 0 && relation.RelatedMemoID == mutation.MemoID {
-				return errors.New("reflexive memo relations are not allowed")
-			}
-			if _, ok := seenRelatedMemoIDs[relation.RelatedMemoID]; ok {
-				return errors.New("duplicate memo reference relation")
-			}
-			seenRelatedMemoIDs[relation.RelatedMemoID] = struct{}{}
-		}
 	}
 	return s.driver.ApplyMemoMutation(ctx, mutation)
 }

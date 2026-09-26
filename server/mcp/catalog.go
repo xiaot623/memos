@@ -15,22 +15,16 @@ var curatedOperationIDs = []string{
 	"MemoService_GetMemo",
 	"MemoService_UpdateMemo",
 	"MemoService_DeleteMemo",
-	"MemoService_ListMemoComments",
-	"MemoService_CreateMemoComment",
 	"MemoService_ListMemoAttachments",
 	"MemoService_SetMemoAttachments",
 	"MemoService_ListMemoReactions",
 	"MemoService_UpsertMemoReaction",
 	"MemoService_DeleteMemoReaction",
-	"MemoService_ListMemoRelations",
-	"MemoService_SetMemoRelations",
 	"AttachmentService_ListAttachments",
 	"AttachmentService_CreateAttachment",
 	"AttachmentService_GetAttachment",
 	"AttachmentService_DeleteAttachment",
-	"UserService_ListMemoViews",
-	// The only allowed auth/identity operation: a read-only "whoami" so agents
-	// can resolve the current user (e.g. for UserService_ListMemoViews).
+	// The only allowed auth/identity operation: a read-only "whoami".
 	"AuthService_GetCurrentUser",
 	// Spaces: memos carry a placement (Memo.space) and a SPACE audience, so an
 	// agent needs to discover, create, and administer the spaces it can place
@@ -91,15 +85,8 @@ var requestBodySchemaOverrides = map[string]requestBodySchemaOverride{
 		omittedProperties: []string{"name"},
 		minProperties:     1,
 	},
-	"MemoService_CreateMemoComment": {
-		required: []string{"content"},
-	},
 	"MemoService_SetMemoAttachments": {
 		required:          []string{"attachments"},
-		omittedProperties: []string{"name"},
-	},
-	"MemoService_SetMemoRelations": {
-		required:          []string{"relations"},
 		omittedProperties: []string{"name"},
 	},
 	"MemoService_UpsertMemoReaction": {
@@ -353,7 +340,6 @@ func extractSchemaDefs(schema jsonSchema) map[string]any {
 // treats as non-idempotent).
 var idempotentOperationIDs = map[string]bool{
 	"MemoService_SetMemoAttachments": true,
-	"MemoService_SetMemoRelations":   true,
 }
 
 // destructiveOperationIDs lists mutating operations that can overwrite or
@@ -361,7 +347,6 @@ var idempotentOperationIDs = map[string]bool{
 var destructiveOperationIDs = map[string]bool{
 	"MemoService_UpdateMemo":         true,
 	"MemoService_SetMemoAttachments": true,
-	"MemoService_SetMemoRelations":   true,
 	"SpaceService_UpdateSpace":       true,
 	"SpaceService_UpdateSpaceMember": true,
 }

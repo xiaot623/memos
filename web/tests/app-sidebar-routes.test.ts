@@ -5,20 +5,9 @@ describe("sidebar route content", () => {
   it.each([
     ["/", "home"],
     ["/archived", "archived"],
-    ["/explore", "explore"],
-    ["/Explore/", "explore"],
     ["/ARCHIVED/", "archived"],
-    ["/u/steven", "profile"],
-    ["/U/Steven/", "profile"],
-    ["/views", "views"],
-    ["/Views/", "views"],
-    ["/calendar", "calendar"],
-    ["/calendar/2026/08", "calendar"],
-    ["/Calendar/2026/08/02/", "calendar"],
     ["/attachments", "attachments"],
     ["/Attachments/", "attachments"],
-    ["/inbox", "inbox"],
-    ["/Inbox/", "inbox"],
     ["/setting", "settings"],
     ["/Setting/", "settings"],
     ["/memos/abc", "memo"],
@@ -29,12 +18,17 @@ describe("sidebar route content", () => {
     ["/403", "common"],
     ["/404", "common"],
     ["/unknown", "common"],
+    ["/explore", "common"],
+    ["/u/steven", "common"],
+    ["/views", "common"],
+    ["/calendar", "common"],
+    ["/inbox", "common"],
   ])("maps %s to %s content", (path, kind) => {
     expect(getSidebarRouteKind(path)).toBe(kind);
   });
 
-  it.each(["/", "/explore"])("keeps search in the route collection on %s", (path) => {
-    expect(getRouteActionPolicy(path)).toEqual({
+  it("keeps search in the route collection on home", () => {
+    expect(getRouteActionPolicy("/")).toEqual({
       searchScope: "route-collection",
     });
   });
@@ -45,45 +39,14 @@ describe("sidebar route content", () => {
     });
   });
 
-  it.each(["/attachments", "/calendar/2026/08/02"])("keeps the route scope when %s sends search to Home", (path) => {
-    expect(getRouteActionPolicy(path)).toEqual({
+  it("keeps the route scope when attachments sends search to Home", () => {
+    expect(getRouteActionPolicy("/attachments")).toEqual({
       searchScope: "route-collection",
       searchDestination: "/",
     });
   });
 
-  it("keeps Profile search on Profile", () => {
-    expect(getRouteActionPolicy("/u/steven")).toEqual({
-      searchScope: "profile",
-      searchDestination: "/u/steven",
-    });
-  });
-
-  it("normalizes a Profile route without changing its spelling", () => {
-    expect(getRouteActionPolicy("/U/Steven/")).toEqual({
-      searchScope: "profile",
-      searchDestination: "/U/Steven",
-    });
-  });
-
-  it("keeps a normalized Explore route in the route scope", () => {
-    const path = "/Explore/";
-    expect(getRouteActionPolicy(path)).toEqual({
-      searchScope: "route-collection",
-    });
-  });
-
-  it.each([
-    "/inbox",
-    "/setting",
-    "/views",
-    "/about",
-    "/memos/abc",
-    "/memos/shares/token",
-    "/403",
-    "/404",
-    "/unknown",
-  ])("sends search to All on %s", (path) => {
+  it.each(["/setting", "/about", "/memos/abc", "/memos/shares/token", "/403", "/404", "/unknown"])("sends search to All on %s", (path) => {
     expect(getRouteActionPolicy(path)).toEqual({
       searchScope: "all",
       searchDestination: "/",

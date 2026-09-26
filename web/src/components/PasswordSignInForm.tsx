@@ -43,9 +43,9 @@ function PasswordSignInForm({ redirectPath }: PasswordSignInFormProps) {
       actionBtnLoadingState.setLoading();
       const response = await authServiceClient.signIn(
         {
-          credentials: {
-            case: "passwordCredentials",
-            value: { username, password },
+          passwordCredentials: {
+            username,
+            password,
           },
         },
         challengeToken ? { headers: { [CHALLENGE_TOKEN_HEADER]: challengeToken } } : undefined,

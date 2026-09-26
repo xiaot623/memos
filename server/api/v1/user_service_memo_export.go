@@ -98,9 +98,7 @@ func (s *APIV1Service) loadMemoExportData(ctx context.Context, user *store.User)
 		}
 	}
 
-	foreignMemoIDs := make(map[int32]struct{})
 	reactorIDs := make(map[int32]struct{})
-	relationType := store.MemoRelationReference
 	for chunk := range slices.Chunk(memoIDs, archiveQueryChunk) {
 		attachments, err := s.Store.ListAttachments(ctx, &store.FindAttachment{MemoIDList: chunk})
 		if err != nil {
@@ -116,22 +114,6 @@ func (s *APIV1Service) loadMemoExportData(ctx context.Context, user *store.User)
 			}
 		}
 
-		relations, err := s.Store.ListMemoRelations(ctx, &store.FindMemoRelation{MemoIDList: chunk, Type: &relationType})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to list memo relations")
-		}
-		for _, relation := range relations {
-			// MemoIDList matches either endpoint; only outgoing relations from
-			// the user's own memos belong to their records.
-			if _, own := export.memoUIDs[relation.MemoID]; !own {
-				continue
-			}
-			export.relatedIDsByID[relation.MemoID] = append(export.relatedIDsByID[relation.MemoID], relation.RelatedMemoID)
-			if _, own := export.memoUIDs[relation.RelatedMemoID]; !own {
-				foreignMemoIDs[relation.RelatedMemoID] = struct{}{}
-			}
-		}
-
 		reactions, err := s.Store.ListReactions(ctx, &store.FindReaction{MemoIDList: chunk})
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to list reactions")
@@ -144,15 +126,6 @@ func (s *APIV1Service) loadMemoExportData(ctx context.Context, user *store.User)
 		}
 	}
 
-	for chunk := range slices.Chunk(slices.Sorted(maps.Keys(foreignMemoIDs)), archiveQueryChunk) {
-		related, err := s.Store.ListMemos(ctx, &store.FindMemo{IDList: chunk, ExcludeContent: true})
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to list related memos")
-		}
-		for _, memo := range related {
-			export.memoUIDs[memo.ID] = memo.UID
-		}
-	}
 	for chunk := range slices.Chunk(slices.Sorted(maps.Keys(reactorIDs)), archiveQueryChunk) {
 		users, err := s.Store.ListUsers(ctx, &store.FindUser{IDList: chunk})
 		if err != nil {
@@ -176,27 +149,10 @@ func (s *APIV1Service) buildMemoExportRecord(ctx context.Context, writer *memoex
 		Pinned:     memo.Pinned,
 		Tags:       memo.Payload.GetTags(),
 	}
-	if location := memo.Payload.GetLocation(); location != nil {
-		record.Location = &memoexport.Location{
-			Placeholder: location.Placeholder,
-			Latitude:    location.Latitude,
-			Longitude:   location.Longitude,
-		}
-	}
 	if memo.SpaceID != nil {
 		if space := export.spacesByID[*memo.SpaceID]; space != nil {
 			record.Space = &memoexport.Space{UID: space.UID, Title: space.Title}
 		}
-	}
-	if memo.ParentUID != nil && *memo.ParentUID != "" {
-		record.Parent = *memo.ParentUID
-	}
-	for _, relatedID := range export.relatedIDsByID[memo.ID] {
-		uid, ok := export.memoUIDs[relatedID]
-		if !ok {
-			continue
-		}
-		record.Relations = append(record.Relations, memoexport.Relation{Type: memoexport.RelationReference, Memo: uid})
 	}
 	for _, reaction := range export.reactionsByID[memo.ID] {
 		username, ok := export.usernames[reaction.CreatorID]

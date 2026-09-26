@@ -108,9 +108,6 @@ func deleteSQLiteMemoSetTx(ctx context.Context, tx dbExecutor, memoIDs []int32) 
 	if err := deleteAttachmentsByIDsTx(ctx, tx, attachmentIDsFromList(attachments)); err != nil {
 		return nil, errors.Wrap(err, "failed to delete memo attachments")
 	}
-	if err := deleteMemoRelationsTx(ctx, tx, memoIDs); err != nil {
-		return nil, errors.Wrap(err, "failed to delete incident memo relations")
-	}
 	return attachments, nil
 }
 

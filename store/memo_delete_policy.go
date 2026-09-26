@@ -31,7 +31,7 @@ func MemoDeleteActorCanRead(rowStatus RowStatus, visibility Visibility, spaceID 
 		return false
 	}
 	switch visibility {
-	case Public, Protected, Private:
+	case Private:
 		return true
 	case SpaceAudience:
 		return spaceID != nil && spaceExists && actorMember

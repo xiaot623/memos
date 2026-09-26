@@ -13,8 +13,6 @@ export interface MemoViewProps {
   showSpace?: boolean;
   className?: string;
   parentPage?: string;
-  shareImageDialogOpen?: boolean;
-  onShareImageDialogOpenChange?: (open: boolean) => void;
 }
 
 export interface MemoViewHandle {

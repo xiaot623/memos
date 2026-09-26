@@ -61,8 +61,8 @@ describe("Quick Find", () => {
     expect(buildQuickFindFilters("project", scopedFilters, false, "text")).toEqual([{ factor: "contentSearch", value: "project" }]);
   });
 
-  it.each(["/", "/explore"])("keeps scoped filters and stays on %s", (pathname) => {
-    expect(resolveQuickFindSubmission(pathname, "project", scopedFilters, "text")).toEqual({
+  it("keeps scoped filters and stays on home", () => {
+    expect(resolveQuickFindSubmission("/", "project", scopedFilters, "text")).toEqual({
       filters: [
         { factor: "tagSearch", value: "work" },
         { factor: "displayTime", value: "2026-08-03" },
@@ -105,26 +105,7 @@ describe("Quick Find", () => {
     });
   });
 
-  it("keeps Profile search on the Profile and returns its map tab to the memo list", () => {
-    expect(resolveQuickFindSubmission("/u/steven", "project", scopedFilters, "text")).toEqual({
-      filters: [
-        { factor: "tagSearch", value: "work" },
-        { factor: "displayTime", value: "2026-08-03" },
-        { factor: "contentSearch", value: "project" },
-      ],
-      destination: "/u/steven?filter=tagSearch%3Awork%2CdisplayTime%3A2026-08-03%2CcontentSearch%3Aproject",
-    });
-  });
-
-  it.each([
-    "/inbox",
-    "/setting",
-    "/views",
-    "/about",
-    "/memos/abc",
-    "/memos/shares/token",
-    "/404",
-  ])("starts a clean All search from %s", (pathname) => {
+  it.each(["/setting", "/about", "/memos/abc", "/memos/shares/token", "/404"])("starts a clean All search from %s", (pathname) => {
     expect(resolveQuickFindSubmission(pathname, "project", scopedFilters, "text")).toEqual({
       filters: [{ factor: "contentSearch", value: "project" }],
       destination: "/?filter=contentSearch%3Aproject",

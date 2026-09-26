@@ -18,10 +18,8 @@ type Store struct {
 	vector  vector.Store
 
 	userCreateMu   sync.Mutex
-	authConfigMu   sync.Mutex
 	refreshTokenMu sync.Mutex
 	patMu          sync.Mutex
-	memoViewMu     sync.Mutex
 
 	deploymentConfigMu sync.RWMutex
 	deploymentConfig   *deploymentConfiguration
@@ -42,8 +40,7 @@ type Store struct {
 }
 
 type deploymentConfiguration struct {
-	identityProviders map[string]*storepb.IdentityProvider
-	instanceSettings  map[storepb.InstanceSettingKey]*storepb.InstanceSetting
+	instanceSettings map[storepb.InstanceSettingKey]*storepb.InstanceSetting
 }
 
 // New creates a new instance of Store.
@@ -64,8 +61,7 @@ func New(driver Driver, profile *profile.Profile) *Store {
 		userCache:            cache.New(cacheConfig),
 		userSettingCache:     cache.New(cacheConfig),
 		deploymentConfig: &deploymentConfiguration{
-			identityProviders: map[string]*storepb.IdentityProvider{},
-			instanceSettings:  map[storepb.InstanceSettingKey]*storepb.InstanceSetting{},
+			instanceSettings: map[storepb.InstanceSettingKey]*storepb.InstanceSetting{},
 		},
 	}
 

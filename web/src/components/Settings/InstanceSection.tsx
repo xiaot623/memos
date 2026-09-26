@@ -5,14 +5,9 @@ import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { identityProviderServiceClient } from "@/connect";
 import { useInstance } from "@/contexts/InstanceContext";
 import useDialog from "@/hooks/useDialog";
-import { IdentityProvider } from "@/types/proto/api/v1/idp_service_pb";
 import {
-  InstanceAccessMode,
-  InstanceSetting_AccessSetting,
-  InstanceSetting_AccessSettingSchema,
   InstanceSetting_GeneralSetting,
   InstanceSetting_GeneralSettingSchema,
   InstanceSetting_Key,
@@ -29,27 +24,12 @@ const InstanceSection = () => {
   const t = useTranslate();
   const customizeDialog = useDialog();
   const saveInstanceSetting = useInstanceSettingUpdater();
-  const { accessSetting: originalAccessSetting, generalSetting: originalGeneralSetting, profile } = useInstance();
-  const [instanceAccessSetting, setInstanceAccessSetting] = useState<InstanceSetting_AccessSetting>(originalAccessSetting);
+  const { generalSetting: originalGeneralSetting, profile } = useInstance();
   const [instanceGeneralSetting, setInstanceGeneralSetting] = useState<InstanceSetting_GeneralSetting>(originalGeneralSetting);
-  const [identityProviderList, setIdentityProviderList] = useState<IdentityProvider[]>([]);
-
-  useEffect(() => {
-    setInstanceAccessSetting(originalAccessSetting);
-  }, [originalAccessSetting]);
 
   useEffect(() => {
     setInstanceGeneralSetting(originalGeneralSetting);
   }, [originalGeneralSetting]);
-
-  const fetchIdentityProviderList = async () => {
-    const { identityProviders } = await identityProviderServiceClient.listIdentityProviders({});
-    setIdentityProviderList(identityProviders);
-  };
-
-  useEffect(() => {
-    fetchIdentityProviderList();
-  }, []);
 
   const weekStartDayOptions = useMemo(
     () => [
@@ -69,49 +49,25 @@ const InstanceSection = () => {
     );
   };
 
-  const updateAccessMode = (accessMode: InstanceAccessMode) => {
-    setInstanceAccessSetting(create(InstanceSetting_AccessSettingSchema, { accessMode }));
-  };
-
   const handleSaveSettings = async () => {
-    const generalSettingChanged = !isEqual(instanceGeneralSetting, originalGeneralSetting);
-    const accessSettingChanged = !isEqual(instanceAccessSetting, originalAccessSetting);
-
-    if (generalSettingChanged) {
-      const generalSettingSaved = await saveInstanceSetting({
-        key: InstanceSetting_Key.GENERAL,
-        setting: create(InstanceSettingSchema, {
-          name: buildInstanceSettingName(InstanceSetting_Key.GENERAL),
-          value: {
-            case: "generalSetting",
-            value: instanceGeneralSetting,
-          },
-        }),
-        errorContext: "Update general settings",
-        showSuccessToast: !accessSettingChanged,
-      });
-      if (!generalSettingSaved) {
-        return;
-      }
+    if (isEqual(instanceGeneralSetting, originalGeneralSetting)) {
+      return;
     }
 
-    if (accessSettingChanged) {
-      await saveInstanceSetting({
-        key: InstanceSetting_Key.ACCESS,
-        setting: create(InstanceSettingSchema, {
-          name: buildInstanceSettingName(InstanceSetting_Key.ACCESS),
-          value: {
-            case: "accessSetting",
-            value: instanceAccessSetting,
-          },
-        }),
-        errorContext: "Update access settings",
-      });
-    }
+    await saveInstanceSetting({
+      key: InstanceSetting_Key.GENERAL,
+      setting: create(InstanceSettingSchema, {
+        name: buildInstanceSettingName(InstanceSetting_Key.GENERAL),
+        value: {
+          case: "generalSetting",
+          value: instanceGeneralSetting,
+        },
+      }),
+      errorContext: "Update general settings",
+    });
   };
 
-  const hasUnsavedChanges =
-    !isEqual(instanceGeneralSetting, originalGeneralSetting) || !isEqual(instanceAccessSetting, originalAccessSetting);
+  const hasUnsavedChanges = !isEqual(instanceGeneralSetting, originalGeneralSetting);
 
   return (
     <SettingSection title={t("setting.system.label")}>
@@ -149,17 +105,6 @@ const InstanceSection = () => {
       <SettingGroup title={t("setting.instance.access-title")} description={t("setting.instance.access-description")} showSeparator>
         <SettingList>
           <SettingListItem
-            label={t("setting.instance.allow-public-access")}
-            description={t("setting.instance.allow-public-access-description")}
-          >
-            <Switch
-              disabled={profile.demo}
-              checked={instanceAccessSetting.accessMode === InstanceAccessMode.PUBLIC}
-              onCheckedChange={(checked) => updateAccessMode(checked ? InstanceAccessMode.PUBLIC : InstanceAccessMode.PRIVATE)}
-            />
-          </SettingListItem>
-
-          <SettingListItem
             label={t("setting.instance.disallow-user-registration")}
             description={t("setting.instance.disallow-user-registration-description")}
           >
@@ -175,7 +120,7 @@ const InstanceSection = () => {
             description={t("setting.instance.disallow-password-auth-description")}
           >
             <Switch
-              disabled={profile.demo || (identityProviderList.length === 0 && !instanceGeneralSetting.disallowPasswordAuth)}
+              disabled={profile.demo}
               checked={instanceGeneralSetting.disallowPasswordAuth}
               onCheckedChange={(checked) => updatePartialSetting({ disallowPasswordAuth: checked })}
             />

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Location, Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
+import type { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { cacheService, memoService } from "../services";
 import { useEditorContext } from "../state";
 import type { EditorController } from "../types/editorController";
@@ -12,7 +12,6 @@ interface UseMemoInitOptions {
   autoFocus?: boolean | (() => boolean);
   defaultVisibility?: Visibility;
   defaultCreateTime?: Date;
-  defaultLocation?: Location;
 }
 
 export const useMemoInit = ({
@@ -23,7 +22,6 @@ export const useMemoInit = ({
   autoFocus,
   defaultVisibility,
   defaultCreateTime,
-  defaultLocation,
 }: UseMemoInitOptions) => {
   const { actions, dispatch } = useEditorContext();
   const initializedRef = useRef(false);
@@ -46,7 +44,6 @@ export const useMemoInit = ({
       if (cachedDraft.attachments.length > 0) {
         dispatch(actions.setMetadata({ attachments: cachedDraft.attachments }));
       }
-      dispatch(actions.setMetadata({ location: cachedDraft.location === null ? undefined : (cachedDraft.location ?? defaultLocation) }));
       if (defaultVisibility !== undefined) {
         dispatch(actions.setMetadata({ visibility: defaultVisibility }));
       }
@@ -59,22 +56,21 @@ export const useMemoInit = ({
     let restoreCursorTimer: ReturnType<typeof setTimeout> | undefined;
     if (autoFocus || cachedCursor !== undefined) {
       restoreCursorTimer = setTimeout(() => {
+        const shouldFocus = typeof autoFocus === "function" ? autoFocus() : Boolean(autoFocus);
+        if (shouldFocus) {
+          editorRef.current?.focus();
+        }
         if (cachedCursor !== undefined) {
           editorRef.current?.setCursor(cachedCursor);
         }
-        if (typeof autoFocus === "function" ? autoFocus() : autoFocus) {
-          editorRef.current?.focus();
-        }
-      }, 100);
+      }, 0);
     }
 
     setIsInitialized(true);
     return () => {
-      if (restoreCursorTimer) {
-        clearTimeout(restoreCursorTimer);
-      }
+      if (restoreCursorTimer) clearTimeout(restoreCursorTimer);
     };
-  }, [memo, cacheKey, username, autoFocus, defaultVisibility, defaultCreateTime, defaultLocation, actions, dispatch, editorRef]);
+  }, [actions, autoFocus, cacheKey, defaultCreateTime, defaultVisibility, dispatch, editorRef, memo, username]);
 
   return { isInitialized };
 };

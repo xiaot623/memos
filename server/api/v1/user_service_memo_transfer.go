@@ -32,6 +32,22 @@ type memoImportState struct {
 
 type memoImports = uploadSessions[memoImportState]
 
+// requireCallerIs asserts that the caller is user. Personal resources such as
+// memo exports are never reachable by another account.
+func (s *APIV1Service) requireCallerIs(ctx context.Context, user *store.User) error {
+	currentUser, err := s.fetchCurrentUser(ctx)
+	if err != nil {
+		return status.Errorf(codes.Internal, "failed to get current user: %v", err)
+	}
+	if currentUser == nil {
+		return status.Errorf(codes.Unauthenticated, "user not authenticated")
+	}
+	if currentUser.ID != user.ID {
+		return status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+	return nil
+}
+
 // resolveMemoTransferOwner resolves users/{user} and asserts it is the caller.
 func (s *APIV1Service) resolveMemoTransferOwner(ctx context.Context, name string) (*store.User, error) {
 	user, err := ResolveUserByName(ctx, s.Store, name)

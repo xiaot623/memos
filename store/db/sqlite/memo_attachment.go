@@ -11,7 +11,7 @@ import (
 	"github.com/usememos/memos/store"
 )
 
-// ApplyMemoMutation atomically updates a memo, attachment bindings, and reference relations.
+// ApplyMemoMutation atomically updates a memo and its attachment bindings.
 func (d *DB) ApplyMemoMutation(ctx context.Context, mutation *store.MemoMutation) error {
 	// BEGIN IMMEDIATE avoids SQLITE_BUSY on deferred write upgrades (issue #6186).
 	conn, err := d.db.Conn(ctx)
@@ -28,17 +28,9 @@ func (d *DB) ApplyMemoMutation(ctx context.Context, mutation *store.MemoMutation
 			_, _ = conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
 		}
 	}()
-	if err := validateSQLiteMemoRelationEndpoints(ctx, conn, mutation); err != nil {
-		return err
-	}
 	if create := mutation.MemoCreate; create != nil {
 		if err := validateSQLiteMemoCreate(ctx, conn, create); err != nil {
 			return err
-		}
-		if mutation.CommentContextMemoID != nil {
-			if err := authorizeSQLiteMemoComment(ctx, conn, *mutation.CommentContextMemoID, create.CreatorID); err != nil {
-				return err
-			}
 		}
 		if err := insertSQLiteMemo(ctx, conn, create); err != nil {
 			return err
@@ -46,16 +38,6 @@ func (d *DB) ApplyMemoMutation(ctx context.Context, mutation *store.MemoMutation
 		mutation.MemoID = create.ID
 		mutation.MemoCreatorID = create.CreatorID
 		mutation.ExpectedMemoContent = create.Content
-		for _, relation := range mutation.ReferenceRelations {
-			if relation != nil {
-				relation.MemoID = create.ID
-			}
-		}
-		if mutation.CommentContextMemoID != nil {
-			if err := insertSQLiteMemoCommentRelation(ctx, conn, create.ID, *mutation.CommentContextMemoID); err != nil {
-				return err
-			}
-		}
 	}
 	policy := mutation.WritePolicy()
 	actorUserID := mutation.ActorUserID()
@@ -142,45 +124,10 @@ func (d *DB) ApplyMemoMutation(ctx context.Context, mutation *store.MemoMutation
 			return err
 		}
 	}
-	if mutation.ReplaceReferenceRelations {
-		if err := replaceMemoReferenceRelations(ctx, conn, mutation.MemoID, mutation.ReferenceRelations); err != nil {
-			return err
-		}
-	}
 	if _, err := conn.ExecContext(ctx, "COMMIT"); err != nil {
 		return errors.Wrap(err, "failed to commit memo transaction")
 	}
 	committed = true
-	return nil
-}
-
-func insertSQLiteMemoCommentRelation(ctx context.Context, executor memoUpdateExecer, memoID, contextMemoID int32) error {
-	if memoID <= 0 || contextMemoID <= 0 || memoID == contextMemoID {
-		return errors.New("invalid COMMENT relation")
-	}
-	if _, err := executor.ExecContext(ctx, `INSERT INTO memo_relation (memo_id, related_memo_id, type) VALUES (?, ?, ?)`,
-		memoID, contextMemoID, store.MemoRelationComment); err != nil {
-		return errors.Wrap(err, "failed to insert COMMENT relation")
-	}
-	return nil
-}
-
-func replaceMemoReferenceRelations(ctx context.Context, executor memoUpdateExecer, memoID int32, relations []*store.MemoRelation) error {
-	if _, err := executor.ExecContext(ctx, `DELETE FROM memo_relation WHERE memo_id = ? AND type = ?`, memoID, store.MemoRelationReference); err != nil {
-		return errors.Wrap(err, "failed to delete memo reference relations")
-	}
-	for _, relation := range relations {
-		if relation == nil || relation.MemoID != memoID || relation.Type != store.MemoRelationReference {
-			return errors.New("invalid memo reference relation mutation")
-		}
-		if _, err := executor.ExecContext(ctx, `
-			INSERT INTO memo_relation (memo_id, related_memo_id, type)
-			VALUES (?, ?, ?)
-			ON CONFLICT(memo_id, related_memo_id, type) DO UPDATE SET type = excluded.type
-		`, relation.MemoID, relation.RelatedMemoID, relation.Type); err != nil {
-			return errors.Wrap(err, "failed to insert memo reference relation")
-		}
-	}
 	return nil
 }
 

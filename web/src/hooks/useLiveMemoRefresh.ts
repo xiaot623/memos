@@ -473,7 +473,7 @@ function handleSSEEvent(event: SSEChangeEvent, queryClient: ReturnType<typeof us
 function invalidateAllLiveQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: spaceKeys.all, refetchType: "active" });
   // Space invitations are delivered to the inbox and resolved with the same event.
-  queryClient.invalidateQueries({ queryKey: userKeys.notifications(), refetchType: "active" });
+  // notifications removed
   invalidateLiveMemoQueries(queryClient);
 }
 

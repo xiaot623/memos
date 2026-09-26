@@ -43,12 +43,8 @@ func (s *Store) UpsertInstanceSetting(ctx context.Context, upsert *storepb.Insta
 		valueBytes, err = protojson.Marshal(upsert.GetMemoRelatedSetting())
 	} else if upsert.Key == storepb.InstanceSettingKey_TAGS {
 		valueBytes, err = protojson.Marshal(upsert.GetTagsSetting())
-	} else if upsert.Key == storepb.InstanceSettingKey_NOTIFICATION {
-		valueBytes, err = protojson.Marshal(upsert.GetNotificationSetting())
 	} else if upsert.Key == storepb.InstanceSettingKey_AI {
 		valueBytes, err = protojson.Marshal(upsert.GetAiSetting())
-	} else if upsert.Key == storepb.InstanceSettingKey_ACCESS {
-		valueBytes, err = protojson.Marshal(upsert.GetAccessSetting())
 	} else {
 		return nil, errors.Errorf("unsupported instance setting key: %v", upsert.Key)
 	}
@@ -229,37 +225,6 @@ func (s *Store) GetInstanceGeneralSetting(ctx context.Context) (*storepb.Instanc
 	return instanceGeneralSetting, nil
 }
 
-// GetInstanceAccessSetting gets the instance access policy, defaulting to private.
-func (s *Store) GetInstanceAccessSetting(ctx context.Context) (*storepb.InstanceAccessSetting, error) {
-	instanceSetting := s.getDeploymentInstanceSetting(storepb.InstanceSettingKey_ACCESS)
-	if instanceSetting == nil {
-		var err error
-		// Access policy changes must take effect across replicas without waiting for
-		// the general instance-setting cache to expire.
-		instanceSetting, err = s.getRawInstanceSetting(ctx, storepb.InstanceSettingKey_ACCESS.String())
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get instance access setting")
-		}
-	}
-
-	instanceAccessSetting := &storepb.InstanceAccessSetting{}
-	if instanceSetting != nil && instanceSetting.GetAccessSetting() != nil {
-		instanceAccessSetting = instanceSetting.GetAccessSetting()
-	}
-	if instanceAccessSetting.AccessMode == storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_UNSPECIFIED {
-		instanceAccessSetting.AccessMode = storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PRIVATE
-	}
-	return instanceAccessSetting, nil
-}
-
-// AllowsAnonymousAccess reports whether the effective instance access policy is public.
-func (s *Store) AllowsAnonymousAccess(ctx context.Context) (bool, error) {
-	setting, err := s.GetInstanceAccessSetting(ctx)
-	if err != nil {
-		return false, err
-	}
-	return setting.AccessMode == storepb.InstanceAccessMode_INSTANCE_ACCESS_MODE_PUBLIC, nil
-}
 
 // DefaultContentLengthLimit is the default limit of content length in bytes. 8KB.
 const DefaultContentLengthLimit = 8 * 1024
@@ -314,27 +279,6 @@ func (s *Store) GetInstanceTagsSetting(ctx context.Context) (*storepb.InstanceTa
 	return instanceTagsSetting, nil
 }
 
-func (s *Store) GetInstanceNotificationSetting(ctx context.Context) (*storepb.InstanceNotificationSetting, error) {
-	instanceSetting, err := s.GetInstanceSetting(ctx, &FindInstanceSetting{
-		Name: storepb.InstanceSettingKey_NOTIFICATION.String(),
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get instance notification setting")
-	}
-
-	instanceNotificationSetting := &storepb.InstanceNotificationSetting{}
-	if instanceSetting != nil {
-		instanceNotificationSetting = instanceSetting.GetNotificationSetting()
-	}
-	if instanceNotificationSetting.Email == nil {
-		instanceNotificationSetting.Email = &storepb.InstanceNotificationSetting_EmailSetting{}
-	}
-	s.cacheInstanceSetting(ctx, &storepb.InstanceSetting{
-		Key:   storepb.InstanceSettingKey_NOTIFICATION,
-		Value: &storepb.InstanceSetting_NotificationSetting{NotificationSetting: instanceNotificationSetting},
-	})
-	return instanceNotificationSetting, nil
-}
 
 // GetInstanceAISetting gets the AI provider settings for the instance.
 func (s *Store) GetInstanceAISetting(ctx context.Context) (*storepb.InstanceAISetting, error) {
@@ -433,24 +377,12 @@ func convertInstanceSettingFromRaw(instanceSettingRaw *InstanceSetting) (*storep
 			return nil, err
 		}
 		instanceSetting.Value = &storepb.InstanceSetting_TagsSetting{TagsSetting: tagsSetting}
-	case storepb.InstanceSettingKey_NOTIFICATION.String():
-		notificationSetting := &storepb.InstanceNotificationSetting{}
-		if err := protojsonUnmarshaler.Unmarshal([]byte(instanceSettingRaw.Value), notificationSetting); err != nil {
-			return nil, err
-		}
-		instanceSetting.Value = &storepb.InstanceSetting_NotificationSetting{NotificationSetting: notificationSetting}
 	case storepb.InstanceSettingKey_AI.String():
 		aiSetting := &storepb.InstanceAISetting{}
 		if err := protojsonUnmarshaler.Unmarshal([]byte(instanceSettingRaw.Value), aiSetting); err != nil {
 			return nil, err
 		}
 		instanceSetting.Value = &storepb.InstanceSetting_AiSetting{AiSetting: aiSetting}
-	case storepb.InstanceSettingKey_ACCESS.String():
-		accessSetting := &storepb.InstanceAccessSetting{}
-		if err := protojsonUnmarshaler.Unmarshal([]byte(instanceSettingRaw.Value), accessSetting); err != nil {
-			return nil, err
-		}
-		instanceSetting.Value = &storepb.InstanceSetting_AccessSetting{AccessSetting: accessSetting}
 	default:
 		// Skip unsupported instance setting key.
 		return nil, nil

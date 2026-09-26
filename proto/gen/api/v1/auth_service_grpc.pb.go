@@ -34,9 +34,8 @@ type AuthServiceClient interface {
 	// Validates the access token and returns user details.
 	// Similar to OIDC's /userinfo endpoint.
 	GetCurrentUser(ctx context.Context, in *GetCurrentUserRequest, opts ...grpc.CallOption) (*GetCurrentUserResponse, error)
-	// SignIn authenticates a user with credentials and returns tokens.
+	// SignIn authenticates a user with a username and password and returns tokens.
 	// On success, returns an access token and sets a refresh token cookie.
-	// Supports password-based and SSO authentication methods.
 	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
 	// SignOut terminates the user's authentication.
 	// Revokes the refresh token and clears the authentication cookie.
@@ -103,9 +102,8 @@ type AuthServiceServer interface {
 	// Validates the access token and returns user details.
 	// Similar to OIDC's /userinfo endpoint.
 	GetCurrentUser(context.Context, *GetCurrentUserRequest) (*GetCurrentUserResponse, error)
-	// SignIn authenticates a user with credentials and returns tokens.
+	// SignIn authenticates a user with a username and password and returns tokens.
 	// On success, returns an access token and sets a refresh token cookie.
-	// Supports password-based and SSO authentication methods.
 	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
 	// SignOut terminates the user's authentication.
 	// Revokes the refresh token and clears the authentication cookie.

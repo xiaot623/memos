@@ -18,8 +18,6 @@ import { SpaceProvider } from "@/contexts/SpaceContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
-import { ROUTES, resolveCollectionRoute } from "@/router/routes";
-import { InstanceAccessMode } from "@/types/proto/api/v1/instance_service_pb";
 import { UserSetting_SemanticIndexState } from "@/types/proto/api/v1/user_service_pb";
 import { buildAuthRoute, shouldGatePrivateInstance } from "@/utils/auth-redirect";
 import { useTranslate } from "@/utils/i18n";
@@ -51,8 +49,7 @@ const RootLayoutContent = () => {
   const { isUserSettingsInitialized, userGeneralSetting } = useAuth();
   const { filters, removeFilter } = useMemoFilterContext();
   const { pathname } = location;
-  // The map fills the viewport and scrolls inside itself, so the document must not.
-  const fullBleed = resolveCollectionRoute(pathname).pathname.toLowerCase() === ROUTES.MAP;
+  const fullBleed = false;
   const prevPathnameRef = useRef<string | undefined>(undefined);
   const shellRef = useRef<HTMLDivElement>(null);
   const { width: sidebarWidth, minWidth, maxWidth, setWidth: setSidebarWidth } = useSidebarWidth();
@@ -75,11 +72,10 @@ const RootLayoutContent = () => {
     removeFilter((filter) => filter.factor === "semanticSearch");
   }, [filters, isUserSettingsInitialized, removeFilter, userGeneralSetting?.semanticIndexState]);
 
-  // Anonymous visitors to private instances may only reach share links. Treat an
-  // unspecified mode as private so a partial or older response cannot expose content.
+  // Anonymous visitors may only reach share links and other public routes.
   if (
     shouldGatePrivateInstance({
-      isPrivateInstance: profile.accessMode !== InstanceAccessMode.PUBLIC,
+      isPrivateInstance: true,
       isAuthenticated: !!currentUser,
       pathname,
     })

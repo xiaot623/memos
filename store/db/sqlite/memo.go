@@ -165,22 +165,8 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 		}
 		where = append(where, fmt.Sprintf("`memo`.`visibility` IN (%s)", strings.Join(placeholder, ",")))
 	}
-	if v := find.CommentContextMemoID; v != nil {
-		where, args = append(where, `EXISTS (
-			SELECT 1 FROM memo_relation AS comment_context
-			WHERE comment_context.memo_id = memo.id
-				AND comment_context.related_memo_id = ?
-				AND comment_context.type = 'COMMENT'
-		)`), append(args, *v)
-	}
 	if access := find.Access; access != nil {
 		where = append(where, sqliteMemoAccessPredicate(access, "`memo`", "`access_member`", &args))
-	}
-	if find.ExcludeComments {
-		where = append(where, `NOT EXISTS (
-			SELECT 1 FROM memo_relation AS comment_relation
-			WHERE comment_relation.memo_id = memo.id AND comment_relation.type = 'COMMENT'
-		)`)
 	}
 
 	order := "DESC"
@@ -209,11 +195,6 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 		"`memo`.`pinned` AS `pinned`",
 		"`memo`.`payload` AS `payload`",
 		"`memo`.`space_id` AS `space_id`",
-		`(SELECT parent_memo.uid
-			FROM memo_relation AS parent_relation
-			JOIN memo AS parent_memo ON parent_memo.id = parent_relation.related_memo_id
-			WHERE parent_relation.memo_id = memo.id AND parent_relation.type = 'COMMENT'
-			ORDER BY parent_memo.id LIMIT 1) AS parent_uid`,
 	}
 	if !find.ExcludeContent {
 		fields = append(fields, "`memo`.`content` AS `content`")
@@ -252,7 +233,6 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 			&memo.Pinned,
 			&payloadBytes,
 			&memo.SpaceID,
-			&memo.ParentUID,
 		}
 		if !find.ExcludeContent {
 			dests = append(dests, &memo.Content)

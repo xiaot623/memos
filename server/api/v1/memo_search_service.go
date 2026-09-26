@@ -108,7 +108,7 @@ func (s *APIV1Service) SearchMemos(ctx context.Context, request *v1pb.SearchMemo
 		return nil, status.Errorf(codes.Internal, "failed to embed query: %v", err)
 	}
 
-	memoFind := &store.FindMemo{ExcludeComments: true}
+	memoFind := &store.FindMemo{}
 	accessScope, _, err := s.resolveMemoAccessScope(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
@@ -217,10 +217,6 @@ func (s *APIV1Service) memoMessages(ctx context.Context, memos []*store.Memo) ([
 		}
 		attachmentMap[*attachment.MemoID] = append(attachmentMap[*attachment.MemoID], attachment)
 	}
-	relationMap, err := s.batchConvertMemoRelations(ctx, memos, false)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to batch load memo relations")
-	}
 	creatorIDs := make([]int32, 0, len(memos)+len(reactions))
 	for _, memo := range memos {
 		creatorIDs = append(creatorIDs, memo.CreatorID)
@@ -234,7 +230,7 @@ func (s *APIV1Service) memoMessages(ctx context.Context, memos []*store.Memo) ([
 	}
 	messages := make([]*v1pb.Memo, 0, len(memos))
 	for _, memo := range memos {
-		message, err := s.convertMemoFromStoreWithCreators(ctx, memo, reactionMap[memo.ID], attachmentMap[memo.ID], relationMap[memo.ID], creatorMap)
+		message, err := s.convertMemoFromStoreWithCreators(ctx, memo, reactionMap[memo.ID], attachmentMap[memo.ID], creatorMap)
 		if err != nil {
 			if stderrors.Is(err, errMemoCreatorNotFound) {
 				slog.Warn("Skipping memo with missing creator", slog.Int64("memo_id", int64(memo.ID)))

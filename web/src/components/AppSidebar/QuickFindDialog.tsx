@@ -10,9 +10,7 @@ import { useAppSidebar } from "@/contexts/AppSidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { getFilterSearch, isSearchFilter, type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useSpaceContext } from "@/contexts/SpaceContext";
-import useCurrentUser from "@/hooks/useCurrentUser";
-import { useMemoViews } from "@/hooks/useUserQueries";
-import { BUILTIN_TASKS_VIEW_ID, getMemoViewId, isMemoCollectionRoute } from "@/lib/memo-views";
+import { BUILTIN_TASKS_VIEW_ID, isMemoCollectionRoute } from "@/lib/memo-views";
 import { extractSpaceUidFromName, formatSpaceUidForDisplay } from "@/lib/space-display";
 import { cn } from "@/lib/utils";
 import { UserSetting_SemanticIndexState } from "@/types/proto/api/v1/user_service_pb";
@@ -81,8 +79,6 @@ const searchModeLabel = (mode: QuickFindMode, t: ReturnType<typeof useTranslate>
 const getScopeLabel = (pathname: string, t: ReturnType<typeof useTranslate>) => {
   const routeKind = getSidebarRouteKind(pathname);
   if (routeKind === "archived") return t("common.archived");
-  if (routeKind === "explore") return t("common.explore");
-  if (routeKind === "profile") return t("common.profile");
   return t("common.memos");
 };
 
@@ -90,8 +86,6 @@ const QuickFindDialog = () => {
   const t = useTranslate();
   const location = useLocation();
   const navigate = useNavigate();
-  const currentUser = useCurrentUser();
-  const { data: memoViews = [] } = useMemoViews(currentUser?.name);
   const { userGeneralSetting, isUserSettingsInitialized } = useAuth();
   const semanticReady = isUserSettingsInitialized && userGeneralSetting?.semanticIndexState === UserSetting_SemanticIndexState.READY;
   const { filters, setFilters, setMemoView, memoView } = useMemoFilterContext();
@@ -101,9 +95,7 @@ const QuickFindDialog = () => {
   const [mode, setMode] = useState<QuickFindMode>("text");
   const hintId = useId();
   const viewApplies = isMemoCollectionRoute(location.pathname);
-  const selectedMemoView = viewApplies ? memoViews.find((item) => getMemoViewId(item.name) === memoView) : undefined;
-  const lensLabel =
-    viewApplies && memoView === BUILTIN_TASKS_VIEW_ID ? t("common.tasks") : selectedMemoView?.title || getScopeLabel(location.pathname, t);
+  const lensLabel = viewApplies && memoView === BUILTIN_TASKS_VIEW_ID ? t("common.tasks") : getScopeLabel(location.pathname, t);
   const selectedSpaceUid = selectedSpaceName ? extractSpaceUidFromName(selectedSpaceName) : "";
   const selectedSpaceUidDisplay = selectedSpaceName ? formatSpaceUidForDisplay(selectedSpaceName) : "";
   const showSelectedSpaceUid = selectedSpace ? duplicateSpaceTitles.has(selectedSpace.title) : Boolean(selectedSpaceName);

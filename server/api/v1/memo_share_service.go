@@ -200,7 +200,7 @@ func (s *APIV1Service) GetSharedMemo(ctx context.Context, request *v1pb.GetShare
 		return nil, status.Errorf(codes.Internal, "failed to list attachments")
 	}
 
-	memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments, nil)
+	memoMessage, err := s.convertMemoFromStore(ctx, memo, reactions, attachments)
 	if err != nil {
 		if stderrors.Is(err, errMemoCreatorNotFound) {
 			return nil, status.Errorf(codes.NotFound, "not found")
@@ -209,7 +209,6 @@ func (s *APIV1Service) GetSharedMemo(ctx context.Context, request *v1pb.GetShare
 	}
 	// A share token grants access to this memo only, not to its surrounding
 	// conversation or relation graph.
-	memoMessage.Parent = nil
 	return memoMessage, nil
 }
 

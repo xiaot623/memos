@@ -34,7 +34,6 @@ const dynamicKeyParts: Record<string, readonly string[]> = {
   "live-update.${}": ["connected", "connecting", "disconnected"],
   "memo.${}": ["layout-auto", "layout-columns", "layout-list"],
   "memo.${}-description": ["layout-auto", "layout-columns", "layout-list"],
-  "setting.notification.requirement-${}": ["gmail", "optional", "recommended", "required"],
   "space.icon.${}": ["emoji", "icons"],
 };
 
@@ -147,10 +146,10 @@ describe("locale key usage", () => {
 
 describe("locale resources", () => {
   it("allows extra plural categories only for existing plural messages", () => {
-    expect(referenceFor("setting.sso.scope-count_few")).toBe(source["setting.sso.scope-count_other"]);
-    expect(referenceFor("setting.sso.scope-count_many")).toBe(source["setting.sso.scope-count_other"]);
-    expect(referenceFor("setting.sso.removed-key_other")).toBeUndefined();
+    expect(referenceFor("common.removed-key_other")).toBeUndefined();
     expect(referenceFor("common.save_few")).toBeUndefined();
+    // A plural category without a matching English base stays undefined.
+    expect(referenceFor("common.save_many")).toBeUndefined();
   });
 
   for (const [path, module] of Object.entries(locales)) {
@@ -174,12 +173,6 @@ describe("locale resources", () => {
 
       expect(messages["setting.storage.filepath-template-description"]).toContain("assets/{timestamp}_{uuid}_{filename}");
       expect(messages["setting.memo-export.import-detail"]).toMatch(/zip/i);
-      for (const key of ["transcription-model-placeholder-openai", "transcription-model-placeholder-gemini"]) {
-        expect(messages[`setting.ai.${key}`]).toBe(source[`setting.ai.${key}`]);
-      }
-      for (const model of ["whisper-1", "gpt-4o-transcribe", "whisper-large-v3-turbo"]) {
-        expect(messages["setting.ai.transcription-model-help"]).toContain(model);
-      }
     });
   }
 });

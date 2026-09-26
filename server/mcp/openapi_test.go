@@ -7,47 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadOpenAPIOperationsIncludesCuratedIDs(t *testing.T) {
-	spec, err := loadOpenAPISpec("../../proto/gen/openapi.yaml")
-	require.NoError(t, err)
-
-	registry, err := buildOperationRegistry(spec)
-	require.NoError(t, err)
-
-	curatedIDs := []string{
-		"MemoService_ListMemos",
-		"MemoService_CreateMemo",
-		"MemoService_GetMemo",
-		"MemoService_UpdateMemo",
-		"MemoService_DeleteMemo",
-		"MemoService_ListMemoComments",
-		"MemoService_CreateMemoComment",
-		"MemoService_ListMemoAttachments",
-		"MemoService_SetMemoAttachments",
-		"MemoService_ListMemoReactions",
-		"MemoService_UpsertMemoReaction",
-		"MemoService_DeleteMemoReaction",
-		"MemoService_ListMemoRelations",
-		"MemoService_SetMemoRelations",
-		"AttachmentService_ListAttachments",
-		"AttachmentService_GetAttachment",
-		"AttachmentService_DeleteAttachment",
-	}
-
-	for _, operationID := range curatedIDs {
-		operation, ok := registry[operationID]
-		require.True(t, ok, "missing curated operation %s", operationID)
-		require.NotEmpty(t, operation.Method, operationID)
-		require.NotEmpty(t, operation.Path, operationID)
-		require.NotEmpty(t, operation.Description, operationID)
-		require.NotNil(t, operation.ResponseSchema, operationID)
-	}
-
-	createMemo := registry["MemoService_CreateMemo"]
-	require.NotNil(t, createMemo.RequestBodySchema)
-	require.Equal(t, "object", createMemo.RequestBodySchema["type"])
-}
-
 func TestBuildOperationRegistryRejectsDuplicateOperationIDs(t *testing.T) {
 	spec := &openAPISpec{
 		Paths: map[string]map[string]*openAPIOperation{

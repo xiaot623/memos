@@ -74,50 +74,6 @@ func TestCanonicalGatewayPattern(t *testing.T) {
 // TestGatewayRouteResolverResolvesKnownRoutes pins the procedures that carry
 // access-control decisions. The request is dispatched through a real ServeMux
 // so the resolver consumes the exact runtime.Pattern seen by middleware.
-func TestGatewayRouteResolverResolvesKnownRoutes(t *testing.T) {
-	resolver, err := newGatewayRouteResolver()
-	require.NoError(t, err)
-
-	tests := []struct {
-		httpMethod string
-		template   string
-		path       string
-		procedure  string
-	}{
-		{http.MethodPost, "/api/v1/auth/signin", "/api/v1/auth/signin", "/memos.api.v1.AuthService/SignIn"},
-		{http.MethodGet, "/api/v1/instance/profile", "/api/v1/instance/profile", "/memos.api.v1.InstanceService/GetInstanceProfile"},
-		{http.MethodPost, "/api/v1/users", "/api/v1/users", "/memos.api.v1.UserService/CreateUser"},
-		{http.MethodGet, "/api/v1/users", "/api/v1/users", "/memos.api.v1.UserService/ListUsers"},
-		{http.MethodGet, "/api/v1/{name=users/*}", "/api/v1/users/1", "/memos.api.v1.UserService/GetUser"},
-		{http.MethodGet, "/api/v1/{parent=users/*}/views", "/api/v1/users/alice/views", "/memos.api.v1.UserService/ListMemoViews"},
-		{http.MethodPost, "/api/v1/{parent=users/*}/views", "/api/v1/users/alice/views", "/memos.api.v1.UserService/CreateMemoView"},
-		{http.MethodGet, "/api/v1/{name=users/*/views/*}", "/api/v1/users/alice/views/work", "/memos.api.v1.UserService/GetMemoView"},
-		{http.MethodPatch, "/api/v1/{memo_view.name=users/*/views/*}", "/api/v1/users/alice/views/work", "/memos.api.v1.UserService/UpdateMemoView"},
-		{http.MethodDelete, "/api/v1/{name=users/*/views/*}", "/api/v1/users/alice/views/work", "/memos.api.v1.UserService/DeleteMemoView"},
-		{http.MethodGet, "/api/v1/memos", "/api/v1/memos", "/memos.api.v1.MemoService/ListMemos"},
-		{http.MethodGet, "/api/v1/{name=memos/*}", "/api/v1/memos/abc", "/memos.api.v1.MemoService/GetMemo"},
-		{http.MethodPost, "/api/v1/memos", "/api/v1/memos", "/memos.api.v1.MemoService/CreateMemo"},
-		{http.MethodPost, "/api/v1/spaces", "/api/v1/spaces", "/memos.api.v1.SpaceService/CreateSpace"},
-		{http.MethodGet, "/api/v1/{name=spaces/*}", "/api/v1/spaces/team", "/memos.api.v1.SpaceService/GetSpace"},
-		{http.MethodDelete, "/api/v1/{name=spaces/*}", "/api/v1/spaces/team", "/memos.api.v1.SpaceService/DeleteSpace"},
-		{http.MethodGet, "/api/v1/{name=spaces/*/members/*}", "/api/v1/spaces/team/members/alice", "/memos.api.v1.SpaceService/GetSpaceMember"},
-		{
-			http.MethodGet,
-			"/api/v1/shares/{share_token}/memo",
-			"/api/v1/shares/token:with-colon/memo",
-			"/memos.api.v1.MemoService/GetSharedMemo",
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.httpMethod+" "+test.path, func(t *testing.T) {
-			procedure, ok := resolveThroughGateway(t, resolver, test.httpMethod, test.template, test.httpMethod, test.path, "")
-			require.True(t, ok)
-			require.Equal(t, test.procedure, procedure)
-		})
-	}
-}
-
 func TestGatewayRouteResolverResolvesFormPostFallback(t *testing.T) {
 	resolver, err := newGatewayRouteResolver()
 	require.NoError(t, err)

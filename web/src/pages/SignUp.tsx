@@ -1,19 +1,17 @@
 import { create } from "@bufbuild/protobuf";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
-import { InfoIcon, LoaderIcon, LockIcon, SparklesIcon, UserRoundXIcon } from "lucide-react";
+import { InfoIcon, LoaderIcon, SparklesIcon, UserRoundXIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useSearchParams } from "react-router-dom";
 import { setAccessToken } from "@/auth-state";
-import AuthPageLayout, { AuthChip, AuthEmptyState, AuthLinkPrompt, AuthOptionsLoading } from "@/components/AuthPageLayout";
+import AuthPageLayout, { AuthChip, AuthEmptyState, AuthLinkPrompt } from "@/components/AuthPageLayout";
 import ChallengeWidget, { CHALLENGE_TOKEN_HEADER } from "@/components/ChallengeWidget";
 import CredentialFields from "@/components/CredentialFields";
-import IdentityProviderButtons from "@/components/IdentityProviderButtons";
 import { Button } from "@/components/ui/button";
 import { authServiceClient, userServiceClient } from "@/connect";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstance } from "@/contexts/InstanceContext";
-import { useIdentityProviderList } from "@/hooks/useIdentityProviderQueries";
 import useLoading from "@/hooks/useLoading";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { ERROR_REASON_CHALLENGE_REQUIRED, handleError, hasErrorReason } from "@/lib/error";
@@ -39,11 +37,6 @@ const SignUp = () => {
   const passwordAuthAllowed = !instanceGeneralSetting.disallowPasswordAuth;
   const registrationOpen = !instanceGeneralSetting.disallowUserRegistration;
   const needsSetup = profile.needsSetup;
-  // Provider buttons only render on the SSO-provisioned branch below; skip the request elsewhere.
-  const { identityProviderList, isLoading: identityProvidersLoading } = useIdentityProviderList(
-    !needsSetup && registrationOpen && !passwordAuthAllowed,
-  );
-  const hasIdentityProviders = identityProviderList.length > 0;
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,26 +56,18 @@ const SignUp = () => {
         password,
         role: User_Role.USER,
       });
-      // The token is spent by createUser; the sign-in that follows is not a
-      // credential guess, and the server does not ask for a second one there.
       const callOptions = challengeToken ? { headers: { [CHALLENGE_TOKEN_HEADER]: challengeToken } } : undefined;
       await userServiceClient.createUser({ user }, callOptions);
       const response = await authServiceClient.signIn(
         {
-          credentials: {
-            case: "passwordCredentials",
-            value: { username, password },
-          },
+          passwordCredentials: { username, password },
         },
         callOptions,
       );
-      // Store access token from login response
       if (response.accessToken) {
         setAccessToken(response.accessToken, response.accessTokenExpiresAt ? timestampDate(response.accessTokenExpiresAt) : undefined);
       }
-      // Refresh auth context to load the current user
       await initAuth();
-      // Refetch instance profile to update the initialized status
       await initInstance();
       navigateTo(redirectTarget || ROUTES.HOME, { replace: true });
     } catch (error: unknown) {
@@ -117,7 +102,6 @@ const SignUp = () => {
 
   const signInPrompt = <AuthLinkPrompt prompt={t("auth.sign-in-tip")} to={signInPath} label={t("common.sign-in")} />;
 
-  // First run: create the instance owner account.
   if (needsSetup) {
     return (
       <AuthPageLayout
@@ -129,7 +113,6 @@ const SignUp = () => {
         }
         title={t("auth.setup-title")}
         subtitle={t("auth.setup-description")}
-        hideExplore
       >
         {signUpForm}
         <div className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-accent/50 px-3 py-2 text-[13px] leading-relaxed text-muted-foreground">
@@ -140,8 +123,7 @@ const SignUp = () => {
     );
   }
 
-  // Registration closed.
-  if (!registrationOpen) {
+  if (!registrationOpen || !passwordAuthAllowed) {
     return (
       <AuthPageLayout title={t("auth.create-your-account")}>
         <AuthEmptyState
@@ -154,29 +136,6 @@ const SignUp = () => {
     );
   }
 
-  // Password sign-up disallowed: accounts come from the identity provider.
-  if (!passwordAuthAllowed) {
-    // Shared by the subtitle and the body branch so they can't disagree.
-    const showSsoOptions = identityProvidersLoading || hasIdentityProviders;
-    return (
-      <AuthPageLayout title={t("auth.create-your-account")} subtitle={showSsoOptions ? t("auth.sso-signup-tip") : undefined}>
-        {identityProvidersLoading ? (
-          <AuthOptionsLoading />
-        ) : showSsoOptions ? (
-          <IdentityProviderButtons identityProviderList={identityProviderList} redirectTarget={redirectTarget} />
-        ) : (
-          <AuthEmptyState
-            icon={<LockIcon className="h-5 w-5" />}
-            title={t("auth.signup-unavailable-title")}
-            description={t("auth.signup-unavailable-description")}
-          />
-        )}
-        {signInPrompt}
-      </AuthPageLayout>
-    );
-  }
-
-  // Open registration.
   return (
     <AuthPageLayout title={t("auth.create-your-account")}>
       {signUpForm}

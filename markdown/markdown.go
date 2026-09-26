@@ -29,7 +29,6 @@ type ManagedAttachmentReference struct {
 // ExtractedData contains all metadata extracted from markdown in a single pass.
 type ExtractedData struct {
 	Tags                               []string
-	Mentions                           []string
 	ImageDestinations                  []string
 	ManagedAttachmentReferences        []ManagedAttachmentReference
 	InvalidManagedAttachmentReferences []string
@@ -70,21 +69,13 @@ type service struct {
 type Option func(*config)
 
 type config struct {
-	enableTags     bool
-	enableMentions bool
+	enableTags bool
 }
 
 // WithTagExtension enables #tag parsing.
 func WithTagExtension() Option {
 	return func(c *config) {
 		c.enableTags = true
-	}
-}
-
-// WithMentionExtension enables @mention parsing.
-func WithMentionExtension() Option {
-	return func(c *config) {
-		c.enableMentions = true
 	}
 }
 
@@ -105,9 +96,6 @@ func NewService(opts ...Option) Service {
 	// Add custom extensions based on config
 	if cfg.enableTags {
 		exts = append(exts, extensions.TagExtension)
-	}
-	if cfg.enableMentions {
-		exts = append(exts, extensions.MentionExtension)
 	}
 
 	md := goldmark.New(
@@ -394,7 +382,6 @@ func (s *service) ExtractAll(content []byte) (*ExtractedData, error) {
 
 	data := &ExtractedData{
 		Tags:                        []string{},
-		Mentions:                    []string{},
 		ImageDestinations:           []string{},
 		ManagedAttachmentReferences: []ManagedAttachmentReference{},
 		Property:                    &storepb.MemoPayload_Property{},
@@ -409,9 +396,6 @@ func (s *service) ExtractAll(content []byte) (*ExtractedData, error) {
 
 		if tagNode, ok := asMemoTagNode(n); ok {
 			data.Tags = appendTagHierarchy(data.Tags, string(tagNode.Tag))
-		}
-		if mentionNode, ok := n.(*mast.MentionNode); ok {
-			data.Mentions = append(data.Mentions, string(mentionNode.Username))
 		}
 		if imageNode, ok := n.(*gast.Image); ok {
 			destination := string(imageNode.Destination)
@@ -468,7 +452,6 @@ func (s *service) ExtractAll(content []byte) (*ExtractedData, error) {
 
 	// Deduplicate tags while preserving original case
 	data.Tags = uniquePreserveCase(data.Tags)
-	data.Mentions = uniquePreserveCase(data.Mentions)
 	data.ManagedAttachmentReferences = uniqueManagedAttachmentReferences(data.ManagedAttachmentReferences)
 	data.InvalidManagedAttachmentReferences = uniquePreserveCase(data.InvalidManagedAttachmentReferences)
 

@@ -13,12 +13,30 @@ func TestMain(m *testing.M) {
 	// If DRIVER is set, run tests for that driver only
 	if os.Getenv("DRIVER") != "" {
 		defer TerminateContainers()
-		m.Run() //nolint:revive // Exit code is handled by test runner
+		os.Exit(m.Run())
+		return
+	}
+
+	// -count=0 (and -c) only need packages to compile; skip the multi-driver reexec.
+	if testingCompileOnly() {
+		os.Exit(m.Run())
 		return
 	}
 
 	// No DRIVER set - run tests for all drivers sequentially
 	runAllDrivers()
+}
+
+func testingCompileOnly() bool {
+	for i, arg := range os.Args {
+		if arg == "-test.count=0" || arg == "-count=0" {
+			return true
+		}
+		if (arg == "-test.count" || arg == "-count") && i+1 < len(os.Args) && os.Args[i+1] == "0" {
+			return true
+		}
+	}
+	return false
 }
 
 func runAllDrivers() {
@@ -28,8 +46,6 @@ func runAllDrivers() {
 		env   []string
 	}{
 		{"sqlite", []string{"DRIVER=sqlite"}},
-		{"mysql", []string{"DRIVER=mysql"}},
-		{"postgres", []string{"DRIVER=postgres"}},
 	}
 	_, currentFile, _, _ := runtime.Caller(0)
 	projectRoot := filepath.Dir(filepath.Dir(filepath.Dir(currentFile)))

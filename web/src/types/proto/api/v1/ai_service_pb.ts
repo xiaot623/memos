@@ -5,7 +5,6 @@
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_google_api_annotations } from "../../google/api/annotations_pb";
-import { file_google_api_client } from "../../google/api/client_pb";
 import { file_google_api_field_behavior } from "../../google/api/field_behavior_pb";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -13,92 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file api/v1/ai_service.proto.
  */
 export const file_api_v1_ai_service: GenFile = /*@__PURE__*/
-  fileDesc("ChdhcGkvdjEvYWlfc2VydmljZS5wcm90bxIMbWVtb3MuYXBpLnYxIkkKEVRyYW5zY3JpYmVSZXF1ZXN0EjQKBWF1ZGlvGAEgASgLMiAubWVtb3MuYXBpLnYxLlRyYW5zY3JpcHRpb25BdWRpb0ID4EECIncKElRyYW5zY3JpcHRpb25BdWRpbxIWCgdjb250ZW50GAEgASgMQgPgQQRIABINCgN1cmkYAiABKAlIABIVCghmaWxlbmFtZRgDIAEoCUID4EEBEhkKDGNvbnRlbnRfdHlwZRgEIAEoCUID4EEBQggKBnNvdXJjZSIiChJUcmFuc2NyaWJlUmVzcG9uc2USDAoEdGV4dBgBIAEoCSI2ChpMaXN0RW1iZWRkaW5nTW9kZWxzUmVxdWVzdBIYCgtwcm92aWRlcl9pZBgBIAEoCUID4EECIksKG0xpc3RFbWJlZGRpbmdNb2RlbHNSZXNwb25zZRIsCgZtb2RlbHMYASADKAsyHC5tZW1vcy5hcGkudjEuRW1iZWRkaW5nTW9kZWwiKwoORW1iZWRkaW5nTW9kZWwSCgoCaWQYASABKAkSDQoFdGl0bGUYAiABKAkylwIKCUFJU2VydmljZRJ5CgpUcmFuc2NyaWJlEh8ubWVtb3MuYXBpLnYxLlRyYW5zY3JpYmVSZXF1ZXN0GiAubWVtb3MuYXBpLnYxLlRyYW5zY3JpYmVSZXNwb25zZSIo2kEFYXVkaW+C0+STAho6ASoiFS9hcGkvdjEvYWk6dHJhbnNjcmliZRKOAQoTTGlzdEVtYmVkZGluZ01vZGVscxIoLm1lbW9zLmFwaS52MS5MaXN0RW1iZWRkaW5nTW9kZWxzUmVxdWVzdBopLm1lbW9zLmFwaS52MS5MaXN0RW1iZWRkaW5nTW9kZWxzUmVzcG9uc2UiIoLT5JMCHBIaL2FwaS92MS9haS9lbWJlZGRpbmdNb2RlbHNCpgEKEGNvbS5tZW1vcy5hcGkudjFCDkFpU2VydmljZVByb3RvUAFaMGdpdGh1Yi5jb20vdXNlbWVtb3MvbWVtb3MvcHJvdG8vZ2VuL2FwaS92MTthcGl2MaICA01BWKoCDE1lbW9zLkFwaS5WMcoCDE1lbW9zXEFwaVxWMeICGE1lbW9zXEFwaVxWMVxHUEJNZXRhZGF0YeoCDk1lbW9zOjpBcGk6OlYxYgZwcm90bzM", [file_google_api_annotations, file_google_api_client, file_google_api_field_behavior]);
-
-/**
- * @generated from message memos.api.v1.TranscribeRequest
- */
-export type TranscribeRequest = Message<"memos.api.v1.TranscribeRequest"> & {
-  /**
-   * Required. Audio input.
-   *
-   * @generated from field: memos.api.v1.TranscriptionAudio audio = 1;
-   */
-  audio?: TranscriptionAudio | undefined;
-};
-
-/**
- * Describes the message memos.api.v1.TranscribeRequest.
- * Use `create(TranscribeRequestSchema)` to create a new message.
- */
-export const TranscribeRequestSchema: GenMessage<TranscribeRequest> = /*@__PURE__*/
-  messageDesc(file_api_v1_ai_service, 0);
-
-/**
- * @generated from message memos.api.v1.TranscriptionAudio
- */
-export type TranscriptionAudio = Message<"memos.api.v1.TranscriptionAudio"> & {
-  /**
-   * @generated from oneof memos.api.v1.TranscriptionAudio.source
-   */
-  source: {
-    /**
-     * Inline audio bytes.
-     *
-     * @generated from field: bytes content = 1;
-     */
-    value: Uint8Array;
-    case: "content";
-  } | {
-    /**
-     * URI for audio content. Reserved for future use.
-     *
-     * @generated from field: string uri = 2;
-     */
-    value: string;
-    case: "uri";
-  } | { case: undefined; value?: undefined };
-
-  /**
-   * Optional. The uploaded filename.
-   *
-   * @generated from field: string filename = 3;
-   */
-  filename: string;
-
-  /**
-   * Optional. The MIME type of the input audio.
-   *
-   * @generated from field: string content_type = 4;
-   */
-  contentType: string;
-};
-
-/**
- * Describes the message memos.api.v1.TranscriptionAudio.
- * Use `create(TranscriptionAudioSchema)` to create a new message.
- */
-export const TranscriptionAudioSchema: GenMessage<TranscriptionAudio> = /*@__PURE__*/
-  messageDesc(file_api_v1_ai_service, 1);
-
-/**
- * @generated from message memos.api.v1.TranscribeResponse
- */
-export type TranscribeResponse = Message<"memos.api.v1.TranscribeResponse"> & {
-  /**
-   * The transcribed text.
-   *
-   * @generated from field: string text = 1;
-   */
-  text: string;
-};
-
-/**
- * Describes the message memos.api.v1.TranscribeResponse.
- * Use `create(TranscribeResponseSchema)` to create a new message.
- */
-export const TranscribeResponseSchema: GenMessage<TranscribeResponse> = /*@__PURE__*/
-  messageDesc(file_api_v1_ai_service, 2);
+  fileDesc("ChdhcGkvdjEvYWlfc2VydmljZS5wcm90bxIMbWVtb3MuYXBpLnYxIjYKGkxpc3RFbWJlZGRpbmdNb2RlbHNSZXF1ZXN0EhgKC3Byb3ZpZGVyX2lkGAEgASgJQgPgQQIiSwobTGlzdEVtYmVkZGluZ01vZGVsc1Jlc3BvbnNlEiwKBm1vZGVscxgBIAMoCzIcLm1lbW9zLmFwaS52MS5FbWJlZGRpbmdNb2RlbCIrCg5FbWJlZGRpbmdNb2RlbBIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCTKcAQoJQUlTZXJ2aWNlEo4BChNMaXN0RW1iZWRkaW5nTW9kZWxzEigubWVtb3MuYXBpLnYxLkxpc3RFbWJlZGRpbmdNb2RlbHNSZXF1ZXN0GikubWVtb3MuYXBpLnYxLkxpc3RFbWJlZGRpbmdNb2RlbHNSZXNwb25zZSIigtPkkwIcEhovYXBpL3YxL2FpL2VtYmVkZGluZ01vZGVsc0KmAQoQY29tLm1lbW9zLmFwaS52MUIOQWlTZXJ2aWNlUHJvdG9QAVowZ2l0aHViLmNvbS91c2VtZW1vcy9tZW1vcy9wcm90by9nZW4vYXBpL3YxO2FwaXYxogIDTUFYqgIMTWVtb3MuQXBpLlYxygIMTWVtb3NcQXBpXFYx4gIYTWVtb3NcQXBpXFYxXEdQQk1ldGFkYXRh6gIOTWVtb3M6OkFwaTo6VjFiBnByb3RvMw", [file_google_api_annotations, file_google_api_field_behavior]);
 
 /**
  * @generated from message memos.api.v1.ListEmbeddingModelsRequest
@@ -117,7 +31,7 @@ export type ListEmbeddingModelsRequest = Message<"memos.api.v1.ListEmbeddingMode
  * Use `create(ListEmbeddingModelsRequestSchema)` to create a new message.
  */
 export const ListEmbeddingModelsRequestSchema: GenMessage<ListEmbeddingModelsRequest> = /*@__PURE__*/
-  messageDesc(file_api_v1_ai_service, 3);
+  messageDesc(file_api_v1_ai_service, 0);
 
 /**
  * @generated from message memos.api.v1.ListEmbeddingModelsResponse
@@ -134,7 +48,7 @@ export type ListEmbeddingModelsResponse = Message<"memos.api.v1.ListEmbeddingMod
  * Use `create(ListEmbeddingModelsResponseSchema)` to create a new message.
  */
 export const ListEmbeddingModelsResponseSchema: GenMessage<ListEmbeddingModelsResponse> = /*@__PURE__*/
-  messageDesc(file_api_v1_ai_service, 4);
+  messageDesc(file_api_v1_ai_service, 1);
 
 /**
  * @generated from message memos.api.v1.EmbeddingModel
@@ -160,22 +74,12 @@ export type EmbeddingModel = Message<"memos.api.v1.EmbeddingModel"> & {
  * Use `create(EmbeddingModelSchema)` to create a new message.
  */
 export const EmbeddingModelSchema: GenMessage<EmbeddingModel> = /*@__PURE__*/
-  messageDesc(file_api_v1_ai_service, 5);
+  messageDesc(file_api_v1_ai_service, 2);
 
 /**
  * @generated from service memos.api.v1.AIService
  */
 export const AIService: GenService<{
-  /**
-   * Transcribe transcribes an audio file using an instance AI provider.
-   *
-   * @generated from rpc memos.api.v1.AIService.Transcribe
-   */
-  transcribe: {
-    methodKind: "unary";
-    input: typeof TranscribeRequestSchema;
-    output: typeof TranscribeResponseSchema;
-  },
   /**
    * ListEmbeddingModels returns embedding models advertised by one configured provider.
    *

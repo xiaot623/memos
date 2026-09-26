@@ -1,5 +1,4 @@
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import type { Location, MemoRelation } from "@/types/proto/api/v1/memo_service_pb";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { LocalFile } from "../types/attachment";
 
@@ -12,8 +11,6 @@ export interface EditorState {
   metadata: {
     visibility: Visibility;
     attachments: Attachment[];
-    relations: MemoRelation[];
-    location?: Location;
   };
   ui: {
     isFocusMode: boolean;
@@ -35,9 +32,6 @@ export interface EditorState {
     updateTime?: Date;
   };
   localFiles: LocalFile[];
-  /** Whether an audio recording is in flight; gates save. The recorder's full
-   *  state lives in useAudioRecorder — only this shared bit reaches the store. */
-  recorderBusy: boolean;
 }
 
 export type EditorAction =
@@ -52,7 +46,6 @@ export type EditorAction =
   | { type: "SET_LOADING"; payload: { key: LoadingKey; value: boolean } }
   | { type: "SET_PENDING_INLINE_IMAGE_INSERTIONS"; payload: number }
   | { type: "SET_TIMESTAMPS"; payload: Partial<EditorState["timestamps"]> }
-  | { type: "SET_RECORDER_BUSY"; payload: boolean }
   | { type: "SET_JUST_SAVED"; payload: boolean }
   | { type: "RESET" };
 
@@ -63,8 +56,6 @@ const defaultState: EditorState = {
   metadata: {
     visibility: Visibility.PRIVATE,
     attachments: [],
-    relations: [],
-    location: undefined,
   },
   ui: {
     isFocusMode: false,
@@ -82,7 +73,6 @@ const defaultState: EditorState = {
     updateTime: undefined,
   },
   localFiles: [],
-  recorderBusy: false,
 };
 
 /** Fresh initial state for a mounting editor. */

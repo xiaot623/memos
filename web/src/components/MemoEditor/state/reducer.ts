@@ -98,12 +98,6 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         },
       };
 
-    case "SET_RECORDER_BUSY":
-      return {
-        ...state,
-        recorderBusy: action.payload,
-      };
-
     case "SET_JUST_SAVED":
       return {
         ...state,

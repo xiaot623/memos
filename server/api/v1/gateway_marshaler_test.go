@@ -118,12 +118,8 @@ func TestGatewayMarshalerKeepsEmptyCollections(t *testing.T) {
 	payload := marshalThroughGateway(t, memo)
 
 	require.Equal(t, []any{}, payload["attachments"])
-	require.Equal(t, []any{}, payload["relations"])
 	require.Equal(t, "", payload["content"])
 	require.Equal(t, false, payload["pinned"])
-	// location is `optional` in the proto, so it is already omitted rather than
-	// null; property has no such marker and would otherwise be null here.
-	require.NotContains(t, payload, "location")
 	require.NotContains(t, payload, "property")
 }
 

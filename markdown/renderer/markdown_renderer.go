@@ -194,14 +194,6 @@ func (r *MarkdownRenderer) renderNode(node gast.Node, source []byte, depth int) 
 			r.buf.WriteByte('\n')
 		}
 
-	case *mast.MentionNode:
-		if len(n.Source) > 0 {
-			r.buf.Write(n.Source)
-		} else {
-			r.buf.WriteByte('@')
-			r.buf.Write(n.Username)
-		}
-
 	default:
 		// For unknown nodes, try to render children
 		r.renderChildren(n, source, depth)

@@ -95,20 +95,6 @@ func (s *APIV1Service) SignIn(ctx context.Context, request *v1pb.SignInRequest) 
 			return nil, status.Errorf(codes.PermissionDenied, "password signin is not allowed")
 		}
 		existingUser = user
-	} else if ssoCredentials := request.GetSsoCredentials(); ssoCredentials != nil {
-		// Authentication Method 2: SSO (OAuth2) authentication
-		identityProvider, userInfo, err := s.resolveSSOIdentity(ctx, ssoCredentials.IdpName, ssoCredentials.Code, ssoCredentials.RedirectUri, ssoCredentials.CodeVerifier)
-		if err != nil {
-			// A rejected exchange is a credential failure and stays counted.
-			return nil, err
-		}
-		user, err := s.resolveSSOUser(ctx, nil, identityProvider, userInfo)
-		if err != nil {
-			// The credential was valid; whatever refused provisioning is not a guess.
-			attempt.succeeded()
-			return nil, err
-		}
-		existingUser = user
 	}
 
 	if existingUser == nil {
@@ -133,15 +119,3 @@ func (s *APIV1Service) SignIn(ctx context.Context, request *v1pb.SignInRequest) 
 		AccessTokenExpiresAt: timestamppb.New(accessExpiresAt),
 	}, nil
 }
-
-// resolveSSOUser resolves a local user from an external-identity subject, creating the
-// linkage record (and a new local user if necessary) when first login is allowed.
-//
-// Lookup goes through the user_identity table instead of using userInfo.Identifier
-// as the local lookup key. On the miss path, a local user is created with the
-// identifier as its username when valid and available, or a UUID fallback
-// otherwise, and the (provider, extern_uid) linkage is committed atomically with
-// the user. When currentUser is provided by a caller outside AuthService.SignIn,
-// the lookup miss path binds the external identity to that existing user instead.
-// Concurrent first logins reconcile uniqueness conflicts by loading the linkage
-// winner.

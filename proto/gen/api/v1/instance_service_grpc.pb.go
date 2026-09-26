@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,7 +23,6 @@ const (
 	InstanceService_GetInstanceSetting_FullMethodName       = "/memos.api.v1.InstanceService/GetInstanceSetting"
 	InstanceService_BatchGetInstanceSettings_FullMethodName = "/memos.api.v1.InstanceService/BatchGetInstanceSettings"
 	InstanceService_UpdateInstanceSetting_FullMethodName    = "/memos.api.v1.InstanceService/UpdateInstanceSetting"
-	InstanceService_TestInstanceEmailSetting_FullMethodName = "/memos.api.v1.InstanceService/TestInstanceEmailSetting"
 	InstanceService_GetInstanceStats_FullMethodName         = "/memos.api.v1.InstanceService/GetInstanceStats"
 )
 
@@ -40,8 +38,6 @@ type InstanceServiceClient interface {
 	BatchGetInstanceSettings(ctx context.Context, in *BatchGetInstanceSettingsRequest, opts ...grpc.CallOption) (*BatchGetInstanceSettingsResponse, error)
 	// Updates an instance setting.
 	UpdateInstanceSetting(ctx context.Context, in *UpdateInstanceSettingRequest, opts ...grpc.CallOption) (*InstanceSetting, error)
-	// Tests notification email delivery with the provided or stored SMTP settings.
-	TestInstanceEmailSetting(ctx context.Context, in *TestInstanceEmailSettingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// GetInstanceStats returns resource usage statistics for the instance. Admin only.
 	GetInstanceStats(ctx context.Context, in *GetInstanceStatsRequest, opts ...grpc.CallOption) (*InstanceStats, error)
 }
@@ -94,16 +90,6 @@ func (c *instanceServiceClient) UpdateInstanceSetting(ctx context.Context, in *U
 	return out, nil
 }
 
-func (c *instanceServiceClient) TestInstanceEmailSetting(ctx context.Context, in *TestInstanceEmailSettingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, InstanceService_TestInstanceEmailSetting_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *instanceServiceClient) GetInstanceStats(ctx context.Context, in *GetInstanceStatsRequest, opts ...grpc.CallOption) (*InstanceStats, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(InstanceStats)
@@ -126,8 +112,6 @@ type InstanceServiceServer interface {
 	BatchGetInstanceSettings(context.Context, *BatchGetInstanceSettingsRequest) (*BatchGetInstanceSettingsResponse, error)
 	// Updates an instance setting.
 	UpdateInstanceSetting(context.Context, *UpdateInstanceSettingRequest) (*InstanceSetting, error)
-	// Tests notification email delivery with the provided or stored SMTP settings.
-	TestInstanceEmailSetting(context.Context, *TestInstanceEmailSettingRequest) (*emptypb.Empty, error)
 	// GetInstanceStats returns resource usage statistics for the instance. Admin only.
 	GetInstanceStats(context.Context, *GetInstanceStatsRequest) (*InstanceStats, error)
 	mustEmbedUnimplementedInstanceServiceServer()
@@ -151,9 +135,6 @@ func (UnimplementedInstanceServiceServer) BatchGetInstanceSettings(context.Conte
 }
 func (UnimplementedInstanceServiceServer) UpdateInstanceSetting(context.Context, *UpdateInstanceSettingRequest) (*InstanceSetting, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateInstanceSetting not implemented")
-}
-func (UnimplementedInstanceServiceServer) TestInstanceEmailSetting(context.Context, *TestInstanceEmailSettingRequest) (*emptypb.Empty, error) {
-	return nil, status.Error(codes.Unimplemented, "method TestInstanceEmailSetting not implemented")
 }
 func (UnimplementedInstanceServiceServer) GetInstanceStats(context.Context, *GetInstanceStatsRequest) (*InstanceStats, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetInstanceStats not implemented")
@@ -251,24 +232,6 @@ func _InstanceService_UpdateInstanceSetting_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _InstanceService_TestInstanceEmailSetting_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TestInstanceEmailSettingRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(InstanceServiceServer).TestInstanceEmailSetting(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: InstanceService_TestInstanceEmailSetting_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(InstanceServiceServer).TestInstanceEmailSetting(ctx, req.(*TestInstanceEmailSettingRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _InstanceService_GetInstanceStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetInstanceStatsRequest)
 	if err := dec(in); err != nil {
@@ -309,10 +272,6 @@ var InstanceService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateInstanceSetting",
 			Handler:    _InstanceService_UpdateInstanceSetting_Handler,
-		},
-		{
-			MethodName: "TestInstanceEmailSetting",
-			Handler:    _InstanceService_TestInstanceEmailSetting_Handler,
 		},
 		{
 			MethodName: "GetInstanceStats",

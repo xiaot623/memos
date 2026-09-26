@@ -16,7 +16,6 @@ import {
   XIcon,
 } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { LazyLocationPicker } from "@/components/map/LazyLocationPicker";
 import { Button } from "@/components/ui/button";
 import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -207,13 +206,7 @@ const MediaMetadataDetails = ({ id, item, onClose, className }: MediaMetadataDet
                 <MapIcon className="size-3.5" strokeWidth={1.75} aria-hidden="true" />
                 {showMap ? t("attachment-details.actions.hide-map") : t("attachment-details.actions.show-map")}
               </button>
-              {showMap && (
-                <LazyLocationPicker
-                  className="mt-3 h-44 rounded-xl border-white/10"
-                  latlng={{ lat: details.location.latitude, lng: details.location.longitude }}
-                  readonly
-                />
-              )}
+              {showMap && null}
             </DetailSection>
           )}
 

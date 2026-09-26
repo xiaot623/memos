@@ -22,7 +22,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -43,7 +42,6 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
 
   // Derived state
-  const isComment = Boolean(memo.parent);
   const isArchived = memo.state === State.ARCHIVED;
   const canMutateTasks = !readonly && !isArchived && Boolean(memo.property?.hasTaskList);
   const hasOpenTasks = Boolean(memo.property?.hasIncompleteTasks);
@@ -62,7 +60,6 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
     confirmDeleteMemo,
   } = useMemoActionHandlers({
     memo,
-    parentPage: props.parentPage,
     onEdit: props.onEdit,
     setDeleteDialogOpen,
   });
@@ -76,12 +73,10 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
         {/* Edit actions (non-readonly, non-archived) */}
         {!readonly && !isArchived && (
           <>
-            {!isComment && (
-              <DropdownMenuItem onClick={handleTogglePinMemoBtnClick}>
-                {memo.pinned ? <BookmarkMinusIcon /> : <BookmarkPlusIcon />}
-                {memo.pinned ? t("common.unpin") : t("common.pin")}
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem onClick={handleTogglePinMemoBtnClick}>
+              {memo.pinned ? <BookmarkMinusIcon /> : <BookmarkPlusIcon />}
+              {memo.pinned ? t("common.unpin") : t("common.pin")}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleEditMemoClick}>
               <Edit3Icon />
               {t("common.edit")}
@@ -129,24 +124,14 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
           </DropdownMenuSub>
         )}
 
-        {!readonly && !isComment && (
+        {!readonly && (
           <DropdownMenuItem onClick={handleToggleMemoStatusClick}>
             {isArchived ? <ArchiveRestoreIcon /> : <ArchiveIcon />}
             {isArchived ? t("common.restore") : t("common.archive")}
           </DropdownMenuItem>
         )}
 
-        {isComment && !readonly && (
-          <>
-            {!isArchived && <DropdownMenuSeparator />}
-            <DropdownMenuItem onClick={handleDeleteMemoClick}>
-              <TrashIcon />
-              {t("common.delete")}
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {!isComment && (canMove || !readonly) && (
+        {(canMove || !readonly) && (
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <MoreHorizontalIcon />

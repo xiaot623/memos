@@ -16,7 +16,6 @@ const SAVED_CONFIRMATION_MS = 900;
 
 interface UseMemoSaveOptions {
   memoName?: string;
-  parentMemoName?: string;
   defaultSpace?: string;
   defaultVisibility?: Visibility;
   defaultCreateTime?: Date;
@@ -41,7 +40,6 @@ export interface SaveMemoOptions {
  */
 export function useMemoSave({
   memoName,
-  parentMemoName,
   defaultSpace,
   defaultVisibility,
   defaultCreateTime,
@@ -75,10 +73,6 @@ export function useMemoSave({
         if (memoName) {
           invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(memoName) }));
         }
-        if (parentMemoName) {
-          invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.comments(parentMemoName) }));
-          invalidationPromises.push(queryClient.invalidateQueries({ queryKey: memoKeys.detail(parentMemoName) }));
-        }
         return invalidationPromises;
       };
 
@@ -89,7 +83,7 @@ export function useMemoSave({
         onSavingChange?.(true);
         onConfirm?.(memoName ?? "");
         try {
-          const result = await memoService.save(state, { memoName, parentMemoName, space: defaultSpace });
+          const result = await memoService.save(state, { memoName, space: defaultSpace });
           if (!result.hasChanges) return;
           await Promise.all(invalidateAfterSave());
         } catch (error) {
@@ -106,7 +100,7 @@ export function useMemoSave({
       dispatch(actions.setLoading("saving", true));
 
       try {
-        const result = await memoService.save(state, { memoName, parentMemoName, space: defaultSpace });
+        const result = await memoService.save(state, { memoName, space: defaultSpace });
 
         if (!result.hasChanges) {
           if (!options?.closeIfUnchanged) {
@@ -119,7 +113,7 @@ export function useMemoSave({
         discardDraft();
 
         const invalidationPromises = invalidateAfterSave();
-        if (memoName || parentMemoName) {
+        if (memoName) {
           dispatch(actions.setLoading("saving", false));
           dispatch(actions.setJustSaved(true));
           invalidationPromises.push(new Promise((resolve) => setTimeout(resolve, SAVED_CONFIRMATION_MS)));
@@ -134,7 +128,7 @@ export function useMemoSave({
           dispatch(actions.setTimestamps({ createTime: defaultCreateTime, updateTime: defaultCreateTime }));
         }
 
-        if (!memoName && !parentMemoName) {
+        if (!memoName) {
           markNewMemo(result.memoName);
         }
         onConfirm?.(result.memoName);
@@ -161,7 +155,6 @@ export function useMemoSave({
       onCancel,
       onConfirm,
       onSavingChange,
-      parentMemoName,
       queryClient,
       t,
     ],

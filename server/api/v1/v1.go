@@ -14,8 +14,6 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/semaphore"
 
-	"github.com/usememos/memos/core/notification"
-	"github.com/usememos/memos/internal/linkmeta"
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/ratelimit"
 	"github.com/usememos/memos/markdown"
@@ -40,7 +38,6 @@ const maxGeneralRequestBytes = 16 << 20
 // against the instance upload limit.
 var inlineContentProcedures = map[string]struct{}{
 	"/memos.api.v1.AttachmentService/CreateAttachment": {},
-	"/memos.api.v1.AIService/Transcribe":               {},
 }
 
 // requestBodyLimit returns the request body cap for a procedure. Chunked
@@ -63,14 +60,12 @@ type APIV1Service struct {
 	v1pb.UnimplementedSpaceServiceServer
 	v1pb.UnimplementedAttachmentServiceServer
 	v1pb.UnimplementedAIServiceServer
-	v1pb.UnimplementedIdentityProviderServiceServer
 
-	Secret                  string
-	Profile                 *profile.Profile
-	Store                   *store.Store
-	MarkdownService         markdown.Service
-	SSEHub                  *SSEHub
-	NotificationEmailSender notification.EmailSender
+	Secret          string
+	Profile         *profile.Profile
+	Store           *store.Store
+	MarkdownService markdown.Service
+	SSEHub          *SSEHub
 
 	// RateLimiter bounds request rates; nil disables every limit.
 	RateLimiter ratelimit.Limiter
@@ -88,31 +83,26 @@ type APIV1Service struct {
 	// instanceStatsCache memoizes GetInstanceStats results for instanceStatsCacheTTL.
 	instanceStatsCache instanceStatsCache
 
-	linkMetadataFetcher linkMetadataFetcher
-	attachmentUploads   attachmentUploads
-	memoImports         memoImports
-	semantic            *semanticIndex
+	attachmentUploads attachmentUploads
+	memoImports       memoImports
+	semantic          *semanticIndex
 }
 
 // NewAPIV1Service creates an API v1 service with its shared dependencies.
 func NewAPIV1Service(secret string, profile *profile.Profile, store *store.Store) *APIV1Service {
 	markdownService := markdown.NewService(
 		markdown.WithTagExtension(),
-		markdown.WithMentionExtension(),
 	)
-	service := &APIV1Service{
+	return &APIV1Service{
 		Secret:                   secret,
 		Profile:                  profile,
 		Store:                    store,
 		MarkdownService:          markdownService,
 		SSEHub:                   NewSSEHub(),
-		NotificationEmailSender:  nil,
 		RateLimiter:              newProfileRateLimiter(profile),
 		thumbnailSemaphore:       semaphore.NewWeighted(3), // Limit to 3 concurrent thumbnail generations
 		imageProcessingSemaphore: semaphore.NewWeighted(2),
 	}
-	service.linkMetadataFetcher = linkmeta.NewHTMLMetaFetcher()
-	return service
 }
 
 // newGatewayMarshaler mirrors grpc-gateway's default JSON marshaler with one
@@ -210,9 +200,6 @@ func (s *APIV1Service) RegisterGateway(ctx context.Context, echoServer *echo.Ech
 		return err
 	}
 	if err := v1pb.RegisterAIServiceHandlerServer(ctx, gwMux, s); err != nil {
-		return err
-	}
-	if err := v1pb.RegisterIdentityProviderServiceHandlerServer(ctx, gwMux, s); err != nil {
 		return err
 	}
 	gwGroup := echoServer.Group("")

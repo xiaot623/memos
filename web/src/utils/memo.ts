@@ -1,16 +1,12 @@
-import { Globe2Icon, LockIcon, type LucideIcon, UserLockIcon, UsersIcon } from "lucide-react";
+import { LockIcon, type LucideIcon, UserLockIcon } from "lucide-react";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 
 export interface VisibilityOption {
   value: Visibility;
   /** Proto enum name, as stored in user settings and sent in filter expressions. */
-  name: "PRIVATE" | "SPACE" | "PROTECTED" | "PUBLIC";
-  labelKey: "memo.visibility.private" | "memo.visibility.space" | "memo.visibility.protected" | "memo.visibility.public";
-  descriptionKey:
-    | "memo.visibility.private-description"
-    | "memo.visibility.space-description"
-    | "memo.visibility.protected-description"
-    | "memo.visibility.public-description";
+  name: "PRIVATE" | "SPACE";
+  labelKey: "memo.visibility.private" | "memo.visibility.space";
+  descriptionKey: "memo.visibility.private-description" | "memo.visibility.space-description";
   icon: LucideIcon;
   /** SPACE only means anything inside a Space, so it is offered contextually rather than as a standing choice. */
   requiresSpace: boolean;
@@ -38,22 +34,6 @@ export const VISIBILITY_OPTIONS: readonly VisibilityOption[] = [
     icon: UserLockIcon,
     requiresSpace: true,
   },
-  {
-    value: Visibility.PROTECTED,
-    name: "PROTECTED",
-    labelKey: "memo.visibility.protected",
-    descriptionKey: "memo.visibility.protected-description",
-    icon: UsersIcon,
-    requiresSpace: false,
-  },
-  {
-    value: Visibility.PUBLIC,
-    name: "PUBLIC",
-    labelKey: "memo.visibility.public",
-    descriptionKey: "memo.visibility.public-description",
-    icon: Globe2Icon,
-    requiresSpace: false,
-  },
 ];
 
 export const getVisibilityOption = (visibility: Visibility): VisibilityOption | undefined =>
@@ -71,6 +51,6 @@ export const getAssignableVisibilityOptions = (options: { hasSpacePlacement: boo
 export const DEFAULT_VISIBILITY_OPTIONS: readonly VisibilityOption[] = VISIBILITY_OPTIONS.filter((option) => !option.requiresSpace);
 
 export const convertVisibilityFromString = (visibility: string) =>
-  VISIBILITY_OPTIONS.find((option) => option.name === visibility)?.value ?? Visibility.PUBLIC;
+  VISIBILITY_OPTIONS.find((option) => option.name === visibility)?.value ?? Visibility.PRIVATE;
 
 export const convertVisibilityToString = (visibility: Visibility) => getVisibilityOption(visibility)?.name ?? "PRIVATE";

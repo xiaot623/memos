@@ -1,13 +1,11 @@
 import { equals } from "@bufbuild/protobuf";
 import { useCallback, useEffect, useRef } from "react";
 import { AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
-import { LocationSchema } from "@/types/proto/api/v1/memo_service_pb";
 import { cacheService, type EditorDraft } from "../services";
 import { useEditorStore } from "../state";
 
 const sameDraft = (left: EditorDraft, right: EditorDraft): boolean =>
   left.content === right.content &&
-  (left.location === right.location || (!!left.location && !!right.location && equals(LocationSchema, left.location, right.location))) &&
   left.attachments.length === right.attachments.length &&
   left.attachments.every((attachment, index) => {
     const other = right.attachments[index];
@@ -26,7 +24,6 @@ export const useAutoSave = (username: string, cacheKey: string | undefined, enab
   const latestDraftRef = useRef<EditorDraft>({
     content: initialState.content,
     attachments: initialState.metadata.attachments,
-    location: initialState.metadata.location ?? null,
   });
   const discardedDraftRef = useRef<EditorDraft | undefined>(undefined);
 
@@ -39,18 +36,17 @@ export const useAutoSave = (username: string, cacheKey: string | undefined, enab
       if (discardedDraftRef.current !== undefined && !sameDraft(discardedDraftRef.current, draft)) {
         discardedDraftRef.current = undefined;
       }
-      cacheService.save(key, draft.content, draft.attachments, draft.location);
+      cacheService.save(key, draft.content, draft.attachments);
     };
 
     // Persist the current draft on mount/enable, then on every relevant change.
     const state = store.getState();
-    persist({ content: state.content, attachments: state.metadata.attachments, location: state.metadata.location ?? null });
+    persist({ content: state.content, attachments: state.metadata.attachments });
     return store.subscribe(() => {
       const nextState = store.getState();
       const draft = {
         content: nextState.content,
         attachments: nextState.metadata.attachments,
-        location: nextState.metadata.location ?? null,
       };
       if (!sameDraft(draft, latestDraftRef.current)) {
         persist(draft);
@@ -67,7 +63,7 @@ export const useAutoSave = (username: string, cacheKey: string | undefined, enab
         return;
       }
 
-      cacheService.saveNow(key, latestDraftRef.current.content, latestDraftRef.current.attachments, latestDraftRef.current.location);
+      cacheService.saveNow(key, latestDraftRef.current.content, latestDraftRef.current.attachments);
     };
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
@@ -79,19 +75,15 @@ export const useAutoSave = (username: string, cacheKey: string | undefined, enab
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      // Flush on unmount (e.g. editor closes) to ensure the draft is persisted
-      // before the component is torn down — distinct from the visibility flush above.
-      flushDraft();
       window.removeEventListener("pagehide", flushDraft);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [store, username, cacheKey, enabled]);
+  }, [username, cacheKey, enabled]);
 
-  const discardDraft = useCallback(() => {
-    const key = cacheService.key(username, cacheKey);
+  const discard = useCallback(() => {
     discardedDraftRef.current = latestDraftRef.current;
-    cacheService.clear(key);
+    cacheService.clear(cacheService.key(username, cacheKey));
   }, [username, cacheKey]);
 
-  return { discardDraft };
+  return { discard };
 };
