@@ -9,7 +9,7 @@ export const SIDEBAR_SECTION_ACTION_ICON_CLASSES = "size-3.5";
 interface Props {
   label?: ReactNode;
   ariaLabel?: string;
-  children: ReactNode;
+  children?: ReactNode;
   action?: ReactNode;
 }
 
@@ -17,7 +17,7 @@ const SidebarSection = ({ label, ariaLabel, children, action }: Props) => (
   <section className="w-full" aria-label={ariaLabel}>
     {label !== undefined && <SidebarSectionHeader action={action}>{label}</SidebarSectionHeader>}
     {/* Flex gap keeps popup focus guards from affecting the visible row rhythm. */}
-    <div className={SIDEBAR_SECTION_CONTENT_CLASSES}>{children}</div>
+    {children != null && <div className={SIDEBAR_SECTION_CONTENT_CLASSES}>{children}</div>}
   </section>
 );
 

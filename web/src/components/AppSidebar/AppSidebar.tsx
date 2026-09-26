@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MemoDetailSidebar } from "@/components/MemoDetailSidebar";
+import MemoDisplaySettingMenu from "@/components/MemoDisplaySettingMenu";
 import { DEFAULT_SETTING_SECTION, SETTINGS_SECTIONS } from "@/components/Settings/settingSections";
 import StatisticsView from "@/components/StatisticsView";
 import UserMenu from "@/components/UserMenu";
@@ -93,6 +94,7 @@ const CollectionSidebarContent = ({ context }: { context: MemoStatsContext }) =>
       <SidebarSection ariaLabel={t("common.statistics")}>
         <StatisticsView statisticsData={statistics} onDateSelect={() => setMobileOpen(false)} />
       </SidebarSection>
+      <SidebarSection label={t("memo.view-options")} action={<MemoDisplaySettingMenu />} />
       <TagsSection tagCount={tags} scope={tagStateScope} onSelect={() => setMobileOpen(false)} />
     </div>
   );
