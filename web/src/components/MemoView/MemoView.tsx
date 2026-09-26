@@ -12,12 +12,12 @@ import {
 } from "react";
 import { useLocation } from "react-router-dom";
 import type { MarkdownCaretPoint } from "@/components/MarkdownRuntime/focus";
-import { useResolvedUser } from "@/components/MemoContent/MentionResolutionContext";
 import { loadMemoEditor } from "@/components/MemoEditor/loader";
 import type { MemoEditorProps } from "@/components/MemoEditor/types";
 import { useAuth } from "@/contexts/AuthContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useUpdateMemo } from "@/hooks/useMemoQueries";
+import { useUser } from "@/hooks/useUserQueries";
 import { isMemoBlurred } from "@/lib/tag";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
@@ -54,7 +54,9 @@ const MemoView = forwardRef<MemoViewHandle, MemoViewProps>((props, ref) => {
 
   const currentUser = useCurrentUser();
   const { userTagsSetting } = useAuth();
-  const creator = useResolvedUser(memoData.creator);
+  const { data: creator } = useUser(memoData.creator, {
+    enabled: Boolean(showCreator && memoData.creator),
+  });
   const isArchived = memoData.state === State.ARCHIVED;
   const readonly = !canManageMemo(memoData, currentUser);
   const canEdit = !readonly && !isArchived;

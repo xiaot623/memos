@@ -27,8 +27,10 @@ const Home = () => {
   // has to be rebuilt for the new Space rather than just re-pointed at another cache.
   const editorCacheKey = spaceScopedCacheKey("home-memo-editor", selectedSpaceName);
 
+  // A Space feed lists every memo the viewer can read there. Personal home stays
+  // the signed-in user's own memos; the server still hides other people's PRIVATE notes.
   const memoFilter = useMemoFilters({
-    creatorName: user?.name,
+    creatorName: selectedSpaceName ? undefined : user?.name,
     includeMemoViews: true,
     includePinned: true,
   });
@@ -43,7 +45,15 @@ const Home = () => {
       <NewMemoProvider>
         <PagedMemoList
           renderer={(memo: Memo, { compact }) => (
-            <MemoView key={getMemoKey(memo)} memo={memo} showVisibility showPinned showSpace={!selectedSpaceName} compact={compact} />
+            <MemoView
+              key={getMemoKey(memo)}
+              memo={memo}
+              showCreator={Boolean(selectedSpaceName)}
+              showVisibility
+              showPinned
+              showSpace={!selectedSpaceName}
+              compact={compact}
+            />
           )}
           listSort={listSort}
           orderBy={orderBy}

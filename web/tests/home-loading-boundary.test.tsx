@@ -6,6 +6,8 @@ const state = vi.hoisted(() => ({
   selectedSpaceName: undefined as string | undefined,
   editorProps: undefined as Record<string, unknown> | undefined,
   listProps: undefined as Record<string, unknown> | undefined,
+  memoViewProps: undefined as Record<string, unknown> | undefined,
+  memoFilterOptions: undefined as Record<string, unknown> | undefined,
 }));
 
 vi.mock("@/components/MemoEditor", () => ({
@@ -16,7 +18,10 @@ vi.mock("@/components/MemoEditor", () => ({
 }));
 
 vi.mock("@/components/MemoView", () => ({
-  default: () => <div data-testid="memo-view" />,
+  default: (props: Record<string, unknown>) => {
+    state.memoViewProps = props;
+    return <div data-testid="memo-view" />;
+  },
 }));
 
 vi.mock("@/components/PagedMemoList", () => ({
@@ -63,7 +68,10 @@ vi.mock("@/contexts/SpaceContext", () => ({
 }));
 
 vi.mock("@/hooks", () => ({
-  useMemoFilters: () => "",
+  useMemoFilters: (options: Record<string, unknown>) => {
+    state.memoFilterOptions = options;
+    return "";
+  },
   useMemoSorting: () => ({ listSort: undefined, orderBy: "create_time desc" }),
 }));
 
@@ -83,6 +91,8 @@ describe("<Home>", () => {
     expect(screen.getByTestId("memo-editor")).toBeInTheDocument();
     expect(screen.getByTestId("memo-view")).toBeInTheDocument();
     expect(state.listProps).toMatchObject({ contextFilter: undefined });
+    expect(state.memoFilterOptions).toMatchObject({ creatorName: "users/1" });
+    expect(state.memoViewProps).toMatchObject({ showCreator: false });
     expect(state.editorProps).toMatchObject({ cacheKey: "home-memo-editor", defaultSpace: undefined });
     expect(state.editorProps?.autoFocus).toEqual(expect.any(Function));
   });
@@ -92,6 +102,8 @@ describe("<Home>", () => {
     render(<Home />);
 
     expect(state.listProps).toMatchObject({ contextFilter: 'space == "spaces/product"' });
+    expect(state.memoFilterOptions).toMatchObject({ creatorName: undefined });
+    expect(state.memoViewProps).toMatchObject({ showCreator: true });
     expect(state.editorProps).toMatchObject({
       cacheKey: "home-memo-editor:spaces/product",
       defaultSpace: "spaces/product",

@@ -15,8 +15,6 @@ export const MentionResolutionProvider = ({
   userNames?: string[];
 }) => <MentionResolutionContext.Provider value={new Map()}>{children}</MentionResolutionContext.Provider>;
 
-export const useResolvedUser = (_name?: string): User | undefined => undefined;
-
 export const useResolvedUsersByNames = (_names: string[]): Map<string, User | undefined> => {
   return useContext(MentionResolutionContext);
 };

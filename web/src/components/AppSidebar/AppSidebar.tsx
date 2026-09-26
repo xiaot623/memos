@@ -77,11 +77,14 @@ const CollectionSidebarContent = ({ context }: { context: MemoStatsContext }) =>
   const { isInitialized: instanceInitialized } = useInstance();
   const statsUserName = context === "home" || context === "archived" ? currentUser?.name : undefined;
   const isUserLevelCollection = context === "archived";
+  // Space home counts every memo the viewer can read, matching the feed.
+  const sharedSpaceFeed = context === "home" && Boolean(selectedSpaceName);
   const collectionFilter = isUserLevelCollection ? undefined : memoFilter;
   const { statistics, tags } = useFilteredMemoStats({
     context,
-    userName: statsUserName,
+    userName: sharedSpaceFeed ? undefined : statsUserName,
     filter: collectionFilter,
+    shared: sharedSpaceFeed,
     enabled: authInitialized && instanceInitialized && (md || mobileOpen),
   });
 

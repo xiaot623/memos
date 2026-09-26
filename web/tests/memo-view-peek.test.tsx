@@ -19,10 +19,6 @@ vi.mock("@/components/MemoEditor/loader", () => ({
   loadMemoEditor: mocks.loadMemoEditor,
 }));
 
-vi.mock("@/components/MemoContent/MentionResolutionContext", () => ({
-  useResolvedUser: () => undefined,
-}));
-
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ userTagsSetting: undefined }),
 }));

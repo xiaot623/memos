@@ -23,6 +23,8 @@ export interface UseFilteredMemoStatsOptions {
   context?: MemoStatsContext;
   enabled?: boolean;
   filter?: string;
+  /** Merge every creator the viewer can read. Used by a Space feed. */
+  shared?: boolean;
 }
 
 const toDateString = (date: Date) => dayjs(date).format("YYYY-MM-DD");
@@ -38,51 +40,46 @@ const timestampsForBasis = (stats: UserStats, basis: MemoTimeBasis) => {
   return wantUpdated && !oldServerFallback ? updatedArray : createdArray;
 };
 
+const activityFromStats = (statsList: UserStats[], timeBasis: MemoTimeBasis) => {
+  const displayDates: string[] = [];
+  for (const stats of statsList) {
+    displayDates.push(
+      ...timestampsForBasis(stats, timeBasis)
+        .map((ts) => (ts ? timestampDate(ts) : undefined))
+        .filter((date): date is Date => date !== undefined)
+        .map(toDateString),
+    );
+  }
+  return {
+    activityStats: countBy(displayDates),
+    tags: mergeTagCounts(...statsList.map((stats) => stats.tagCount)),
+  };
+};
+
 export const useFilteredMemoStats = (options: UseFilteredMemoStatsOptions = {}): FilteredMemoStats => {
-  const { userName, context, enabled = true, filter } = options;
+  const { userName, context, enabled = true, filter, shared = false } = options;
   const currentUser = useCurrentUser();
   const { timeBasis } = useView();
+  const aggregate = shared || context === "archived";
 
-  const { data: userStats, isLoading: isLoadingUserStats } = useUserStats(userName, { enabled, filter });
-  const shouldFetchAllUserStats = context === "archived" && !!currentUser?.name;
+  const { data: userStats, isLoading: isLoadingUserStats } = useUserStats(userName, { enabled: enabled && !aggregate, filter });
+  const shouldFetchAllUserStats = aggregate && !!currentUser?.name;
   const { data: allUserStats = [], isLoading: isLoadingAllUserStats } = useAllUserStats(
-    { state: State.ARCHIVED, filter },
+    context === "archived" ? { state: State.ARCHIVED, filter } : { filter },
     { enabled: enabled && shouldFetchAllUserStats },
   );
 
   const data = useMemo(() => {
     const loading = isLoadingUserStats || isLoadingAllUserStats;
-    let activityStats: Record<string, number> = {};
-    let tagCount: Record<string, number> = mergeTagCounts();
-
-    if (context === "archived") {
-      const displayDates: string[] = [];
-      tagCount = mergeTagCounts(...allUserStats.map((stats) => stats.tagCount));
-      for (const stats of allUserStats) {
-        displayDates.push(
-          ...timestampsForBasis(stats, timeBasis)
-            .map((ts) => (ts ? timestampDate(ts) : undefined))
-            .filter((date): date is Date => date !== undefined)
-            .map(toDateString),
-        );
-      }
-      activityStats = countBy(displayDates);
-    } else if (userStats) {
-      tagCount = mergeTagCounts(userStats.tagCount);
-      activityStats = countBy(
-        timestampsForBasis(userStats, timeBasis)
-          .map((ts) => (ts ? timestampDate(ts) : undefined))
-          .filter((date): date is Date => date !== undefined)
-          .map(toDateString),
-      );
-    }
+    const source = aggregate ? allUserStats : userStats ? [userStats] : [];
+    const { activityStats, tags } = activityFromStats(source, timeBasis);
 
     return {
       statistics: { activityStats, timeBasis },
-      tags: tagCount,
+      tags,
       loading,
     };
-  }, [allUserStats, context, isLoadingAllUserStats, isLoadingUserStats, timeBasis, userStats]);
+  }, [aggregate, allUserStats, isLoadingAllUserStats, isLoadingUserStats, timeBasis, userStats]);
 
   return data;
 };
