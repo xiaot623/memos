@@ -401,6 +401,10 @@ message SearchMemosResponse {
 
   // A token that can be sent as `page_token` to retrieve the next page.
   string next_page_token = 2;
+
+  // similarity_scores aligns with memos. Each value is that memo's cosine
+  // similarity, rounded to two decimal places. Higher means more similar.
+  repeated float similarity_scores = 3;
 }
 
 message GetMemoRequest {

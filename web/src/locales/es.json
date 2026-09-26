@@ -238,6 +238,7 @@
     },
     "copy-content": "Copiar contenido",
     "copy-link": "Copiar enlace",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} en {{date}}",
     "delete-confirm": "¿Estás seguro de que quieres eliminar este memo?",
     "delete-confirm-description": "Esta acción es irreversible. Los adjuntos, enlaces y referencias también se eliminarán.",

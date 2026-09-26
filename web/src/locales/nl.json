@@ -238,6 +238,7 @@
     },
     "copy-content": "Inhoud kopiëren",
     "copy-link": "Kopieer link",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} op {{date}}",
     "delete-confirm": "Weet je zeker dat je deze memo wilt verwijderen? DEZE ACTIE IS NIET TERUG TE DRAAIEN",
     "delete-confirm-description": "Deze actie is onomkeerelijk. Bijlagen, links en referenties worden ook verwijderd.",

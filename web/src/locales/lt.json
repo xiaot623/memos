@@ -276,6 +276,7 @@
     },
     "copy-content": "Kopijuoti turinį",
     "copy-link": "Kopijuoti nuorodą",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} {{date}}",
     "count-memos-updated-in-date": "{{count}} {{memos}} atnaujintas {{date}}",
     "delete-confirm": "Ar tikrai norite ištrinti šią atmintinę?",

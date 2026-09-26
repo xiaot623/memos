@@ -277,6 +277,7 @@
     },
     "copy-content": "İçeriği kopyala",
     "copy-link": "Bağlantıyı Kopyala",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{date}} tarihinde {{count}} {{memos}}",
     "delete-confirm": "Bu notu silmek istediğinizden emin misiniz?",
     "delete-confirm-description": "Bu işlem geri alınamaz. Ekler, bağlantılar ve referanslar da kaldırılacaktır.",

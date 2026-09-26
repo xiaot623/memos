@@ -21,6 +21,7 @@ import MemoFilters from "../MemoFilters";
 import Placeholder from "../Placeholder";
 import MemoListError from "./MemoListError";
 import { estimateMemoCardHeight } from "./memoCardHeight";
+import { SemanticScoreContext } from "./semanticScoreContext";
 
 // Memo identity for React keys and grid planning. The pages use it for their renderer keys too,
 // so flow-list and grid identity can never drift apart. Deliberately name-only: content updates
@@ -174,6 +175,17 @@ const PagedMemoList = (props: Props) => {
 
   // Flatten pages into a single array of memos
   const memos = useMemo(() => data?.pages.flatMap((page) => page.memos) || [], [data]);
+  const similarityScores = useMemo(() => {
+    const scores = new Map<string, number>();
+    for (const page of data?.pages ?? []) {
+      const pageScores = "similarityScores" in page ? page.similarityScores : undefined;
+      page.memos.forEach((memo, index) => {
+        const score = pageScores?.[index];
+        if (score !== undefined) scores.set(memo.name, score);
+      });
+    }
+    return scores;
+  }, [data]);
 
   // Apply custom sorting if provided, otherwise use memos directly, then hoist
   // a freshly created memo to the very top so it stays visible above pins.
@@ -315,7 +327,7 @@ const PagedMemoList = (props: Props) => {
     </MentionResolutionProvider>
   );
 
-  return children;
+  return <SemanticScoreContext.Provider value={similarityScores}>{children}</SemanticScoreContext.Provider>;
 };
 
 const BackToTop = () => {

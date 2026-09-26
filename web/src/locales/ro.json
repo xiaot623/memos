@@ -276,6 +276,7 @@
     },
     "copy-content": "Copiați conținut",
     "copy-link": "Copiați linkul",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} în {{date}}",
     "count-memos-updated-in-date": "{{count}} {{memos}} actualizat pe {{date}}",
     "delete-confirm": "Sigur doriți să ștergeți această notă?",

@@ -316,6 +316,7 @@
     },
     "copy-content": "複製內容",
     "copy-link": "複製連結",
+    "similarity-score": "相似度 {{score}}",
     "count-memos-in-date": "{{count}} 條{{memos}}於 {{date}}",
     "count-memos-updated-in-date": "{{count}} 條{{memos}}更新於 {{date}}",
     "delete-confirm": "您確定要刪除此備忘錄嗎？",

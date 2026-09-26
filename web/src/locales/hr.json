@@ -238,6 +238,7 @@
     },
     "copy-content": "Kopiraj sadržaj",
     "copy-link": "Kopiraj link",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} na {{date}}",
     "delete-confirm": "Jesi li siguran da želiš obrisati ovaj memo? OVA AKCIJA JE NEPOVRATNA",
     "delete-confirm-description": "Ova akcija je nepovratna. Privici, linkovi i reference će također biti uklonjeni.",

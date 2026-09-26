@@ -238,6 +238,7 @@
     },
     "copy-content": "Kopírovat obsah",
     "copy-link": "Kopírovat odkaz",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} v {{date}}",
     "delete-confirm": "Opravdu chcete smazat tuto poznámku?",
     "delete-confirm-description": "Tato akce je nevratná. Přílohy, odkazy a reference budou také odstraněny.",

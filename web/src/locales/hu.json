@@ -238,6 +238,7 @@
     },
     "copy-content": "Tartalom másolása",
     "copy-link": "Hivatkozás másolása",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} ezen a napon: {{date}}",
     "delete-confirm": "Biztosan törlöd ezt a jegyzetet? EZ A MŰVELET VÉGLEGES",
     "delete-confirm-description": "Ez a művelet visszafordíthatatlan. A mellékletek, hivatkozások és referenciák is törlődnek.",

@@ -233,6 +233,7 @@
     },
     "copy-content": "Copiar conteúdo",
     "copy-link": "Copiar link",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} em {{date}}",
     "delete-confirm": "Tem certeza de que deseja deletar este memo?\n\nESTA AÇÃO É IRREVERSÍVEL",
     "delete-confirm-description": "Esta ação é irreversível. Anexos, links e referências também serão removidos.",

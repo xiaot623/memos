@@ -276,6 +276,7 @@
     },
     "copy-content": "Kopeeri sisu",
     "copy-link": "Kopeeri link",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} mudelis {{date}}",
     "count-memos-updated-in-date": "{{count}} {{memos}} on värskendatud {{date}}-l",
     "delete-confirm": "Kas olete kindel, et soovite selle memo kustutada?",

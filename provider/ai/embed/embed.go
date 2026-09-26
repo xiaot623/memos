@@ -96,10 +96,12 @@ func embeddingPayload(input Input) (any, error) {
 			return nil, errors.New("image embedding requires a MIME type")
 		}
 		return []map[string]any{{
-			"type": "image_url",
-			"image_url": map[string]any{
-				"url": "data:" + input.ImageMIME + ";base64," + base64.StdEncoding.EncodeToString(input.Image),
-			},
+			"content": []map[string]any{{
+				"type": "image_url",
+				"image_url": map[string]any{
+					"url": "data:" + input.ImageMIME + ";base64," + base64.StdEncoding.EncodeToString(input.Image),
+				},
+			}},
 		}}, nil
 	}
 	return input.Text, nil

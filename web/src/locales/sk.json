@@ -276,6 +276,7 @@
     },
     "copy-content": "Kopírovať obsah",
     "copy-link": "Kopírovať odkaz",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} v {{date}}",
     "count-memos-updated-in-date": "{{count}} {{memos}} aktualizované na {{date}}",
     "delete-confirm": "Naozaj chcete odstrániť túto poznámku?",

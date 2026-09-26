@@ -4685,6 +4685,14 @@ components:
                 nextPageToken:
                     type: string
                     description: A token that can be sent as `page_token` to retrieve the next page.
+                similarityScores:
+                    type: array
+                    items:
+                        type: number
+                        format: float
+                    description: |-
+                        similarity_scores aligns with memos. Each value is that memo's cosine
+                         similarity, rounded to two decimal places. Higher means more similar.
         SetMemoAttachmentsRequest:
             required:
                 - name

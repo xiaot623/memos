@@ -238,6 +238,7 @@
     },
     "copy-content": "კონტენტის კოპირება",
     "copy-link": "ლინკის კოპირება",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} {{date}}-ში",
     "delete-confirm": "დარწმუნებული ხართ, რომ გინდათ ამ მემოს წაშლა? ეს ქმედება შეუქცევადია",
     "delete-confirm-description": "ეს ქმედება შეუქცევადია. დანართები, ლინკები და რეფერენციებიც წაიშლება.",

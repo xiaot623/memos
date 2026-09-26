@@ -233,6 +233,7 @@
     },
     "copy-content": "Salin Konten",
     "copy-link": "Salin Tautan",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} di {{date}}",
     "delete-confirm": "Apakah Anda yakin ingin menghapus memo ini? TINDAKAN INI TIDAK DAPAT DIBATALKAN",
     "delete-confirm-description": "Tindakan ini tidak dapat dibatalkan. Lampiran, tautan, dan referensi juga akan dihapus.",

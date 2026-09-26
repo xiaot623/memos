@@ -276,6 +276,7 @@
     },
     "copy-content": "Kopioi sisältö",
     "copy-link": "Kopioi linkki",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} {{date}}:ssä",
     "count-memos-updated-in-date": "{{count}} {{memos}} päivitetty {{date}}:ään",
     "delete-confirm": "Haluatko varmasti poistaa tämän muistion?",

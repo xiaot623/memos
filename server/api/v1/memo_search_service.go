@@ -48,6 +48,22 @@ func normalizeSemanticScoreThreshold(value float32) (float32, error) {
 	return float32(math.Round(float64(value)*100) / 100), nil
 }
 
+func roundSimilarityScore(score float32) float32 {
+	return float32(math.Round(float64(score)*100) / 100)
+}
+
+func similarityScoresForMemos(memos []*store.Memo, messages []*v1pb.Memo, scores map[int32]float32) []float32 {
+	byName := make(map[string]float32, len(memos))
+	for _, memo := range memos {
+		byName[buildMemoName(memo.UID)] = roundSimilarityScore(scores[memo.ID])
+	}
+	aligned := make([]float32, len(messages))
+	for i, message := range messages {
+		aligned[i] = byName[message.GetName()]
+	}
+	return aligned
+}
+
 func semanticScoreThresholdPointer(value float32) *float32 {
 	copied := value
 	return &copied
@@ -167,7 +183,11 @@ func (s *APIV1Service) SearchMemos(ctx context.Context, request *v1pb.SearchMemo
 			return nil, status.Errorf(codes.Internal, "failed to get next page token: %v", err)
 		}
 	}
-	return &v1pb.SearchMemosResponse{Memos: messages, NextPageToken: nextPageToken}, nil
+	return &v1pb.SearchMemosResponse{
+		Memos:            messages,
+		NextPageToken:    nextPageToken,
+		SimilarityScores: similarityScoresForMemos(page, messages, scores),
+	}, nil
 }
 
 func (s *APIV1Service) memoMessages(ctx context.Context, memos []*store.Memo) ([]*v1pb.Memo, error) {

@@ -348,6 +348,7 @@
     },
     "copy-content": "Copy Content",
     "copy-link": "Copy Link",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} in {{date}}",
     "count-memos-updated-in-date": "{{count}} {{memos}} updated on {{date}}",
     "delete-confirm": "Are you sure you want to delete this memo?",

@@ -233,6 +233,7 @@
     },
     "copy-content": "คัดลอกเนื้อหา",
     "copy-link": "คัดลอกลิงก์",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} ใน {{date}}",
     "delete-confirm": "คุณแน่ใจหรือไม่ ว่าต้องการลบบันทึกนี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
     "delete-confirm-description": "การดำเนินการนี้ไม่สามารถย้อนกลับได้ ไฟล์แนบ ลิงก์ และการอ้างอิงจะถูกลบออกด้วย",

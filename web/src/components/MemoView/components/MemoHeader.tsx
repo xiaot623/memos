@@ -15,6 +15,7 @@ import { useTranslate } from "@/utils/i18n";
 import { getVisibilityOption } from "@/utils/memo";
 import MemoActionMenu from "../../MemoActionMenu";
 import { ReactionSelector } from "../../MemoReactionListView";
+import { useSemanticScore } from "../../PagedMemoList/semanticScoreContext";
 import UserAvatar from "../../UserAvatar";
 import VisibilityIcon from "../../VisibilityIcon";
 import { MEMO_TIME_CONTROL_CLASSES } from "../constants";
@@ -41,6 +42,8 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
   }, [memo.name, parentPage, navigateTo]);
 
   const { unpinMemo } = useMemoActions(memo);
+  const similarityScore = useSemanticScore(memo.name);
+  const similarityLabel = similarityScore === undefined ? undefined : t("memo.similarity-score", { score: similarityScore.toFixed(2) });
 
   const timeValue = isArchived ? (
     memoDisplayTime?.toLocaleString(i18n.language)
@@ -89,10 +92,21 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
             <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" />
           </span>
         )}
-        {currentUser && !isArchived && (
-          // On desktop the picker's trigger shows only while the card is engaged or the picker is open.
+        {(similarityLabel || (currentUser && !isArchived)) && (
+          // On desktop these controls show only while the card is engaged or the picker is open.
           <span className="flex sm:hidden sm:group-hover:flex sm:group-focus-within:flex sm:has-[[data-popup-open]]:flex">
-            <ReactionSelector memo={memo} trigger={<Button variant="quiet" size="icon-sm" />} />
+            {similarityLabel && (
+              <Tooltip>
+                <TooltipTrigger
+                  aria-label={similarityLabel}
+                  className={cn(MEMO_HEADER_ACTION_CLASSES, "w-auto px-1.5 font-mono text-xs tabular-nums text-muted-foreground")}
+                >
+                  {similarityScore?.toFixed(2)}
+                </TooltipTrigger>
+                <TooltipContent>{similarityLabel}</TooltipContent>
+              </Tooltip>
+            )}
+            {currentUser && !isArchived && <ReactionSelector memo={memo} trigger={<Button variant="quiet" size="icon-sm" />} />}
           </span>
         )}
 

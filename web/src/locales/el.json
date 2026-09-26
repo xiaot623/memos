@@ -276,6 +276,7 @@
     },
     "copy-content": "Αντιγραφή περιεχομένου",
     "copy-link": "Αντιγραφή συνδέσμου",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} σε {{date}}",
     "count-memos-updated-in-date": "{{count}} Το {{memos}} ενημερώθηκε στο {{date}}",
     "delete-confirm": "Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτό το σημείωμα;",

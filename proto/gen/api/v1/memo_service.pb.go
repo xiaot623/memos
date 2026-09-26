@@ -792,8 +792,11 @@ type SearchMemosResponse struct {
 	Memos []*Memo `protobuf:"bytes,1,rep,name=memos,proto3" json:"memos,omitempty"`
 	// A token that can be sent as `page_token` to retrieve the next page.
 	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// similarity_scores aligns with memos. Each value is that memo's cosine
+	// similarity, rounded to two decimal places. Higher means more similar.
+	SimilarityScores []float32 `protobuf:"fixed32,3,rep,packed,name=similarity_scores,json=similarityScores,proto3" json:"similarity_scores,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *SearchMemosResponse) Reset() {
@@ -838,6 +841,13 @@ func (x *SearchMemosResponse) GetNextPageToken() string {
 		return x.NextPageToken
 	}
 	return ""
+}
+
+func (x *SearchMemosResponse) GetSimilarityScores() []float32 {
+	if x != nil {
+		return x.SimilarityScores
+	}
+	return nil
 }
 
 type GetMemoRequest struct {
@@ -2533,10 +2543,11 @@ const file_api_v1_memo_service_proto_rawDesc = "" +
 	"\n" +
 	"page_token\x18\x03 \x01(\tB\x03\xe0A\x01R\tpageToken\x12.\n" +
 	"\x05state\x18\x04 \x01(\x0e2\x13.memos.api.v1.StateB\x03\xe0A\x01R\x05state\x12\x1b\n" +
-	"\x06filter\x18\x05 \x01(\tB\x03\xe0A\x01R\x06filter\"g\n" +
+	"\x06filter\x18\x05 \x01(\tB\x03\xe0A\x01R\x06filter\"\x94\x01\n" +
 	"\x13SearchMemosResponse\x12(\n" +
 	"\x05memos\x18\x01 \x03(\v2\x12.memos.api.v1.MemoR\x05memos\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"?\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12+\n" +
+	"\x11similarity_scores\x18\x03 \x03(\x02R\x10similarityScores\"?\n" +
 	"\x0eGetMemoRequest\x12-\n" +
 	"\x04name\x18\x01 \x01(\tB\x19\xe0A\x02\xfaA\x13\n" +
 	"\x11memos.api.v1/MemoR\x04name\"\x82\x01\n" +

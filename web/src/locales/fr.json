@@ -238,6 +238,7 @@
     },
     "copy-content": "Copier le contenu",
     "copy-link": "Copier le lien",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{count}} {{memos}} le {{date}}",
     "delete-confirm": "Êtes-vous sûr de vouloir supprimer cette note ? CETTE ACTION EST IRRÉVERSIBLE",
     "delete-confirm-description": "Cette action est irréversible. Les pièces jointes, liens et références seront également supprimés.",

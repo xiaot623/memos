@@ -348,6 +348,7 @@
     },
     "copy-content": "Məzmunu kopyala",
     "copy-link": "Keçidi kopyala",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{date}} tarixində {{count}} {{memos}}",
     "count-memos-updated-in-date": "{{date}} tarixində yenilənən {{count}} {{memos}}",
     "delete-confirm": "Bu qeydi silmək istədiyinizə əminsiniz?",

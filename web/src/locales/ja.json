@@ -238,6 +238,7 @@
     },
     "copy-content": "コンテンツをコピー",
     "copy-link": "リンクをコピー",
+    "similarity-score": "Similarity {{score}}",
     "count-memos-in-date": "{{date}}の{{count}}件の{{memos}}",
     "delete-confirm": "本当に削除しますか? この操作は元に戻せません。",
     "delete-confirm-description": "この操作は元に戻せません。添付ファイル、リンク、参照も削除されます。",
