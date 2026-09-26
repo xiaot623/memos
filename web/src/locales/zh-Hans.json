@@ -156,7 +156,6 @@
     "validation": {
       "cannot-save": "无法保存",
       "content-required": "需要填写正文或添加附件",
-      "finish-audio-recording": "请先完成录音再保存",
       "loading-content": "正在加载备忘录内容",
       "resolve-image-uploads": "请先处理未完成的图片上传",
       "save-in-progress": "正在保存",
@@ -180,12 +179,8 @@
     "audio-recorder": {
       "attachment-label": "录音",
       "attachment-label-with-time": "录音 {{time}}",
-      "error-description": "检查此站点的麦克风访问权限后重试。",
       "pause-recording": "暂停录音",
-      "play-recording": "播放录音",
-      "transcribe-empty": "未检测到语音",
-      "transcribe-error": "音频转写失败",
-      "transcribe-success": "转写内容已加入"
+      "play-recording": "播放录音"
     },
     "saved": "已保存"
   },

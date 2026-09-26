@@ -237,7 +237,6 @@
     "validation": {
       "cannot-save": "Cannot save",
       "content-required": "Content, attachment, or file required",
-      "finish-audio-recording": "Finish audio recording before saving",
       "loading-content": "Loading memo content",
       "resolve-image-uploads": "Resolve image uploads before saving",
       "save-in-progress": "Save in progress",
@@ -247,12 +246,8 @@
     "audio-recorder": {
       "attachment-label": "Audio recording",
       "attachment-label-with-time": "Audio recording {{time}}",
-      "error-description": "Try again after checking microphone access for this site.",
       "pause-recording": "Pause audio recording",
-      "play-recording": "Play audio recording",
-      "transcribe-empty": "No speech detected",
-      "transcribe-error": "Failed to transcribe audio",
-      "transcribe-success": "Transcription added"
+      "play-recording": "Play audio recording"
     }
   },
   "live-update": {

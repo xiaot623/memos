@@ -56,7 +56,7 @@ MemoEditor/
 │   └── ...                     # Heading/list/viewport decorations, editor.css
 ├── formatting/
 │   └── commands.ts         # Backend-agnostic catalog of formatting verbs
-├── Toolbar/                # EditorToolbar, FormattingToolbar, InsertMenu, VisibilitySelector
+├── Toolbar/                # EditorToolbar, FormattingToolbar, InsertMenu
 ├── constants.ts
 └── types/                  # EditorController / FormattingController, component props,
                             #   attachment and insert-menu types

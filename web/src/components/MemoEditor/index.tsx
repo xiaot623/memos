@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
+import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { convertVisibilityFromString } from "@/utils/memo";
 import { EditorContent, EditorMetadata, FocusModeOverlay, PeekEditorDialog, TimestampPopover } from "./components";
@@ -80,8 +81,11 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   // independently; only a new top-level memo inherits its host's target.
   const editorSpace = memo?.space ?? defaultSpace;
 
-  // Get default visibility from user settings
-  const defaultVisibility = userGeneralSetting?.memoVisibility ? convertVisibilityFromString(userGeneralSetting.memoVisibility) : undefined;
+  // No visibility picker: new memos inherit their audience from placement —
+  // SPACE when composing inside a Space, otherwise the user's default (PRIVATE).
+  // Edits keep their existing visibility via fromMemo and ignore this.
+  const settingVisibility = userGeneralSetting?.memoVisibility ? convertVisibilityFromString(userGeneralSetting.memoVisibility) : undefined;
+  const defaultVisibility = memo ? settingVisibility : editorSpace ? Visibility.SPACE : settingVisibility;
   const editorCacheKey = cacheService.key(currentUser?.name ?? "", cacheKey);
 
   const { isInitialized } = useMemoInit({
@@ -292,7 +296,6 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           onSave={handleSave}
           onCancel={onCancel ? (isPeek ? () => closePeek(true) : handleCancel) : undefined}
           memoName={memoName}
-          space={editorSpace}
           viewToggles={isPeek ? undefined : viewToggles}
           onInsertImages={handleInsertImages}
           isRawMode={isRawMode}

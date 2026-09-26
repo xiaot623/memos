@@ -3,14 +3,12 @@ import type { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { primaryModifierGlyph } from "@/utils/platform";
 import { validationService } from "../services";
-import { useEditorContext, useEditorSelector } from "../state";
+import { useEditorSelector } from "../state";
 import type { EditorToolbarProps } from "../types";
 import InsertMenu from "./InsertMenu";
-import VisibilitySelector from "./VisibilitySelector";
 
 /**
  * Shortcut chip inside the commit button. While saving, a spinner takes the
@@ -34,21 +32,18 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
   onSave,
   onCancel,
   memoName,
-  space,
   viewToggles,
   onInsertImages,
   isRawMode,
   onToggleRawMode,
 }) => {
   const t = useTranslate();
-  const { actions, dispatch } = useEditorContext();
   const valid = useEditorSelector((s) => validationService.canSave(s).valid);
   const blockedReason = useEditorSelector((s) => validationService.canSave(s).reason);
   const blockedReasonDetail = useEditorSelector((s) => validationService.canSave(s).detail);
   const isSaving = useEditorSelector((s) => s.ui.isLoading.saving);
   const justSaved = useEditorSelector((s) => s.ui.justSaved);
   const isUploading = useEditorSelector((s) => s.ui.isLoading.uploading);
-  const visibility = useEditorSelector((s) => s.metadata.visibility);
   const committing = isSaving || justSaved;
   const blockedMessage =
     valid || committing
@@ -57,10 +52,6 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
         ? t(blockedReason, blockedReasonDetail ? { url: blockedReasonDetail } : undefined)
         : t("editor.validation.cannot-save");
   const commitLabel = memoName ? t("common.update") : t("editor.save");
-
-  const handleVisibilityChange = (next: Visibility) => {
-    dispatch(actions.setMetadata({ visibility: next }));
-  };
 
   const commitButton = justSaved ? (
     <Button size="sm" disabled>
@@ -86,7 +77,6 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
           isRawMode={isRawMode}
           onToggleRawMode={onToggleRawMode}
         />
-        <VisibilitySelector value={visibility} space={space} onChange={handleVisibilityChange} />
       </div>
 
       <div className="flex flex-row items-center justify-end gap-1">

@@ -1,5 +1,5 @@
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import type { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
+import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import type { EditorFileOrigin } from "../Editor/extensions";
 import type { LocalFile } from "./attachment";
 
@@ -68,8 +68,6 @@ export interface EditorToolbarProps {
   onSave: () => void;
   onCancel?: () => void;
   memoName?: string;
-  /** The Space that owns the memo being created or edited, if any. */
-  space?: string;
   viewToggles?: EditorViewToggles;
   onInsertImages: (files: File[]) => void;
   isRawMode?: boolean;
@@ -102,12 +100,4 @@ export interface InsertMenuProps {
   onInsertImages: (files: File[]) => void;
   isRawMode?: boolean;
   onToggleRawMode?: () => void;
-}
-
-export interface VisibilitySelectorProps {
-  value: Visibility;
-  onChange: (visibility: Visibility) => void;
-  /** The memo's actual placement; independent of the ambient collection scope. */
-  space?: string;
-  onOpenChange?: (open: boolean) => void;
 }
