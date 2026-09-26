@@ -1,7 +1,6 @@
 import { ROUTES, resolveCollectionRoute } from "@/router/routes";
 
 export type MemoScope = "home" | "archived";
-export type PrimaryMemoScope = "home";
 
 export const BUILTIN_TASKS_VIEW_ID = "__built_in_tasks__";
 export const BUILTIN_TASKS_VIEW_FILTER = "has_task_list && has_incomplete_tasks";
@@ -21,8 +20,6 @@ export const isMemoScopeRoute = (pathname: string): boolean => {
 
 /** Routes that render a memo collection the sidebar can narrow. */
 export const isMemoCollectionRoute = (pathname: string): boolean => isMemoScopeRoute(pathname);
-
-export const getMemoScopePath = (_scope: PrimaryMemoScope): string => ROUTES.HOME;
 
 interface ResolveMemoScopeOptions {
   detailFrom?: string;

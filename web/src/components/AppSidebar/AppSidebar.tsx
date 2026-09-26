@@ -1,10 +1,8 @@
 import { useDirection } from "@base-ui/react/direction-provider";
 import {
-  ArchiveIcon,
   ArrowRightIcon,
   FileAudioIcon,
   FileTextIcon,
-  HouseIcon,
   ImageIcon,
   ListIcon,
   type LucideIcon,
@@ -14,7 +12,7 @@ import {
   Trash2Icon,
   UserRoundIcon,
 } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { MemoDetailSidebar } from "@/components/MemoDetailSidebar";
 import MemoDisplaySettingMenu from "@/components/MemoDisplaySettingMenu";
 import { DEFAULT_SETTING_SECTION, SETTINGS_SECTIONS } from "@/components/Settings/settingSections";
@@ -22,35 +20,27 @@ import StatisticsView from "@/components/StatisticsView";
 import UserMenu from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { type AttachmentSection, useAppSidebar } from "@/contexts/AppSidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGlobalMemoEditor } from "@/contexts/GlobalMemoEditorContext";
 import { useInstance } from "@/contexts/InstanceContext";
-import { getFilterSearch, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useSpaceContext } from "@/contexts/SpaceContext";
 import { useAttachmentLibraryStats } from "@/hooks/useAttachmentLibrary";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { type MemoStatsContext, useFilteredMemoStats } from "@/hooks/useFilteredMemoStats";
 import useMediaQuery from "@/hooks/useMediaQuery";
-import { getMemoScopePath, type PrimaryMemoScope, resolveMemoScope } from "@/lib/memo-views";
 import { cn } from "@/lib/utils";
-import { collectionPathForLocation, ROUTES } from "@/router/routes";
-import { State } from "@/types/proto/api/v1/common_pb";
+import { ROUTES } from "@/router/routes";
 import { User_Role } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import MemosLogo from "../MemosLogo";
 import CommonSidebarContent from "./CommonSidebarContent";
 import { getSidebarRouteKind } from "./routes";
-import SidebarRow, { SIDEBAR_ROW_CLASSES, SIDEBAR_ROW_FOCUS_CLASSES, SidebarRowIconSlot, sidebarRowStateClasses } from "./SidebarRow";
+import SidebarRow, { SIDEBAR_ROW_CLASSES, SidebarRowIconSlot, sidebarRowStateClasses } from "./SidebarRow";
 import SidebarSection, { SIDEBAR_SECTION_STACK_CLASSES } from "./SidebarSection";
 import SpaceSwitcher from "./SpaceSwitcher";
-import {
-  SIDEBAR_LEADING_SLOT_CLASSES,
-  SIDEBAR_NAV_LEADING_SLOT_CLASSES,
-  SIDEBAR_RAIL_CLASSES,
-  sidebarSurfaceVariants,
-} from "./sidebar-layout";
+import { SIDEBAR_LEADING_SLOT_CLASSES, SIDEBAR_RAIL_CLASSES, sidebarSurfaceVariants } from "./sidebar-layout";
 import TagsSection from "./TagsSection";
 
 const NewMemoAction = ({ onClick }: { onClick: () => void }) => {
@@ -61,6 +51,33 @@ const NewMemoAction = ({ onClick }: { onClick: () => void }) => {
     <Tooltip>
       <TooltipTrigger render={<Button variant="outline" size="icon-compact" onClick={onClick} aria-label={label} data-new-memo-trigger />}>
         <SquarePenIcon className="size-4" strokeWidth={1.8} />
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{label}</TooltipContent>
+    </Tooltip>
+  );
+};
+
+const SearchAction = () => {
+  const t = useTranslate();
+  const { setMobileOpen, setQuickFindOpen } = useAppSidebar();
+  const label = t("common.search");
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon-compact"
+            aria-label={label}
+            onClick={() => {
+              setMobileOpen(false);
+              setQuickFindOpen(true);
+            }}
+          />
+        }
+      >
+        <SearchIcon className="size-4" strokeWidth={1.8} />
       </TooltipTrigger>
       <TooltipContent side="bottom">{label}</TooltipContent>
     </Tooltip>
@@ -205,100 +222,6 @@ const RouteSidebarContent = () => {
   return null;
 };
 
-const navPillClasses = (active: boolean) =>
-  cn(sidebarSurfaceVariants({ role: "navPill" }), SIDEBAR_ROW_FOCUS_CLASSES, sidebarRowStateClasses(active ? "current" : "idle"));
-
-const GlobalNavigation = () => {
-  const t = useTranslate();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const currentUser = useCurrentUser();
-  const { memoDetail, memoScope, setMemoScope, setMobileOpen, setQuickFindOpen } = useAppSidebar();
-  const { filters } = useMemoFilterContext();
-  const routeKind = getSidebarRouteKind(location.pathname);
-  const resolvedScope = resolveMemoScope(location.pathname, {
-    detailFrom: memoDetail?.from,
-    memoArchived: memoDetail?.memo.state === State.ARCHIVED,
-    fallback: memoScope,
-  });
-  const primaryScope: PrimaryMemoScope = "home";
-  const homeActive = routeKind === "home" || (routeKind === "memo" && resolvedScope === "home");
-  const archivedActive = routeKind === "archived" || (routeKind === "memo" && resolvedScope === "archived");
-
-  const navigateHome = () => {
-    setMemoScope(primaryScope);
-    navigate({ pathname: collectionPathForLocation(getMemoScopePath(primaryScope), location.pathname), search: getFilterSearch(filters) });
-    setMobileOpen(false);
-  };
-
-  return (
-    <TooltipProvider>
-      <nav className={cn("@container flex h-7 items-center gap-0.5", SIDEBAR_RAIL_CLASSES)} aria-label="Primary">
-        {currentUser && (
-          <>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label={t("common.home")}
-                    aria-current={homeActive ? "page" : undefined}
-                    className={navPillClasses(homeActive)}
-                    onClick={navigateHome}
-                  />
-                }
-              >
-                <span className={SIDEBAR_NAV_LEADING_SLOT_CLASSES} aria-hidden="true">
-                  <HouseIcon className="size-4 opacity-75" strokeWidth={1.8} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">{t("common.home")}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Link
-                    to={ROUTES.ARCHIVED}
-                    onClick={() => setMobileOpen(false)}
-                    aria-label={t("common.archived")}
-                    aria-current={archivedActive ? "page" : undefined}
-                    className={navPillClasses(archivedActive)}
-                  />
-                }
-              >
-                <span className={SIDEBAR_NAV_LEADING_SLOT_CLASSES} aria-hidden="true">
-                  <ArchiveIcon className="size-4 opacity-75" strokeWidth={1.8} />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">{t("common.archived")}</TooltipContent>
-            </Tooltip>
-          </>
-        )}
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                aria-label={t("common.search")}
-                className={cn("ms-auto", navPillClasses(false))}
-                onClick={() => {
-                  setMobileOpen(false);
-                  setQuickFindOpen(true);
-                }}
-              />
-            }
-          >
-            <span className={SIDEBAR_NAV_LEADING_SLOT_CLASSES} aria-hidden="true">
-              <SearchIcon className="size-4 opacity-75" strokeWidth={1.8} />
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">{t("common.search")}</TooltipContent>
-        </Tooltip>
-      </nav>
-    </TooltipProvider>
-  );
-};
-
 /** Signed-in users can navigate between Spaces from any page; global pages show Memos. */
 const SidebarBrand = ({ className, size = "md" }: { className?: string; size?: "md" | "header" }) => {
   const currentUser = useCurrentUser();
@@ -330,10 +253,12 @@ const AppSidebar = ({ className }: { className?: string }) => {
     <aside className={cn("flex h-full w-full select-none flex-col bg-sidebar text-sidebar-foreground", className)}>
       <div data-sidebar-header className={cn("flex h-13 shrink-0 items-center justify-between gap-2", SIDEBAR_RAIL_CLASSES)}>
         <SidebarBrand className="min-w-0" size="header" />
-        {canCompose && <NewMemoAction onClick={openEditor} />}
+        <div className="flex shrink-0 items-center gap-1">
+          {canCompose && <NewMemoAction onClick={openEditor} />}
+          <SearchAction />
+        </div>
       </div>
-      <GlobalNavigation />
-      <div className="mx-3 mt-2 border-t border-border/70" />
+      <div className="mx-3 border-t border-border/70" />
       <div className={cn("min-h-0 flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-3 [scrollbar-width:thin]", SIDEBAR_RAIL_CLASSES)}>
         <RouteSidebarContent />
       </div>
