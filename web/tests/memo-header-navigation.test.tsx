@@ -126,6 +126,10 @@ describe("MemoHeader navigation", () => {
       </MemoryRouter>,
     );
 
+    if (showCreator) {
+      expect(screen.getByText("Alice").closest("a")).toBeNull();
+    }
+
     const timestamp = screen.getByRole("button", { name: "time" });
     timestamp.focus();
     expect(timestamp).toHaveFocus();

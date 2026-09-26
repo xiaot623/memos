@@ -1,9 +1,7 @@
 import { BookmarkIcon, LoaderCircleIcon } from "lucide-react";
 import { useCallback } from "react";
-import { Link } from "react-router-dom";
 import RelativeTime from "@/components/RelativeTime";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { FOCUS_VISIBLE_OUTLINE_CLASSES } from "@/components/ui/focus";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNewMemo } from "@/contexts/NewMemoContext";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -137,19 +135,12 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
  */
 const CreatorDisplay: React.FC<{ creator: User }> = ({ creator }) => (
   <>
-    <Link
-      className={cn(
-        "flex min-w-0 shrink items-center gap-1.5 rounded-sm text-ui font-medium text-foreground transition-colors hover:text-foreground/80",
-        FOCUS_VISIBLE_OUTLINE_CLASSES,
-      )}
-      to={`/u/${encodeURIComponent(creator.username)}`}
-      viewTransition
-    >
+    <span className="flex min-w-0 shrink items-center gap-1.5 text-ui font-medium text-foreground">
       <span className="flex size-5 shrink-0 items-center justify-center">
         <UserAvatar className="size-5 rounded-[5px]" avatarUrl={creator.avatarUrl} />
       </span>
       <span className="min-w-0 truncate">{creator.displayName || creator.username}</span>
-    </Link>
+    </span>
     <span aria-hidden="true" className="shrink-0 text-muted-foreground/40">
       ·
     </span>
