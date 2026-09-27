@@ -226,6 +226,36 @@ describe("SpaceSwitcher", () => {
     expect(researchRow).not.toHaveTextContent("research-space");
   });
 
+  it("opens the current home from the brand mark without the switcher", async () => {
+    const router = createMemoryRouter([{ path: "*", element: <SpaceSwitcher size="header" /> }], { initialEntries: ["/setting"] });
+    testingRender(<RouterProvider router={router} />);
+
+    const home = screen.getByRole("link", { name: "common.home" });
+    expect(home).toHaveAttribute("href", "/");
+    expect(home).toHaveClass("start-2", "size-6");
+    fireEvent.click(home);
+
+    expect(router.state.location.pathname).toBe("/");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("opens the selected Space home from the brand mark", () => {
+    spaceState.selectedSpaceName = "spaces/product";
+    spaceState.selectedSpace = spaceState.spaces[0];
+    const router = createMemoryRouter([{ path: "*", element: <SpaceSwitcher /> }], {
+      initialEntries: ["/archived"],
+    });
+    testingRender(<RouterProvider router={router} />);
+
+    const home = screen.getByRole("link", { name: "common.home" });
+    expect(home).toHaveAttribute("href", "/spaces/product");
+    expect(home).toHaveClass("start-1", "size-7");
+    fireEvent.click(home);
+
+    expect(router.state.location.pathname).toBe("/spaces/product");
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
   it("links to spaces and opens Space creation", async () => {
     render(<SpaceSwitcher />);
     fireEvent.click(screen.getByRole("button", { name: "space.switch: common.memos" }));
