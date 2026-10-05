@@ -114,7 +114,7 @@ const CollectionSidebarContent = ({ context }: { context: MemoStatsContext }) =>
       <SidebarSection ariaLabel={t("common.statistics")}>
         <StatisticsView statisticsData={statistics} onDateSelect={() => setMobileOpen(false)} />
       </SidebarSection>
-      <SidebarSection label={t("memo.view-options")} action={<MemoDisplaySettingMenu />} />
+      {authInitialized && !currentUser && <SidebarSection label={t("memo.view-options")} action={<MemoDisplaySettingMenu />} />}
       <TagsSection tagCount={tags} scope={tagStateScope} onSelect={() => setMobileOpen(false)} />
     </div>
   );
@@ -194,16 +194,13 @@ const SettingsSidebarContent = () => {
 };
 
 const MemoDetailSidebarContent = () => {
-  const { memoDetail, closeMobileThen } = useAppSidebar();
+  const { memoDetail } = useAppSidebar();
   if (!memoDetail) return null;
-  const runAndClose = (action: (() => void) | undefined) => (action ? () => closeMobileThen(action) : undefined);
   return (
     <MemoDetailSidebar
       memo={memoDetail.memo}
       parentPage={memoDetail.from}
       hasExplicitOrigin={memoDetail.hasExplicitOrigin}
-      forceReadonly={memoDetail.readonly}
-      onEdit={runAndClose(memoDetail.onEdit)}
       className="pb-2"
     />
   );
@@ -306,9 +303,9 @@ export const MobileAppHeader = () => {
 
 export const MobileAppSidebar = () => {
   const direction = useDirection();
-  const { mobileOpen, setMobileOpen, completeMobileClose } = useAppSidebar();
+  const { mobileOpen, setMobileOpen } = useAppSidebar();
   return (
-    <Sheet open={mobileOpen} onOpenChange={setMobileOpen} onOpenChangeComplete={completeMobileClose}>
+    <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
       <SheetContent
         side={direction === "rtl" ? "right" : "left"}
         className="w-[min(18rem,calc(100vw-2rem))] gap-0 border-border p-0 shadow-2xl [&>[data-slot=sheet-close]]:sr-only"

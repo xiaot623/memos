@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 
@@ -8,8 +8,6 @@ export interface MemoDetailSidebarDescriptor {
   memo: Memo;
   from?: string;
   hasExplicitOrigin?: boolean;
-  readonly?: boolean;
-  onEdit?: () => void;
 }
 
 interface AppSidebarContextValue {
@@ -19,8 +17,6 @@ interface AppSidebarContextValue {
   setMemoDetail: (descriptor?: MemoDetailSidebarDescriptor) => void;
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
-  closeMobileThen: (action: () => void) => void;
-  completeMobileClose: (open: boolean) => void;
   quickFindOpen: boolean;
   setQuickFindOpen: (open: boolean) => void;
 }
@@ -32,57 +28,15 @@ export const AppSidebarProvider = ({ children }: { children: ReactNode }) => {
   const [attachmentSection, setAttachmentSection] = useState<AttachmentSection>("all");
   const [memoDetail, setMemoDetailState] = useState<MemoDetailSidebarDescriptor>();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pendingMobileCloseActionRef = useRef<(() => void) | undefined>(undefined);
-  const scheduledMobileCloseActionFrameRef = useRef<number | undefined>(undefined);
   const [quickFindOpen, setQuickFindOpen] = useState(false);
 
   useEffect(() => {
-    pendingMobileCloseActionRef.current = undefined;
-    if (scheduledMobileCloseActionFrameRef.current !== undefined) {
-      window.cancelAnimationFrame(scheduledMobileCloseActionFrameRef.current);
-      scheduledMobileCloseActionFrameRef.current = undefined;
-    }
     setMobileOpen(false);
     setAttachmentSection("all");
-
-    return () => {
-      pendingMobileCloseActionRef.current = undefined;
-      if (scheduledMobileCloseActionFrameRef.current !== undefined) {
-        window.cancelAnimationFrame(scheduledMobileCloseActionFrameRef.current);
-        scheduledMobileCloseActionFrameRef.current = undefined;
-      }
-    };
   }, [location.pathname]);
 
   const setMemoDetail = useCallback((descriptor?: MemoDetailSidebarDescriptor) => {
     setMemoDetailState(descriptor);
-  }, []);
-
-  const closeMobileThen = useCallback(
-    (action: () => void) => {
-      if (!mobileOpen) {
-        action();
-        return;
-      }
-
-      pendingMobileCloseActionRef.current = action;
-      setMobileOpen(false);
-    },
-    [mobileOpen],
-  );
-
-  const completeMobileClose = useCallback((open: boolean) => {
-    if (open) return;
-    const action = pendingMobileCloseActionRef.current;
-    pendingMobileCloseActionRef.current = undefined;
-    if (!action) return;
-
-    // Base UI restores focus in a microtask after the Sheet unmounts. Run the destination
-    // action on the next frame so an editor's focus cannot be overwritten by that cleanup.
-    scheduledMobileCloseActionFrameRef.current = window.requestAnimationFrame(() => {
-      scheduledMobileCloseActionFrameRef.current = undefined;
-      action();
-    });
   }, []);
 
   const value = useMemo(
@@ -93,12 +47,10 @@ export const AppSidebarProvider = ({ children }: { children: ReactNode }) => {
       setMemoDetail,
       mobileOpen,
       setMobileOpen,
-      closeMobileThen,
-      completeMobileClose,
       quickFindOpen,
       setQuickFindOpen,
     }),
-    [attachmentSection, memoDetail, setMemoDetail, mobileOpen, closeMobileThen, completeMobileClose, quickFindOpen],
+    [attachmentSection, memoDetail, setMemoDetail, mobileOpen, quickFindOpen],
   );
 
   return <AppSidebarContext.Provider value={value}>{children}</AppSidebarContext.Provider>;

@@ -52,4 +52,23 @@ describe("ViewContext maxColumns setting", () => {
 
     expect(result.current.maxColumns).toBe(1);
   });
+
+  it("defaults reading width to standard and persists wide", () => {
+    const { result } = renderHook(() => useView(), { wrapper });
+
+    expect(result.current.readingWidth).toBe("standard");
+
+    act(() => result.current.setReadingWidth("wide"));
+
+    expect(result.current.readingWidth).toBe("wide");
+    expect(persisted().readingWidth).toBe("wide");
+  });
+
+  it("falls back to standard for an invalid persisted reading width", () => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ readingWidth: "full" }));
+
+    const { result } = renderHook(() => useView(), { wrapper });
+
+    expect(result.current.readingWidth).toBe("standard");
+  });
 });

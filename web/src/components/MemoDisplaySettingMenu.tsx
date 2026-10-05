@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { MAX_COLUMNS_VALUES, type MemoMaxColumns, useView } from "@/contexts/ViewContext";
+import { MAX_COLUMNS_VALUES, type MemoMaxColumns, type ReadingWidth, useView } from "@/contexts/ViewContext";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -31,6 +31,16 @@ const LAYOUT_OPTIONS: Record<MemoMaxColumns, { icon: LucideIcon; key: "layout-li
   0: { icon: InfinityIcon, key: "layout-auto" },
 };
 
+const READING_WIDTHS: ReadingWidth[] = ["standard", "wide"];
+
+function radioArrowDelta(key: string, direction: "ltr" | "rtl"): number {
+  if (key === "ArrowRight") return direction === "rtl" ? -1 : 1;
+  if (key === "ArrowLeft") return direction === "rtl" ? 1 : -1;
+  if (key === "ArrowDown") return 1;
+  if (key === "ArrowUp") return -1;
+  return 0;
+}
+
 const SettingRow = ({ label, description, children }: SettingRowProps) => (
   <div className="flex min-h-7 items-center justify-between gap-3">
     <div className="min-w-0">
@@ -41,7 +51,7 @@ const SettingRow = ({ label, description, children }: SettingRowProps) => (
   </div>
 );
 
-function MemoDisplaySettingsContent() {
+export function MemoDisplaySettingsContent() {
   const t = useTranslate();
   const direction = useDirection();
   const {
@@ -50,11 +60,13 @@ function MemoDisplaySettingsContent() {
     compactMode,
     linkPreview,
     maxColumns,
+    readingWidth,
     setTimeBasis,
     setOrderByTimeAsc,
     setCompactMode,
     setLinkPreview,
     setMaxColumns,
+    setReadingWidth,
   } = useView();
   // Multi-column grids always render compact tiles, so the toggle is shown as on and locked
   // there; it only becomes a real choice at a single column.
@@ -77,20 +89,7 @@ function MemoDisplaySettingsContent() {
           aria-label={t("memo.layout")}
           className="grid grid-cols-4 gap-0.5"
           onKeyDown={(event) => {
-            const delta =
-              event.key === "ArrowRight"
-                ? direction === "rtl"
-                  ? -1
-                  : 1
-                : event.key === "ArrowLeft"
-                  ? direction === "rtl"
-                    ? 1
-                    : -1
-                  : event.key === "ArrowDown"
-                    ? 1
-                    : event.key === "ArrowUp"
-                      ? -1
-                      : 0;
+            const delta = radioArrowDelta(event.key, direction);
             if (delta === 0) return;
             event.preventDefault();
             const index = MAX_COLUMNS_VALUES.indexOf(maxColumns);
@@ -123,6 +122,47 @@ function MemoDisplaySettingsContent() {
               >
                 <Icon className="size-3.5 shrink-0" strokeWidth={1.8} />
                 <span className="truncate">{shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="space-y-1.5 border-t border-border/60 px-3 py-2.5">
+        <p className="text-[13px] leading-5 text-foreground">{t("memo.reading-width")}</p>
+        <div
+          role="radiogroup"
+          aria-label={t("memo.reading-width")}
+          className="grid grid-cols-2 gap-0.5"
+          onKeyDown={(event) => {
+            const delta = radioArrowDelta(event.key, direction);
+            if (delta === 0) return;
+            event.preventDefault();
+            const index = READING_WIDTHS.indexOf(readingWidth);
+            const next = READING_WIDTHS[(index + delta + READING_WIDTHS.length) % READING_WIDTHS.length];
+            setReadingWidth(next);
+            event.currentTarget.querySelector<HTMLButtonElement>(`[data-value="${next}"]`)?.focus();
+          }}
+        >
+          {READING_WIDTHS.map((value) => {
+            const label = t(`memo.reading-width-${value}`);
+            const active = readingWidth === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                aria-label={label}
+                tabIndex={active ? 0 : -1}
+                data-value={value}
+                onClick={() => setReadingWidth(value)}
+                className={cn(
+                  "flex h-7 min-w-0 items-center justify-center rounded-md px-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                  active ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                )}
+              >
+                <span className="truncate">{label}</span>
               </button>
             );
           })}

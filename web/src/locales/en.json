@@ -154,6 +154,7 @@
     "memos": "Memos",
     "month-navigation": "Month navigation",
     "more": "More",
+    "outline": "Outline",
     "name": "Name",
     "next-month": "Next month",
     "nickname": "Nickname",
@@ -298,6 +299,9 @@
     "newest-first": "Newest first",
     "oldest-first": "Oldest first",
     "order-by": "Order by",
+    "reading-width": "Reading width",
+    "reading-width-standard": "Standard",
+    "reading-width-wide": "Wide",
     "share": {
       "active-links": "Active share links",
       "copy": "Copy link",

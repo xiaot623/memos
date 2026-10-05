@@ -12,8 +12,10 @@ import {
   ListChecksIcon,
   ListRestartIcon,
   MoreVerticalIcon,
+  Share2Icon,
 } from "lucide-react";
 import { useState } from "react";
+import MemoSharePanel from "@/components/MemoDetailSidebar/MemoSharePanel";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,8 +26,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import useCurrentUser from "@/hooks/useCurrentUser";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { useTranslate } from "@/utils/i18n";
+import { canManageMemo } from "@/utils/user";
 import { useMemoActionHandlers } from "./hooks";
 import MemoMoveDialog from "./MemoMoveDialog";
 import type { MemoActionMenuProps } from "./types";
@@ -35,9 +39,12 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
   const t = useTranslate();
 
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const currentUser = useCurrentUser();
 
   // Derived state
   const isArchived = memo.state === State.ARCHIVED;
+  const canShare = memo.state === State.NORMAL || (!readonly && canManageMemo(memo, currentUser));
   const canMutateTasks = !readonly && !isArchived && Boolean(memo.property?.hasTaskList);
   const hasOpenTasks = Boolean(memo.property?.hasIncompleteTasks);
 
@@ -96,6 +103,13 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
           </DropdownMenuSub>
         )}
 
+        {canShare && (
+          <DropdownMenuItem onClick={() => setShareOpen(true)}>
+            <Share2Icon />
+            {t("common.share")}
+          </DropdownMenuItem>
+        )}
+
         {/* Task submenu (writable task memos) */}
         {canMutateTasks && (
           <DropdownMenuSub>
@@ -132,6 +146,7 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
       </DropdownMenuContent>
 
       {moveDialogOpen && <MemoMoveDialog memo={memo} onOpenChange={setMoveDialogOpen} />}
+      {shareOpen && <MemoSharePanel open={shareOpen} onClose={() => setShareOpen(false)} memoName={memo.name} />}
     </DropdownMenu>
   );
 };

@@ -97,6 +97,7 @@ describe("SpaceSwitcher", () => {
     expect(productRow.querySelector(".lucide-astroid")).not.toBeNull();
     expect(screen.getByRole("menuitemradio", { name: "Research" })).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "space.create" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "memo.view-options" })).toBeInTheDocument();
   });
 
   it("fits the popup symmetrically inside the sidebar rail", async () => {

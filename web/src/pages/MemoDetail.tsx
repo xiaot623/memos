@@ -1,34 +1,24 @@
 import { Code, ConnectError } from "@connectrpc/connect";
-import { useCallback, useEffect, useMemo as useReactMemo, useRef } from "react";
+import { useEffect, useMemo as useReactMemo, useRef } from "react";
 import { Navigate, useLocation, useParams } from "react-router-dom";
 import { MentionResolutionProvider } from "@/components/MemoContent/MentionResolutionContext";
-import MemoView, { type MemoViewHandle } from "@/components/MemoView";
+import MemoView from "@/components/MemoView";
 import { resolveMemoDetailOrigin } from "@/components/MemoView/navigation";
 import { useAppSidebar } from "@/contexts/AppSidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useInstance } from "@/contexts/InstanceContext";
+import { useView } from "@/contexts/ViewContext";
 import useMemoDetailError from "@/hooks/useMemoDetailError";
 import { useMemo } from "@/hooks/useMemoQueries";
 import { useSharedMemo, withShareAttachmentLinks } from "@/hooks/useMemoShareQueries";
 import { memoNamePrefix } from "@/lib/resource-names";
+import { cn } from "@/lib/utils";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { findMemoAnchorTarget } from "@/utils/markdown-manipulation";
 
-const MemoSidebarRegistration = ({
-  memo,
-  from,
-  hasExplicitOrigin,
-  readonly,
-  onEdit,
-}: {
-  memo: Memo;
-  from: string;
-  hasExplicitOrigin: boolean;
-  readonly: boolean;
-  onEdit: () => void;
-}) => {
+const MemoSidebarRegistration = ({ memo, from, hasExplicitOrigin }: { memo: Memo; from: string; hasExplicitOrigin: boolean }) => {
   const { setMemoDetail } = useAppSidebar();
 
   useEffect(() => {
@@ -36,10 +26,8 @@ const MemoSidebarRegistration = ({
       memo,
       from,
       hasExplicitOrigin,
-      readonly,
-      onEdit,
     });
-  }, [from, hasExplicitOrigin, memo, onEdit, readonly, setMemoDetail]);
+  }, [from, hasExplicitOrigin, memo, setMemoDetail]);
 
   useEffect(() => () => setMemoDetail(undefined), [setMemoDetail]);
 
@@ -52,9 +40,7 @@ const MemoDetail = () => {
   const params = useParams();
   const location = useLocation();
   const { state: locationState, hash } = location;
-  const memoViewRef = useRef<MemoViewHandle>(null);
-  const handleEdit = useCallback(() => memoViewRef.current?.openEditor(), []);
-
+  const { readingWidth } = useView();
   const shareToken = params.token;
   const isShareMode = !!shareToken;
 
@@ -118,25 +104,10 @@ const MemoDetail = () => {
   return (
     <section className="@container flex min-h-full w-full flex-col items-center pb-8 pt-3 md:pt-6">
       <MentionResolutionProvider contents={mentionResolutionContents} userNames={userResolutionNames}>
-        <MemoSidebarRegistration
-          memo={displayMemo}
-          from={parentPage}
-          hasExplicitOrigin={hasExplicitOrigin}
-          readonly={isShareMode}
-          onEdit={handleEdit}
-        />
-        <div className="w-full max-w-2xl px-4 sm:px-6">
+        <MemoSidebarRegistration memo={displayMemo} from={parentPage} hasExplicitOrigin={hasExplicitOrigin} />
+        <div className={cn("w-full px-4 sm:px-6", readingWidth === "wide" ? "max-w-4xl" : "max-w-2xl")}>
           <div className="w-full">
-            <MemoView
-              ref={memoViewRef}
-              key={displayMemo.name}
-              memo={displayMemo}
-              compact={false}
-              parentPage={parentPage}
-              showCreator
-              showPinned
-              showSpace
-            />
+            <MemoView key={displayMemo.name} memo={displayMemo} compact={false} parentPage={parentPage} showCreator showPinned showSpace />
           </div>
         </div>
       </MentionResolutionProvider>

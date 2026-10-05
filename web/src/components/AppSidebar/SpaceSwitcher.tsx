@@ -1,7 +1,8 @@
-import { CheckIcon, ChevronsUpDownIcon, LoaderCircleIcon, type LucideIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, LoaderCircleIcon, type LucideIcon, PlusIcon, SlidersHorizontalIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CreateSpaceDialog from "@/components/CreateSpaceDialog";
+import { MemoDisplaySettingsContent } from "@/components/MemoDisplaySettingMenu";
 import MemosLogo from "@/components/MemosLogo";
 import SpaceMark from "@/components/SpaceMark";
 import {
@@ -11,6 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useSpaceContext } from "@/contexts/SpaceContext";
@@ -207,6 +211,16 @@ function SpaceSwitcher({ className, size = "md" }: { className?: string; size?: 
               <RowIcon icon={PlusIcon} />
               {t("space.create")}
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <RowIcon icon={SlidersHorizontalIcon} />
+                {t("memo.view-options")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-64 p-0">
+                <MemoDisplaySettingsContent />
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

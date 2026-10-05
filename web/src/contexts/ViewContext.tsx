@@ -6,6 +6,9 @@ export type MemoTimeBasis = "create_time" | "update_time";
 export const MAX_COLUMNS_VALUES = [1, 2, 3, 0] as const;
 export type MemoMaxColumns = (typeof MAX_COLUMNS_VALUES)[number];
 
+/** Memo detail column. Standard is the existing reading measure; wide is one step broader. */
+export type ReadingWidth = "standard" | "wide";
+
 interface ViewState {
   orderByTimeAsc: boolean;
   timeBasis?: MemoTimeBasis;
@@ -13,6 +16,7 @@ interface ViewState {
   compactMode: boolean;
   linkPreview: boolean;
   maxColumns: MemoMaxColumns;
+  readingWidth: ReadingWidth;
 }
 
 interface ViewContextValue {
@@ -21,18 +25,26 @@ interface ViewContextValue {
   compactMode: boolean;
   linkPreview: boolean;
   maxColumns: MemoMaxColumns;
+  readingWidth: ReadingWidth;
   setOrderByTimeAsc: (value: boolean) => void;
   setTimeBasis: (field: MemoTimeBasis) => void;
   setCompactMode: (value: boolean) => void;
   setLinkPreview: (value: boolean) => void;
   setMaxColumns: (value: MemoMaxColumns) => void;
+  setReadingWidth: (value: ReadingWidth) => void;
 }
 
 const ViewContext = createContext<ViewContextValue | null>(null);
 
 const LOCAL_STORAGE_KEY = "memos-view-setting";
 
-const DEFAULT_VIEW_STATE: ViewState = { orderByTimeAsc: false, compactMode: false, linkPreview: true, maxColumns: 1 };
+const DEFAULT_VIEW_STATE: ViewState = {
+  orderByTimeAsc: false,
+  compactMode: false,
+  linkPreview: true,
+  maxColumns: 1,
+  readingWidth: "standard",
+};
 
 export function ViewProvider({ children }: { children: ReactNode }) {
   const getInitialState = (): ViewState => {
@@ -51,6 +63,7 @@ export function ViewProvider({ children }: { children: ReactNode }) {
           compactMode: Boolean(data.compactMode ?? DEFAULT_VIEW_STATE.compactMode),
           linkPreview: Boolean(data.linkPreview ?? DEFAULT_VIEW_STATE.linkPreview),
           maxColumns,
+          readingWidth: data.readingWidth === "wide" ? "wide" : DEFAULT_VIEW_STATE.readingWidth,
         };
       }
     } catch (error) {
@@ -83,6 +96,7 @@ export function ViewProvider({ children }: { children: ReactNode }) {
   const setCompactMode = (value: boolean) => updateState({ compactMode: value });
   const setLinkPreview = (value: boolean) => updateState({ linkPreview: value });
   const setMaxColumns = (value: MemoMaxColumns) => updateState({ maxColumns: value });
+  const setReadingWidth = (value: ReadingWidth) => updateState({ readingWidth: value });
 
   return (
     <ViewContext.Provider
@@ -92,11 +106,13 @@ export function ViewProvider({ children }: { children: ReactNode }) {
         compactMode: viewState.compactMode,
         linkPreview: viewState.linkPreview,
         maxColumns: viewState.maxColumns,
+        readingWidth: viewState.readingWidth,
         setOrderByTimeAsc,
         setTimeBasis,
         setCompactMode,
         setLinkPreview,
         setMaxColumns,
+        setReadingWidth,
       }}
     >
       {children}

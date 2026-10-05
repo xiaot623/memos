@@ -24,6 +24,9 @@ vi.mock("@/utils/i18n", () => ({
       "memo.oldest-first": "Oldest first",
       "memo.order": "Order",
       "memo.order-by": "Order by",
+      "memo.reading-width": "Reading width",
+      "memo.reading-width-standard": "Standard",
+      "memo.reading-width-wide": "Wide",
       "memo.view-options": "View options",
     };
     if (key === "memo.layout-columns") return `${params?.n ?? ""} columns`;
@@ -58,6 +61,18 @@ describe("MemoDisplaySettingMenu", () => {
     expect(compactMode).toBeChecked();
     expect(compactMode).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByText("Grid layouts always use compact cards.")).toBeInTheDocument();
+
+    const standard = screen.getByRole("radio", { name: "Standard" });
+    const wide = screen.getByRole("radio", { name: "Wide" });
+    expect(screen.getByRole("radiogroup", { name: "Reading width" })).toBeInTheDocument();
+    expect(standard).toBeChecked();
+    expect(wide).not.toBeChecked();
+
+    fireEvent.click(wide);
+
+    expect(wide).toBeChecked();
+    expect(standard).not.toBeChecked();
+    expect(JSON.parse(localStorage.getItem("memos-view-setting") ?? "{}").readingWidth).toBe("wide");
   });
 
   it("moves horizontally in the visual direction for RTL layouts", () => {
