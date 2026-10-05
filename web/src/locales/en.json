@@ -328,6 +328,8 @@
       "uncheck-all": "Uncheck all tasks",
       "updated": "Tasks updated"
     },
+    "public": "Public",
+    "public-toggle": "Public",
     "view-options": "View options",
     "visibility": {
       "private": "Only me",

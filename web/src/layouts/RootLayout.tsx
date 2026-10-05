@@ -72,7 +72,7 @@ const RootLayoutContent = () => {
     removeFilter((filter) => filter.factor === "semanticSearch");
   }, [filters, isUserSettingsInitialized, removeFilter, userGeneralSetting?.semanticIndexState]);
 
-  // Anonymous visitors may only reach share links and other public routes.
+  // Anonymous visitors may read the public feed, public memos, and share links.
   if (
     shouldGatePrivateInstance({
       isPrivateInstance: true,

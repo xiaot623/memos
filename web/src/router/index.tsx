@@ -4,13 +4,7 @@ import { ChunkLoadErrorFallback } from "@/components/ErrorBoundary";
 import MainLayout from "@/layouts/MainLayout";
 import RootLayout from "@/layouts/RootLayout";
 import { lazyWithReload } from "@/utils/lazy";
-import {
-  LandingRoute,
-  RequireAuthRoute,
-  RequireFullInitializationRoute,
-  RequireGuestRoute,
-  RequireInstanceInitializationRoute,
-} from "./guards";
+import { RequireAuthRoute, RequireFullInitializationRoute, RequireGuestRoute, RequireInstanceInitializationRoute } from "./guards";
 import { ROUTES, SPACE_ROUTE_PATTERN } from "./routes";
 import { SpaceRoute } from "./SpaceRoute";
 
@@ -18,6 +12,7 @@ const AdminSignIn = lazyWithReload(() => import("@/pages/AdminSignIn"));
 const About = lazyWithReload(() => import("@/pages/About"));
 const Archived = lazyWithReload(() => import("@/pages/Archived"));
 const Home = lazyWithReload(() => import("@/pages/Home"));
+const PublicFeed = lazyWithReload(() => import("@/pages/PublicFeed"));
 const MemoDetail = lazyWithReload(() => import("@/pages/MemoDetail"));
 const NotFound = lazyWithReload(() => import("@/pages/NotFound"));
 const PermissionDenied = lazyWithReload(() => import("@/pages/PermissionDenied"));
@@ -66,10 +61,8 @@ export const routeConfig: RouteObject[] = [
           {
             element: <MainLayout />,
             children: [
-              {
-                element: <LandingRoute />,
-                children: [{ index: true, element: <Home /> }],
-              },
+              { index: true, element: <Home /> },
+              { path: Routes.PUBLIC, element: <PublicFeed /> },
               {
                 element: <RequireInstanceInitializationRoute />,
                 children: [{ path: Routes.ABOUT, element: <About /> }],

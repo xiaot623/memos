@@ -32,6 +32,8 @@ type Visibility string
 const (
 	// Private is the PRIVATE visibility — creator only.
 	Private Visibility = "PRIVATE"
+	// Public is the PUBLIC visibility — anyone, including anonymous visitors.
+	Public Visibility = "PUBLIC"
 	// SpaceAudience is visible to the creator and active members of its space.
 	SpaceAudience Visibility = "SPACE"
 )
@@ -164,8 +166,8 @@ type MemoWriteSnapshot struct {
 // MemoAccessScope is a typed, fail-closed read authorization predicate. When
 // present on FindMemo, drivers apply it in SQL before pagination.
 type MemoAccessScope struct {
-	// UserID is the authenticated viewer. Nil means no readable rows (there is
-	// no anonymous public audience).
+	// UserID is the authenticated viewer. Nil means the anonymous audience:
+	// normal PUBLIC memos only.
 	UserID *int32
 }
 
@@ -357,7 +359,7 @@ func sameMemoSpace(left, right *int32) bool {
 }
 
 func isValidVisibility(visibility Visibility) bool {
-	return visibility == Private || visibility == SpaceAudience
+	return visibility == Private || visibility == Public || visibility == SpaceAudience
 }
 
 func (s *Store) DeleteMemo(ctx context.Context, delete *DeleteMemo) error {

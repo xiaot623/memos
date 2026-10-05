@@ -67,23 +67,41 @@ const PUBLIC_ROUTE_PREFIXES = [
  * visitors are allowed to view without being bounced to the auth page.
  */
 export function isPublicRoute(path: string): boolean {
+  if (path === ROUTES.HOME || path === ROUTES.PUBLIC) {
+    return true;
+  }
   return PUBLIC_ROUTE_PREFIXES.some((route) => path.startsWith(route));
+}
+
+/**
+ * Reports whether an anonymous visitor may read this path without signing in.
+ * The public feed, a single memo page, and share links stay open. A non-public
+ * memo still fails its own read and does not render.
+ */
+export function isAnonymousReadablePath(pathname: string): boolean {
+  if (pathname === ROUTES.HOME || pathname === ROUTES.PUBLIC) {
+    return true;
+  }
+  if (pathname.startsWith(`${ROUTES.SHARED_MEMO}/`)) {
+    return true;
+  }
+  return pathname.startsWith("/memos/");
 }
 
 /**
  * Reports whether an anonymous visitor to a private instance should be redirected
  * to the sign-in page for the given path.
  *
- * A private instance (no configured instance URL) hides everything from anonymous
- * visitors except share-link pages, which stay accessible so public shares keep
- * working. Authenticated visitors and open instances are never gated.
+ * Anonymous visitors can read the public feed and public memo pages. Share links
+ * stay open. Everything else still goes to sign-in. Authenticated visitors and
+ * open instances are never gated.
  */
 export function shouldGatePrivateInstance(params: { isPrivateInstance: boolean; isAuthenticated: boolean; pathname: string }): boolean {
   const { isPrivateInstance, isAuthenticated, pathname } = params;
   if (!isPrivateInstance || isAuthenticated) {
     return false;
   }
-  return !pathname.startsWith(`${ROUTES.SHARED_MEMO}/`);
+  return !isAnonymousReadablePath(pathname);
 }
 
 /**

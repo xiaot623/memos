@@ -118,8 +118,10 @@ enum Visibility {
   VISIBILITY_UNSPECIFIED = 0;
   // PRIVATE: only the creator can read the memo.
   PRIVATE = 1;
-  reserved 2, 3;
-  reserved "PROTECTED", "PUBLIC";
+  reserved 2;
+  reserved "PROTECTED";
+  // PUBLIC: anyone can read the memo, including anonymous visitors.
+  PUBLIC = 3;
   // SPACE: active members of the memo's space can read it.
   SPACE = 4;
 }

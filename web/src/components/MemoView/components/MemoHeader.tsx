@@ -2,11 +2,14 @@ import { BookmarkIcon, LoaderCircleIcon } from "lucide-react";
 import { useCallback } from "react";
 import RelativeTime from "@/components/RelativeTime";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useNewMemo } from "@/contexts/NewMemoContext";
+import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
+import { type Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { User } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import MemoActionMenu from "../../MemoActionMenu";
@@ -88,7 +91,7 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
         )}
         {(similarityLabel || (currentUser && !isArchived)) && (
           // On desktop these controls show only while the card is engaged or the picker is open.
-          <span className="flex sm:hidden sm:group-hover:flex sm:group-focus-within:flex sm:has-[[data-popup-open]]:flex">
+          <span className="flex items-center sm:hidden sm:group-hover:flex sm:group-focus-within:flex sm:has-[[data-popup-open]]:flex">
             {similarityLabel && (
               <Tooltip>
                 <TooltipTrigger
@@ -100,6 +103,7 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
                 <TooltipContent>{similarityLabel}</TooltipContent>
               </Tooltip>
             )}
+            {currentUser?.name === memo.creator && !isArchived && <PublicVisibilityCheckbox memo={memo} />}
             {currentUser && !isArchived && <ReactionSelector memo={memo} trigger={<Button variant="quiet" size="icon-sm" />} />}
           </span>
         )}
@@ -125,6 +129,27 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ timeDisplay = "relative", showC
         <MemoActionMenu memo={memo} readonly={readonly} onEdit={openEditor} />
       </div>
     </div>
+  );
+};
+
+/** Author-only control. Checked publishes the memo; unchecked returns it to its space, or to the author alone. */
+const PublicVisibilityCheckbox = ({ memo }: { memo: Memo }) => {
+  const t = useTranslate();
+  const { mutate, isPending } = useUpdateMemo();
+  const isPublic = memo.visibility === Visibility.PUBLIC;
+
+  return (
+    <span className="inline-flex size-6 items-center justify-center">
+      <Checkbox
+        aria-label={t("memo.public-toggle")}
+        checked={isPublic}
+        disabled={isPending}
+        onCheckedChange={(checked) => {
+          const visibility = checked ? Visibility.PUBLIC : memo.space ? Visibility.SPACE : Visibility.PRIVATE;
+          mutate({ update: { name: memo.name, visibility }, updateMask: ["visibility"] });
+        }}
+      />
+    </span>
   );
 };
 

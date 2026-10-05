@@ -9,13 +9,19 @@ import (
 // sqliteMemoAccessPredicate builds the canonical memo-local read predicate for
 // memoAlias and appends its bind values to args.
 //
-// PRIVATE is visible only to its creator. SPACE is visible to the creator and
-// active members of that space (space_id required). There is no public or
-// protected audience, and instance admins do not bypass these rules in list
-// predicates.
+// PRIVATE is visible only to its creator. PUBLIC is visible to anyone, including
+// anonymous callers, but only while the memo is normal. SPACE is visible to the
+// creator and active members of that space (space_id required). Instance admins
+// do not bypass these rules in list predicates. Archived rows stay author-only.
 func sqliteMemoAccessPredicate(access *store.MemoAccessScope, memoAlias, memberAlias string, args *[]any) string {
+	publicOK := "(" + memoAlias + ".`visibility` = 'PUBLIC')"
+	validMemo := "(" + memoAlias + ".`visibility` IN ('PRIVATE', 'PUBLIC', 'SPACE')" +
+		" AND EXISTS (SELECT 1 FROM `user` AS `valid_creator` WHERE `valid_creator`.`id` = " + memoAlias + ".`creator_id` AND `valid_creator`.`row_status` IN ('NORMAL', 'ARCHIVED'))" +
+		" AND (" + memoAlias + ".`visibility` <> 'SPACE' OR (" + memoAlias + ".`space_id` IS NOT NULL" +
+		" AND EXISTS (SELECT 1 FROM `space` AS `valid_space` WHERE `valid_space`.`id` = " + memoAlias + ".`space_id`))))"
+
 	if access == nil || access.UserID == nil {
-		return "1 = 0"
+		return "(" + publicOK + " AND " + validMemo + " AND " + memoAlias + ".`row_status` = 'NORMAL')"
 	}
 
 	*args = append(*args, *access.UserID)
@@ -30,12 +36,7 @@ func sqliteMemoAccessPredicate(access *store.MemoAccessScope, memoAlias, memberA
 		" WHERE " + memberAlias + ".`space_id` = " + memoAlias + ".`space_id` AND " + memberAlias + ".`user_id` = ?" +
 		" AND " + memberAlias + ".`status` = 'ACTIVE' AND " + memberAlias + ".`role` IN ('ADMIN', 'USER'))))"
 
-	audience := "(" + privateOK + " OR " + spaceOK + ")"
-
-	validMemo := "(" + memoAlias + ".`visibility` IN ('PRIVATE', 'SPACE')" +
-		" AND EXISTS (SELECT 1 FROM `user` AS `valid_creator` WHERE `valid_creator`.`id` = " + memoAlias + ".`creator_id` AND `valid_creator`.`row_status` IN ('NORMAL', 'ARCHIVED'))" +
-		" AND (" + memoAlias + ".`visibility` <> 'SPACE' OR (" + memoAlias + ".`space_id` IS NOT NULL" +
-		" AND EXISTS (SELECT 1 FROM `space` AS `valid_space` WHERE `valid_space`.`id` = " + memoAlias + ".`space_id`))))"
+	audience := "(" + privateOK + " OR " + spaceOK + " OR " + publicOK + ")"
 
 	*args = append(*args, *access.UserID)
 	validState := fmt.Sprintf("(%s.`row_status` = 'NORMAL' OR (%s.`row_status` = 'ARCHIVED' AND %s.`creator_id` = ?))", memoAlias, memoAlias, memoAlias)

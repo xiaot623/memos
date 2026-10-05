@@ -65,7 +65,6 @@ func (s *APIV1Service) convertMemoFromStoreWithCreators(ctx context.Context, mem
 		memoMessage.Property = convertMemoPropertyFromStore(memo.Payload.Property)
 	}
 
-
 	// Reactions have no independent audience and are readable whenever this
 	// memo is readable. Conversion is reached only after memo authorization.
 	reactionMessages, err := s.convertReactionsFromStoreWithCreators(ctx, reactions, creatorMap, name)
@@ -222,12 +221,12 @@ func convertMemoPropertyFromStore(property *storepb.MemoPayload_Property) *v1pb.
 	}
 }
 
-
-
 func convertVisibilityFromStore(visibility store.Visibility) v1pb.Visibility {
 	switch visibility {
 	case store.Private:
 		return v1pb.Visibility_PRIVATE
+	case store.Public:
+		return v1pb.Visibility_PUBLIC
 	case store.SpaceAudience:
 		return v1pb.Visibility_SPACE
 	default:
@@ -239,10 +238,12 @@ func validateCreateMemoVisibility(visibility v1pb.Visibility) (store.Visibility,
 	switch visibility {
 	case v1pb.Visibility_VISIBILITY_UNSPECIFIED, v1pb.Visibility_PRIVATE:
 		return store.Private, nil
+	case v1pb.Visibility_PUBLIC:
+		return store.Public, nil
 	case v1pb.Visibility_SPACE:
 		return store.SpaceAudience, nil
 	default:
-		return "", status.Errorf(codes.InvalidArgument, "visibility must be PRIVATE or SPACE")
+		return "", status.Errorf(codes.InvalidArgument, "visibility must be PRIVATE, PUBLIC, or SPACE")
 	}
 }
 

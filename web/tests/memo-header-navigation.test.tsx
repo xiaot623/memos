@@ -3,10 +3,20 @@ import React from "react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MemoHeader from "@/components/MemoView/components/MemoHeader";
+import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 
 const state = vi.hoisted(() => ({
   creator: undefined as { username: string; displayName: string; avatarUrl: string } | undefined,
   currentUser: undefined as { name: string } | undefined,
+  memoCreator: undefined as string | undefined,
+  visibility: 1,
+  memoSpace: "spaces/product" as string | undefined,
+}));
+
+const updateMemo = vi.hoisted(() => vi.fn());
+
+vi.mock("@/hooks/useMemoQueries", () => ({
+  useUpdateMemo: () => ({ mutate: updateMemo, isPending: false }),
 }));
 
 vi.mock("@/components/RelativeTime", () => ({
@@ -57,7 +67,13 @@ vi.mock("@/components/MemoView/hooks", () => ({
 
 vi.mock("@/components/MemoView/MemoViewContext", () => ({
   useMemoViewContext: () => ({
-    memo: { name: "memos/123", visibility: 1, pinned: false, space: "spaces/product" },
+    memo: {
+      name: "memos/123",
+      visibility: state.visibility,
+      pinned: false,
+      space: state.memoSpace,
+      creator: state.memoCreator,
+    },
     creator: state.creator,
     currentUser: state.currentUser,
     parentPage: "/explore?filter=tagSearch%3Awork",
@@ -91,6 +107,10 @@ describe("MemoHeader navigation", () => {
   beforeEach(() => {
     state.creator = undefined;
     state.currentUser = undefined;
+    state.memoCreator = undefined;
+    state.visibility = 1;
+    state.memoSpace = "spaces/product";
+    updateMemo.mockReset();
   });
 
   it("uses one compact interaction surface for memo header actions", () => {
@@ -155,5 +175,76 @@ describe("MemoHeader navigation", () => {
 
     expect(metadata).toContainElement(timestamp);
     expect(space.closest("a, button")).toBeNull();
+  });
+
+  it("puts the author's public checkbox to the left of add-reaction", () => {
+    state.currentUser = { name: "users/alice" };
+    state.memoCreator = "users/alice";
+
+    render(
+      <MemoryRouter>
+        <MemoHeader />
+      </MemoryRouter>,
+    );
+
+    const toggle = screen.getByRole("checkbox", { name: "memo.public-toggle" });
+    const reaction = screen.getByRole("button", { name: "add-reaction" });
+    expect(toggle.compareDocumentPosition(reaction) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    fireEvent.click(toggle);
+    expect(updateMemo).toHaveBeenCalledWith({
+      update: { name: "memos/123", visibility: Visibility.PUBLIC },
+      updateMask: ["visibility"],
+    });
+  });
+
+  it("returns a public space memo to space members when the author turns it off", () => {
+    state.currentUser = { name: "users/alice" };
+    state.memoCreator = "users/alice";
+    state.visibility = Visibility.PUBLIC;
+
+    render(
+      <MemoryRouter>
+        <MemoHeader />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "memo.public-toggle" }));
+    expect(updateMemo).toHaveBeenCalledWith({
+      update: { name: "memos/123", visibility: Visibility.SPACE },
+      updateMask: ["visibility"],
+    });
+  });
+
+  it("returns a public memo without a space to the author when turned off", () => {
+    state.currentUser = { name: "users/alice" };
+    state.memoCreator = "users/alice";
+    state.visibility = Visibility.PUBLIC;
+    state.memoSpace = undefined;
+
+    render(
+      <MemoryRouter>
+        <MemoHeader />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "memo.public-toggle" }));
+    expect(updateMemo).toHaveBeenCalledWith({
+      update: { name: "memos/123", visibility: Visibility.PRIVATE },
+      updateMask: ["visibility"],
+    });
+  });
+
+  it("hides the public checkbox from other people", () => {
+    state.currentUser = { name: "users/bob" };
+    state.memoCreator = "users/alice";
+
+    render(
+      <MemoryRouter>
+        <MemoHeader />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole("checkbox", { name: "memo.public-toggle" })).not.toBeInTheDocument();
   });
 });

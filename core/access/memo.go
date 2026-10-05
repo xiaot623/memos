@@ -86,7 +86,7 @@ func CheckMemoReadContext(ctx MemoReadContext) MemoReadDecision {
 	if memo == nil || !ctx.CreatorValid {
 		return MemoReadDecision{Denial: MemoReadDenialNotFound}
 	}
-	if memo.Visibility != store.Private && memo.Visibility != store.SpaceAudience {
+	if memo.Visibility != store.Private && memo.Visibility != store.Public && memo.Visibility != store.SpaceAudience {
 		return MemoReadDecision{Denial: MemoReadDenialNotFound}
 	}
 	if memo.Visibility == store.SpaceAudience && (memo.SpaceID == nil || !ctx.SpaceValid) {
@@ -117,6 +117,8 @@ func CheckMemoReadContext(ctx MemoReadContext) MemoReadDecision {
 		if !viewerIsAuthor {
 			return MemoReadDecision{Denial: MemoReadDenialPermission}
 		}
+		return MemoReadDecision{Class: MemoReadClassPrivate}
+	case store.Public:
 		return MemoReadDecision{Class: MemoReadClassPrivate}
 	case store.SpaceAudience:
 		if !viewerActive {

@@ -3,6 +3,7 @@ import { extractSpaceUidFromName } from "@/lib/space-display";
 
 export const ROUTES = {
   HOME: "/",
+  PUBLIC: "/public",
   ABOUT: "/about",
   ATTACHMENTS: "/attachments",
   ARCHIVED: "/archived",

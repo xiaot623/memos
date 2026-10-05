@@ -1,4 +1,4 @@
-import { CheckIcon, ChevronsUpDownIcon, LoaderCircleIcon, type LucideIcon, PlusIcon, SlidersHorizontalIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, GlobeIcon, LoaderCircleIcon, type LucideIcon, PlusIcon, SlidersHorizontalIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CreateSpaceDialog from "@/components/CreateSpaceDialog";
@@ -17,7 +17,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
 import { useSpaceContext } from "@/contexts/SpaceContext";
+import useCurrentUser from "@/hooks/useCurrentUser";
 import { extractSpaceUidFromName, formatSpaceUidForDisplay } from "@/lib/space-display";
 import { cn } from "@/lib/utils";
 import { buildCollectionPath, getSpaceSwitchPath, ROUTES } from "@/router/routes";
@@ -57,8 +59,13 @@ const ContextItem = ({ selected, to, children, ariaLabel }: { selected: boolean;
 function SpaceSwitcher({ className, size = "md" }: { className?: string; size?: "md" | "header" }) {
   const t = useTranslate();
   const location = useLocation();
+  const currentUser = useCurrentUser();
+  const { isInitialized } = useAuth();
+  const anonymous = isInitialized && !currentUser;
   const memosPath = getSpaceSwitchPath(location);
   const { spaces, duplicateSpaceTitles, selectedSpace, selectedSpaceName, isLoadingSpaces, isSpacesError, selectSpace } = useSpaceContext();
+  const onPublicFeed = anonymous ? !selectedSpaceName : location.pathname === ROUTES.PUBLIC;
+  const publicPath = anonymous ? ROUTES.HOME : ROUTES.PUBLIC;
   const [createOpen, setCreateOpen] = useState(false);
   const [menuWidth, setMenuWidth] = useState<number>();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -67,7 +74,9 @@ function SpaceSwitcher({ className, size = "md" }: { className?: string; size?: 
   const showSelectedSpaceUid = selectedSpace ? duplicateSpaceTitles.has(selectedSpace.title) : Boolean(selectedSpaceName);
   const currentContextLabel = selectedSpaceName
     ? `${selectedSpace?.title || t("space.current")}${showSelectedSpaceUid && selectedSpaceUid ? ` (${selectedSpaceUid})` : ""}`
-    : t("common.memos");
+    : onPublicFeed
+      ? t("memo.public")
+      : t("common.memos");
   const brandSize = size === "header" ? "header" : "md";
   const spaceMarkSize = size === "header" ? "header" : "md";
   const homePath = buildCollectionPath(ROUTES.HOME, selectedSpaceName);
@@ -137,6 +146,21 @@ function SpaceSwitcher({ className, size = "md" }: { className?: string; size?: 
                     ) : null}
                   </span>
                 </>
+              ) : onPublicFeed ? (
+                <>
+                  <span className={cn("flex shrink-0 items-center justify-center", size === "header" ? "size-6" : "size-7")}>
+                    <GlobeIcon className={size === "header" ? "size-4" : "size-3.5"} strokeWidth={1.8} />
+                  </span>
+                  <span
+                    data-sidebar-label
+                    className={cn(
+                      "block min-w-0 flex-1 truncate tracking-[-0.01em] text-foreground",
+                      size === "header" ? "text-[15px] font-semibold leading-5" : "text-[14px] font-medium leading-4",
+                    )}
+                  >
+                    {t("memo.public")}
+                  </span>
+                </>
               ) : (
                 <MemosLogo compact size={brandSize} />
               )}
@@ -155,12 +179,18 @@ function SpaceSwitcher({ className, size = "md" }: { className?: string; size?: 
             style={menuWidth ? { width: `${menuWidth}px` } : undefined}
           >
             <DropdownMenuGroup>
-              <ContextItem selected={!selectedSpaceName} to={memosPath}>
-                <span className="min-w-0 flex-1">
-                  <MemosLogo compact size="sm" />
-                </span>
+              {!anonymous && (
+                <ContextItem selected={!selectedSpaceName && !onPublicFeed} to={memosPath}>
+                  <span className="min-w-0 flex-1">
+                    <MemosLogo compact size="sm" />
+                  </span>
+                </ContextItem>
+              )}
+              <ContextItem selected={onPublicFeed} to={publicPath} ariaLabel={t("memo.public")}>
+                <RowIcon icon={GlobeIcon} />
+                <span className="min-w-0 flex-1 truncate font-medium">{t("memo.public")}</span>
               </ContextItem>
-              {spaces.length > 0 && (
+              {!anonymous && spaces.length > 0 && (
                 <>
                   <DropdownMenuLabel className="pb-0.5 pt-1.5 font-normal text-muted-foreground">{t("space.spaces")}</DropdownMenuLabel>
                   {spaces.map((space) => {
@@ -194,23 +224,27 @@ function SpaceSwitcher({ className, size = "md" }: { className?: string; size?: 
               )}
             </DropdownMenuGroup>
             {/* isLoadingSpaces implies no data yet, so these only ever show on an empty list. */}
-            {isLoadingSpaces && (
+            {!anonymous && isLoadingSpaces && (
               <DropdownMenuItem disabled>
                 <RowIcon icon={LoaderCircleIcon} className="animate-spin" />
                 {t("space.loading")}
               </DropdownMenuItem>
             )}
-            {isSpacesError && spaces.length === 0 && (
+            {!anonymous && isSpacesError && spaces.length === 0 && (
               <DropdownMenuItem disabled>
                 <span className="size-5 shrink-0" />
                 {t("space.load-error")}
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setCreateOpen(true)}>
-              <RowIcon icon={PlusIcon} />
-              {t("space.create")}
-            </DropdownMenuItem>
+            {!anonymous && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setCreateOpen(true)}>
+                  <RowIcon icon={PlusIcon} />
+                  {t("space.create")}
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>

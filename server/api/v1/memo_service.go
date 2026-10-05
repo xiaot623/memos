@@ -106,19 +106,15 @@ func (s *APIV1Service) ListMemos(ctx context.Context, request *v1pb.ListMemosReq
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	// An anonymous caller cannot list memos.
-	if currentUser == nil {
-		return nil, status.Errorf(codes.Unauthenticated, "user not authenticated")
-	}
 	memoFind.Access = accessScope
 
 	if request.State == v1pb.State_ARCHIVED {
-		state := store.Archived
-		memoFind.RowStatus = &state
 		// Archived memos are only visible to their creator.
 		if currentUser == nil {
 			return &v1pb.ListMemosResponse{}, nil
 		}
+		state := store.Archived
+		memoFind.RowStatus = &state
 		memoFind.CreatorID = &currentUser.ID
 	} else {
 		state := store.Normal

@@ -187,18 +187,11 @@ func (s *FileServerService) serveAttachmentFile(c *echo.Context) error {
 }
 
 // serveUserAvatar serves user avatar images.
+// Avatars are profile images shown on public memo cards, so this read does not
+// require a session. Uploads stay on their authenticated route.
 func (s *FileServerService) serveUserAvatar(c *echo.Context) error {
 	ctx := c.Request().Context()
-
-	// Avatars require a valid session, access token, or PAT.
 	cacheControl := privateAttachmentCacheControl
-	viewer, err := s.getCurrentUser(ctx, c)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get current user").Wrap(err)
-	}
-	if viewer == nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized access")
-	}
 
 	identifier := c.Param("identifier")
 

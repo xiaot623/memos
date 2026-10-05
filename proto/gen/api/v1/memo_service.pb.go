@@ -32,6 +32,8 @@ const (
 	Visibility_VISIBILITY_UNSPECIFIED Visibility = 0
 	// PRIVATE: only the creator can read the memo.
 	Visibility_PRIVATE Visibility = 1
+	// PUBLIC: anyone can read the memo, including anonymous visitors.
+	Visibility_PUBLIC Visibility = 3
 	// SPACE: active members of the memo's space can read it.
 	Visibility_SPACE Visibility = 4
 )
@@ -41,11 +43,13 @@ var (
 	Visibility_name = map[int32]string{
 		0: "VISIBILITY_UNSPECIFIED",
 		1: "PRIVATE",
+		3: "PUBLIC",
 		4: "SPACE",
 	}
 	Visibility_value = map[string]int32{
 		"VISIBILITY_UNSPECIFIED": 0,
 		"PRIVATE":                1,
+		"PUBLIC":                 3,
 		"SPACE":                  4,
 	}
 )
@@ -1758,12 +1762,14 @@ const file_api_v1_memo_service_proto_rawDesc = "" +
 	"\x16memos.api.v1/MemoShareR\x04name\"<\n" +
 	"\x14GetSharedMemoRequest\x12$\n" +
 	"\vshare_token\x18\x01 \x01(\tB\x03\xe0A\x02R\n" +
-	"shareToken*_\n" +
+	"shareToken*]\n" +
 	"\n" +
 	"Visibility\x12\x1a\n" +
 	"\x16VISIBILITY_UNSPECIFIED\x10\x00\x12\v\n" +
-	"\aPRIVATE\x10\x01\x12\t\n" +
-	"\x05SPACE\x10\x04\"\x04\b\x02\x10\x02\"\x04\b\x03\x10\x03*\tPROTECTED*\x06PUBLIC2\xa2\x0f\n" +
+	"\aPRIVATE\x10\x01\x12\n" +
+	"\n" +
+	"\x06PUBLIC\x10\x03\x12\t\n" +
+	"\x05SPACE\x10\x04\"\x04\b\x02\x10\x02*\tPROTECTED2\xa2\x0f\n" +
 	"\vMemoService\x12e\n" +
 	"\n" +
 	"CreateMemo\x12\x1f.memos.api.v1.CreateMemoRequest\x1a\x12.memos.api.v1.Memo\"\"\xdaA\x04memo\x82\xd3\xe4\x93\x02\x15:\x04memo\"\r/api/v1/memos\x12f\n" +

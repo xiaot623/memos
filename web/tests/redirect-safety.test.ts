@@ -64,6 +64,8 @@ describe("buildAuthRoute", () => {
 
 describe("isPublicRoute", () => {
   it("identifies anonymous-accessible page prefixes", () => {
+    expect(isPublicRoute("/")).toBe(true);
+    expect(isPublicRoute("/public")).toBe(true);
     expect(isPublicRoute("/auth")).toBe(true);
     expect(isPublicRoute("/auth/signup")).toBe(true);
     expect(isPublicRoute("/about")).toBe(true);
@@ -72,7 +74,6 @@ describe("isPublicRoute", () => {
   });
 
   it("treats authenticated-only pages as non-public", () => {
-    expect(isPublicRoute("/")).toBe(false);
     expect(isPublicRoute("/home")).toBe(false);
     expect(isPublicRoute("/setting")).toBe(false);
     expect(isPublicRoute("/attachments")).toBe(false);
@@ -92,13 +93,15 @@ describe("shouldGatePrivateInstance", () => {
     expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: true, pathname: "/setting" })).toBe(false);
   });
 
-  it("gates anonymous visitors to non-share pages on a private instance", () => {
-    for (const pathname of ["/", "/about", "/memos/abc", "/setting"]) {
+  it("gates anonymous visitors away from private pages", () => {
+    for (const pathname of ["/about", "/setting", "/archived", "/attachments"]) {
       expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: false, pathname })).toBe(true);
     }
   });
 
-  it("keeps share links reachable for anonymous visitors on a private instance", () => {
-    expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: false, pathname: "/memos/shares/token123" })).toBe(false);
+  it("keeps the public feed, memo pages, and share links open", () => {
+    for (const pathname of ["/", "/public", "/memos/abc", "/memos/shares/token123"]) {
+      expect(shouldGatePrivateInstance({ isPrivateInstance: true, isAuthenticated: false, pathname })).toBe(false);
+    }
   });
 });

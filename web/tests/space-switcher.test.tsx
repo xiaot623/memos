@@ -3,6 +3,19 @@ import { createMemoryRouter, MemoryRouter, RouterProvider } from "react-router-d
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import SpaceSwitcher from "@/components/AppSidebar/SpaceSwitcher";
 
+const authState = vi.hoisted(() => ({
+  initialized: true,
+  currentUser: { name: "users/alice" } as { name: string } | undefined,
+}));
+
+vi.mock("@/hooks/useCurrentUser", () => ({
+  default: () => authState.currentUser,
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ isInitialized: authState.initialized }),
+}));
+
 const spaceState = vi.hoisted(() => ({
   spaces: [
     { name: "spaces/product", title: "Product", description: "" },
@@ -53,6 +66,8 @@ const render = (ui: React.ReactNode) => testingRender(<MemoryRouter>{ui}</Memory
 
 describe("SpaceSwitcher", () => {
   beforeEach(() => {
+    authState.initialized = true;
+    authState.currentUser = { name: "users/alice" };
     spaceState.spaces = [
       { name: "spaces/product", title: "Product", description: "" },
       { name: "spaces/research", title: "Research", description: "" },
@@ -144,7 +159,8 @@ describe("SpaceSwitcher", () => {
     fireEvent.click(screen.getByRole("button", { name: "space.switch: Product" }));
 
     const rows = await screen.findAllByRole("menuitemradio");
-    expect(rows.map((row) => row.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
+    expect(rows.map((row) => row.getAttribute("aria-checked"))).toEqual(["false", "false", "true", "false"]);
+    expect(rows.filter((row) => row.getAttribute("aria-checked") === "true")).toHaveLength(1);
 
     // The active row carries the fill; the check is its only indicator.
     const active = screen.getByRole("menuitemradio", { name: "Product" });
@@ -276,5 +292,31 @@ describe("SpaceSwitcher", () => {
     expect(screen.getByRole("dialog", { name: "" })).toHaveTextContent("Create Space dialog");
     fireEvent.click(screen.getByRole("button", { name: "Complete create" }));
     expect(spaceState.selectSpace).toHaveBeenCalledWith(spaceState.spaces[0]);
+  });
+
+  it("lists Public beside Memos for a signed-in user", async () => {
+    const router = createMemoryRouter([{ path: "*", element: <SpaceSwitcher /> }], { initialEntries: ["/public"] });
+    testingRender(<RouterProvider router={router} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "space.switch: memo.public" }));
+    const publicItem = await screen.findByRole("menuitemradio", { name: "memo.public" });
+    expect(publicItem).toHaveAttribute("href", "/public");
+    expect(publicItem).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("menuitemradio", { name: "Memos" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("menuitem", { name: "space.create" })).toBeInTheDocument();
+  });
+
+  it("shows only the public feed and view options when signed out", async () => {
+    authState.currentUser = undefined;
+    render(<SpaceSwitcher />);
+
+    fireEvent.click(screen.getByRole("button", { name: "space.switch: memo.public" }));
+    const publicItem = await screen.findByRole("menuitemradio", { name: "memo.public" });
+    expect(publicItem).toHaveAttribute("href", "/");
+    expect(publicItem).toHaveAttribute("aria-checked", "true");
+    expect(screen.queryByRole("menuitemradio", { name: "Memos" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitemradio", { name: "Product" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "space.create" })).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "memo.view-options" })).toBeInTheDocument();
   });
 });

@@ -34,7 +34,6 @@ import { cn } from "@/lib/utils";
 import { ROUTES } from "@/router/routes";
 import { User_Role } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
-import MemosLogo from "../MemosLogo";
 import CommonSidebarContent from "./CommonSidebarContent";
 import { getSidebarRouteKind } from "./routes";
 import SidebarRow, { SIDEBAR_ROW_CLASSES, SidebarRowIconSlot, sidebarRowStateClasses } from "./SidebarRow";
@@ -219,27 +218,10 @@ const RouteSidebarContent = () => {
   return null;
 };
 
-/** Signed-in users can navigate between Spaces from any page; global pages show Memos. */
-const SidebarBrand = ({ className, size = "md" }: { className?: string; size?: "md" | "header" }) => {
-  const currentUser = useCurrentUser();
-
-  if (currentUser) {
-    return <SpaceSwitcher className={className} size={size} />;
-  }
-
-  return (
-    <Link
-      to={ROUTES.HOME}
-      className={cn(
-        "transition-colors hover:bg-sidebar-accent/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/40",
-        sidebarSurfaceVariants({ role: size === "header" ? "headerBrand" : "mobileBrand" }),
-        className,
-      )}
-    >
-      <MemosLogo compact size={size === "header" ? "header" : "md"} />
-    </Link>
-  );
-};
+/** The brand opens the context menu. Signed-out visitors only see the public feed there. */
+const SidebarBrand = ({ className, size = "md" }: { className?: string; size?: "md" | "header" }) => (
+  <SpaceSwitcher className={className} size={size} />
+);
 
 const AppSidebar = ({ className }: { className?: string }) => {
   const t = useTranslate();

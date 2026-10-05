@@ -23,6 +23,21 @@ func TestCheckMemoReadPrivate(t *testing.T) {
 	require.True(t, CheckMemoReadContext(MemoReadContext{Memo: private, SharedMemoID: &shareID, CreatorValid: true, SpaceValid: true}).Allowed())
 }
 
+func TestCheckMemoReadPublic(t *testing.T) {
+	owner := &store.User{ID: 1, RowStatus: store.Normal}
+	other := &store.User{ID: 2, RowStatus: store.Normal}
+	spaceID := int32(7)
+	memo := &store.Memo{ID: 11, CreatorID: owner.ID, RowStatus: store.Normal, Visibility: store.Public, SpaceID: &spaceID}
+
+	require.True(t, CheckMemoReadContext(MemoReadContext{Memo: memo, CreatorValid: true, SpaceValid: true}).Allowed())
+	require.True(t, CheckMemoReadContext(MemoReadContext{Memo: memo, Viewer: other, CreatorValid: true, SpaceValid: false}).Allowed())
+
+	memo.RowStatus = store.Archived
+	require.True(t, CheckMemoReadContext(MemoReadContext{Memo: memo, Viewer: owner, CreatorValid: true, SpaceValid: true}).Allowed())
+	require.Equal(t, MemoReadDenialNotFound, CheckMemoReadContext(MemoReadContext{Memo: memo, CreatorValid: true, SpaceValid: true}).Denial)
+	require.Equal(t, MemoReadDenialNotFound, CheckMemoReadContext(MemoReadContext{Memo: memo, Viewer: other, CreatorValid: true, SpaceValid: true}).Denial)
+}
+
 func TestCheckMemoReadSpaceAudience(t *testing.T) {
 	owner := &store.User{ID: 1, RowStatus: store.Normal}
 	member := &store.User{ID: 2, RowStatus: store.Normal}

@@ -9,9 +9,8 @@ package v1
 // Format: Full gRPC procedure path as returned by req.Spec().Procedure (Connect)
 // or info.FullMethod (gRPC interceptor).
 //
-// There is no instance public-access mode: anonymous callers may only reach
-// auth/bootstrap endpoints needed to render the sign-in page, register when
-// permitted, and open share-token links.
+// Anonymous callers may reach auth/bootstrap endpoints, read PUBLIC memos
+// (list, get, and the author profile on those cards), and open share-token links.
 var PublicMethods = map[string]struct{}{
 	// Auth Service - login/token endpoints must be accessible without auth
 	"/memos.api.v1.AuthService/SignIn":       {},
@@ -22,8 +21,15 @@ var PublicMethods = map[string]struct{}{
 	"/memos.api.v1.InstanceService/GetInstanceSetting":       {},
 	"/memos.api.v1.InstanceService/BatchGetInstanceSettings": {},
 
-	// User Service - registration policy is enforced in UserService
+	// User Service - registration policy is enforced in UserService.
+	// GetUser returns a public profile; email stays hidden from other viewers.
 	"/memos.api.v1.UserService/CreateUser": {},
+	"/memos.api.v1.UserService/GetUser":    {},
+
+	// Memo reads. Handlers still apply the audience predicate, so anonymous
+	// callers only receive normal PUBLIC memos.
+	"/memos.api.v1.MemoService/ListMemos": {},
+	"/memos.api.v1.MemoService/GetMemo":   {},
 
 	// Memo sharing - share-token endpoints require no authentication
 	"/memos.api.v1.MemoService/GetSharedMemo": {},

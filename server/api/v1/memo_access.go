@@ -65,7 +65,7 @@ func newMemoAccessScope(currentUser *store.User) *store.MemoAccessScope {
 }
 
 // resolveMemoAccessScope resolves the caller and builds their memo access
-// scope. Anonymous callers get an empty scope (no readable rows).
+// scope. Anonymous callers get a scope that matches only normal PUBLIC memos.
 func (s *APIV1Service) resolveMemoAccessScope(ctx context.Context) (*store.MemoAccessScope, *store.User, error) {
 	currentUser, err := s.fetchCurrentUser(ctx)
 	if err != nil {

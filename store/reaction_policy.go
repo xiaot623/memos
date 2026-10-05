@@ -84,6 +84,9 @@ func validateReactionMemoParticipation(snapshot *ReactionAuthorizationSnapshot) 
 		if snapshot.MemoCreatorID != snapshot.ActorUserID {
 			return ErrReactionPermissionDenied
 		}
+	case Public:
+		// Any active signed-in user may react. Anonymous callers never reach this check.
+		return nil
 	case SpaceAudience:
 		if snapshot.MemoCreatorID != snapshot.ActorUserID && !snapshot.MemoMemberActive {
 			return ErrReactionPermissionDenied

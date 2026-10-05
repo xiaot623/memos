@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -178,4 +180,56 @@ func TestListMemosTimeOrderBy(t *testing.T) {
 		OrderBy:  "display_time desc",
 	})
 	require.Error(t, err)
+}
+
+func TestPublicMemoIsReadableWithoutSigningIn(t *testing.T) {
+	ctx := context.Background()
+	ts := NewTestService(t)
+	defer ts.Cleanup()
+
+	author, err := ts.CreateRegularUser(ctx, "public-author")
+	require.NoError(t, err)
+	authorCtx := ts.CreateUserContext(ctx, author.ID)
+	reader, err := ts.CreateRegularUser(ctx, "public-reader")
+	require.NoError(t, err)
+	readerCtx := ts.CreateUserContext(ctx, reader.ID)
+
+	privateMemo, err := ts.Service.CreateMemo(authorCtx, &apiv1.CreateMemoRequest{
+		Memo: &apiv1.Memo{Content: "keep this private", Visibility: apiv1.Visibility_PRIVATE},
+	})
+	require.NoError(t, err)
+	publicMemo, err := ts.Service.CreateMemo(authorCtx, &apiv1.CreateMemoRequest{
+		Memo: &apiv1.Memo{Content: "show this", Visibility: apiv1.Visibility_PUBLIC},
+	})
+	require.NoError(t, err)
+
+	anonymousList, err := ts.Service.ListMemos(ctx, &apiv1.ListMemosRequest{PageSize: 10})
+	require.NoError(t, err)
+	require.Len(t, anonymousList.Memos, 1)
+	require.Equal(t, publicMemo.Name, anonymousList.Memos[0].Name)
+	require.Equal(t, "users/public-author", anonymousList.Memos[0].Creator)
+
+	got, err := ts.Service.GetMemo(ctx, &apiv1.GetMemoRequest{Name: publicMemo.Name})
+	require.NoError(t, err)
+	require.Equal(t, "show this", got.Content)
+
+	_, err = ts.Service.GetMemo(ctx, &apiv1.GetMemoRequest{Name: privateMemo.Name})
+	require.Equal(t, codes.Unauthenticated, status.Code(err))
+
+	readerList, err := ts.Service.ListMemos(readerCtx, &apiv1.ListMemosRequest{
+		PageSize: 10,
+		Filter:   `visibility == "PUBLIC"`,
+	})
+	require.NoError(t, err)
+	require.Len(t, readerList.Memos, 1)
+	require.Equal(t, publicMemo.Name, readerList.Memos[0].Name)
+
+	_, err = ts.Service.UpdateMemo(authorCtx, &apiv1.UpdateMemoRequest{
+		Memo:       &apiv1.Memo{Name: publicMemo.Name, State: apiv1.State_ARCHIVED},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"state"}},
+	})
+	require.NoError(t, err)
+	archivedList, err := ts.Service.ListMemos(ctx, &apiv1.ListMemosRequest{PageSize: 10})
+	require.NoError(t, err)
+	require.Empty(t, archivedList.Memos)
 }

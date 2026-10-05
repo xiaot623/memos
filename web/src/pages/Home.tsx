@@ -14,8 +14,9 @@ import { spaceScopedCacheKey } from "@/lib/resource-names";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
+import PublicFeed from "./PublicFeed";
 
-const Home = () => {
+const SignedInHome = () => {
   const user = useCurrentUser();
   const t = useTranslate();
   const { isUserSettingsInitialized } = useAuth();
@@ -77,6 +78,18 @@ const Home = () => {
       </NewMemoProvider>
     </div>
   );
+};
+
+const Home = () => {
+  const user = useCurrentUser();
+  const { isInitialized } = useAuth();
+  if (!isInitialized) {
+    return null;
+  }
+  if (!user) {
+    return <PublicFeed />;
+  }
+  return <SignedInHome />;
 };
 
 export default Home;

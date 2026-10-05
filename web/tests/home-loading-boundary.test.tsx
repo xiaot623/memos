@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import Home from "@/pages/Home";
 
 const state = vi.hoisted(() => ({
+  authInitialized: true,
+  currentUser: { name: "users/1" } as { name: string } | undefined,
   selectedSpaceName: undefined as string | undefined,
   editorProps: undefined as Record<string, unknown> | undefined,
   listProps: undefined as Record<string, unknown> | undefined,
@@ -36,7 +38,7 @@ vi.mock("@/components/PagedMemoList", () => ({
     state.listProps = props;
     return (
       <>
-        {renderLeading({ useGrid: false })}
+        {renderLeading?.({ useGrid: false })}
         {renderer({ name: "memos/1" }, { compact: false })}
       </>
     );
@@ -45,7 +47,7 @@ vi.mock("@/components/PagedMemoList", () => ({
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
-  useAuth: () => ({ isUserSettingsInitialized: true }),
+  useAuth: () => ({ isUserSettingsInitialized: true, isInitialized: state.authInitialized }),
 }));
 
 vi.mock("@/contexts/GlobalMemoEditorContext", () => ({
@@ -76,7 +78,7 @@ vi.mock("@/hooks", () => ({
 }));
 
 vi.mock("@/hooks/useCurrentUser", () => ({
-  default: () => ({ name: "users/1" }),
+  default: () => state.currentUser,
 }));
 
 vi.mock("@/utils/i18n", () => ({
@@ -85,6 +87,8 @@ vi.mock("@/utils/i18n", () => ({
 
 describe("<Home>", () => {
   it("renders the editor and memo cards synchronously without blank placeholders", () => {
+    state.authInitialized = true;
+    state.currentUser = { name: "users/1" };
     state.selectedSpaceName = undefined;
     render(<Home />);
 
@@ -97,7 +101,21 @@ describe("<Home>", () => {
     expect(state.editorProps?.autoFocus).toEqual(expect.any(Function));
   });
 
+  it("shows the public feed without the editor when nobody is signed in", () => {
+    state.authInitialized = true;
+    state.currentUser = undefined;
+    state.selectedSpaceName = undefined;
+    render(<Home />);
+
+    expect(screen.queryByTestId("memo-editor")).not.toBeInTheDocument();
+    expect(screen.getByTestId("memo-view")).toBeInTheDocument();
+    expect(state.memoFilterOptions).toMatchObject({ visibilities: [3] });
+    expect(state.memoViewProps).toMatchObject({ showCreator: true });
+  });
+
   it("filters the feed and sets new memo placement to the selected Space", () => {
+    state.authInitialized = true;
+    state.currentUser = { name: "users/1" };
     state.selectedSpaceName = "spaces/product";
     render(<Home />);
 

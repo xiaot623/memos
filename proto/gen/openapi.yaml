@@ -3027,6 +3027,7 @@ components:
                     enum:
                         - VISIBILITY_UNSPECIFIED
                         - PRIVATE
+                        - PUBLIC
                         - SPACE
                     type: string
                     description: |-
