@@ -28,21 +28,10 @@ const MemoContent = (props: MemoContentProps) => {
           "[&_.data-footnote-backref]:no-underline [&_.data-footnote-backref:hover]:underline",
           contentClassName,
         )}
-        onMouseUp={props.editable ? undefined : props.onClick}
-        onDoubleClick={props.editable ? undefined : props.onDoubleClick}
+        onMouseUp={props.onClick}
+        onDoubleClick={props.onDoubleClick}
       >
-        <MarkdownView
-          content={content}
-          compact={Boolean(props.compact)}
-          memoName={props.memoName}
-          eager={!props.compact}
-          editable={props.editable}
-          inPlace={props.inPlace}
-          caretPoint={props.caretPoint}
-          onContentChange={props.onContentChange}
-          onSubmit={props.onSubmit}
-          onBlur={props.editable ? props.onBlur : undefined}
-        />
+        <MarkdownView content={content} compact={Boolean(props.compact)} memoName={props.memoName} eager={!props.compact} />
       </div>
     </div>
   );

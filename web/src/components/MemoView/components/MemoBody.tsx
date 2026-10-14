@@ -10,7 +10,7 @@ import { filterInlineManagedAttachments } from "@/utils/managed-attachment";
 import MemoContent from "../../MemoContent";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
-import { useMemoViewContext, useMemoViewDerived } from "../MemoViewContext";
+import { useMemoViewContext } from "../MemoViewContext";
 import type { MemoBodyProps } from "../types";
 
 const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
@@ -26,21 +26,7 @@ const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 };
 
 const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
-  const {
-    memo,
-    parentPage,
-    showBlurredContent,
-    blurred,
-    openPreview,
-    toggleBlurVisibility,
-    isEditing,
-    caretPoint,
-    onDraftChange,
-    saveEditor,
-    readonly,
-  } = useMemoViewContext();
-  const { isInMemoDetailPage, isArchived } = useMemoViewDerived();
-  const inPlace = isInMemoDetailPage && !readonly && !isArchived;
+  const { memo, parentPage, showBlurredContent, blurred, openPreview, toggleBlurVisibility } = useMemoViewContext();
 
   const { handleMemoContentClick } = useMemoHandlers({ openPreview });
 
@@ -67,12 +53,6 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact }) => {
               attachments={memo.attachments}
               onClick={handleMemoContentClick}
               compact={Boolean(compact)}
-              editable={isEditing}
-              inPlace={inPlace}
-              caretPoint={caretPoint}
-              onContentChange={onDraftChange}
-              onSubmit={saveEditor}
-              onBlur={saveEditor}
             />
             <AttachmentGallery visual={visual} onImagePreview={openPreview} />
             <MemoMetadataRows audio={audio} docs={docs} currentMemoName={memo.name} parentPage={parentPage} />

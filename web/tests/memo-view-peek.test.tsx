@@ -93,32 +93,41 @@ describe("<MemoView> peek editor", () => {
     mocks.loadMemoEditor.mockReset().mockResolvedValue({ default: MockPeekEditor });
   });
 
-  it("opens a peek editor on card click and keeps the original card", async () => {
+  it("opens a peek editor on card double-click and keeps the original card", async () => {
     renderMemo();
 
-    fireEvent.click(screen.getByText("note body"));
+    fireEvent.doubleClick(screen.getByText("note body"));
 
     await waitFor(() => expect(screen.getByTestId("peek-editor")).toBeInTheDocument());
     expect(screen.getByTestId("peek-editor")).toHaveAttribute("data-presentation", "peek");
     expect(screen.getByText("note body")).toBeInTheDocument();
   });
 
-  it("keeps the reading card and does not open a peek editor on the detail page", async () => {
+  it("opens a peek editor on the detail page and keeps the reading card", async () => {
     renderMemo("users/alice", "/memos/1");
+
+    fireEvent.doubleClick(screen.getByText("note body"));
+
+    await waitFor(() => expect(screen.getByTestId("peek-editor")).toBeInTheDocument());
+    expect(screen.getByTestId("peek-editor")).toHaveAttribute("data-presentation", "peek");
+    expect(screen.getByText("note body")).toBeInTheDocument();
+  });
+
+  it("does not open the editor on a single click", async () => {
+    renderMemo();
 
     fireEvent.click(screen.getByText("note body"));
 
     await Promise.resolve();
     expect(screen.queryByTestId("peek-editor")).toBeNull();
     expect(mocks.loadMemoEditor).not.toHaveBeenCalled();
-    expect(screen.getByText("note body")).toBeInTheDocument();
   });
 
-  it("does not open the editor when clicking a timestamp or tag", async () => {
+  it("does not open the editor when double-clicking a timestamp or tag", async () => {
     renderMemo();
 
-    fireEvent.click(screen.getByRole("button", { name: "goto-detail" }));
-    fireEvent.click(screen.getByText("#inbox"));
+    fireEvent.doubleClick(screen.getByRole("button", { name: "goto-detail" }));
+    fireEvent.doubleClick(screen.getByText("#inbox"));
 
     await Promise.resolve();
     expect(screen.queryByTestId("peek-editor")).toBeNull();
@@ -129,7 +138,7 @@ describe("<MemoView> peek editor", () => {
     mocks.currentUser = { name: "users/bob" };
     renderMemo();
 
-    fireEvent.click(screen.getByText("note body"));
+    fireEvent.doubleClick(screen.getByText("note body"));
 
     await Promise.resolve();
     expect(screen.queryByTestId("peek-editor")).toBeNull();
@@ -138,7 +147,7 @@ describe("<MemoView> peek editor", () => {
 
   it("marks the card busy while a background save is in flight", async () => {
     renderMemo();
-    fireEvent.click(screen.getByText("note body"));
+    fireEvent.doubleClick(screen.getByText("note body"));
     await waitFor(() => expect(mocks.editorProps).toBeDefined());
 
     act(() => {

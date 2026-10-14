@@ -58,16 +58,11 @@ vi.mock("@/components/MemoView/MemoViewContext", () => ({
     showBlurredContent: mockState.showBlurredContent,
     blurred: mockState.blurred,
     readonly: false,
-    isEditing: false,
-    caretPoint: null,
-    saveEditor: vi.fn(),
-    onDraftChange: vi.fn(),
     isSaving: false,
     openEditor: vi.fn(),
     openPreview: vi.fn(),
     toggleBlurVisibility: mockState.toggleBlurVisibility,
   }),
-  useMemoViewDerived: () => ({ isInMemoDetailPage: false, isArchived: false }),
 }));
 
 const createMemo = (content: string, reactions: Array<{ reactionType: string; creator: string }> = []) => ({
