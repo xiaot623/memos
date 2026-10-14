@@ -50,6 +50,11 @@ export interface EditorContentProps {
   /** Invoked by the in-editor save shortcut (Cmd/Ctrl+Enter). */
   onSubmit: () => void;
   onFiles: (files: File[], origin: EditorFileOrigin) => void;
+  /**
+   * Reports the parsed WYSIWYG document. Return true once that report is the
+   * opening markdown; false asks for another report after the document catches up.
+   */
+  onOpeningDocument?: (markdown: string, hasHiddenHtml: boolean) => boolean;
 }
 
 /**

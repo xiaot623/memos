@@ -1,7 +1,6 @@
 import { Maximize2Icon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { needsRawMarkdown } from "@/components/MarkdownRuntime/unsupportedSyntax";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage } from "@/hooks";
@@ -98,17 +97,27 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     defaultCreateTime,
   });
   const isDraftCacheEnabled = !memo;
+  const rawModeDecidedRef = useRef(false);
+  const isInitializedRef = useRef(false);
+  isInitializedRef.current = isInitialized;
 
-  useEffect(() => {
-    if (!isInitialized) {
-      return;
-    }
-    if (!needsRawMarkdown(getState().content)) {
-      return;
-    }
-    dispatch(actions.setRawMode(true));
-    toast(t("editor.unsupported-syntax-raw-mode"));
-  }, [isInitialized, actions, dispatch, getState, t]);
+  const handleOpeningDocument = useCallback(
+    (markdown: string, hasHidden: boolean) => {
+      if (rawModeDecidedRef.current) {
+        return true;
+      }
+      if (!isInitializedRef.current || markdown !== getState().content) {
+        return false;
+      }
+      rawModeDecidedRef.current = true;
+      if (hasHidden) {
+        dispatch(actions.setRawMode(true));
+        toast(t("editor.unsupported-syntax-raw-mode"));
+      }
+      return true;
+    },
+    [actions, dispatch, getState, t],
+  );
 
   useEffect(() => {
     onSavingChange?.(isSaving);
@@ -283,7 +292,13 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         </div>
       )}
 
-      <EditorContent ref={editorRef} placeholder={placeholder} onSubmit={handleSave} onFiles={handleEditorFiles} />
+      <EditorContent
+        ref={editorRef}
+        placeholder={placeholder}
+        onSubmit={handleSave}
+        onFiles={handleEditorFiles}
+        onOpeningDocument={handleOpeningDocument}
+      />
 
       <div className="w-full flex flex-col gap-2">
         <EditorMetadata

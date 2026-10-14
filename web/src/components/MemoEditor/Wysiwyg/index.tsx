@@ -1,9 +1,11 @@
 import type { Crepe } from "@milkdown/crepe";
+import { editorViewCtx } from "@milkdown/kit/core";
 import type { Ctx } from "@milkdown/kit/ctx";
 import { replaceAll } from "@milkdown/kit/utils";
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { createMarkdownRuntime } from "@/components/MarkdownRuntime/createRuntime";
+import { hasHiddenHtml } from "@/components/MarkdownRuntime/plugins/html";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { getThemeWithFallback } from "@/utils/theme";
@@ -19,11 +21,16 @@ interface WysiwygEditorProps {
   onContentChange: (content: string) => void;
   onFiles: (files: File[]) => void;
   onSubmit: () => void;
+  /**
+   * Reports the parsed document. Return true once that report is the opening
+   * markdown; false asks for another report after the document catches up.
+   */
+  onOpeningDocument?: (markdown: string, hasHiddenHtml: boolean) => boolean;
   isFocusMode?: boolean;
 }
 
 const WysiwygEditorInner = forwardRef(function WysiwygEditorInner(props: WysiwygEditorProps, ref: React.ForwardedRef<EditorController>) {
-  const { className, initialContent, placeholder, onContentChange, onFiles, onSubmit, isFocusMode } = props;
+  const { className, initialContent, placeholder, onContentChange, onFiles, onSubmit, onOpeningDocument, isFocusMode } = props;
   const crepeRef = useRef<Crepe | undefined>(undefined);
   const ctxRef = useRef<Ctx | undefined>(undefined);
   const controllerRef = useRef<EditorController | null>(null);
@@ -35,6 +42,9 @@ const WysiwygEditorInner = forwardRef(function WysiwygEditorInner(props: Wysiwyg
   const onSubmitRef = useRef(onSubmit);
   onSubmitRef.current = onSubmit;
   const initialContentRef = useRef(initialContent);
+  const onOpeningDocumentRef = useRef(onOpeningDocument);
+  onOpeningDocumentRef.current = onOpeningDocument;
+  const openingCheckedRef = useRef(false);
   const { userGeneralSetting } = useAuth();
 
   const { loading } = useEditor((root) => {
@@ -52,6 +62,7 @@ const WysiwygEditorInner = forwardRef(function WysiwygEditorInner(props: Wysiwyg
     crepe.on((listener) => {
       listener.mounted((ctx) => {
         ctxRef.current = ctx;
+        onOpeningDocumentRef.current?.(crepe.getMarkdown(), hasHiddenHtml(ctx.get(editorViewCtx).state.doc));
       });
       listener.updated(() => {
         listenersRef.current.forEach((fn) => fn());
@@ -72,11 +83,20 @@ const WysiwygEditorInner = forwardRef(function WysiwygEditorInner(props: Wysiwyg
     if (!crepe || loading) {
       return;
     }
-    if (crepe.getMarkdown() === initialContent) {
+    // Crepe is created from the first render, which is often empty. Memo text
+    // arrives after init, so re-check once that document is in the editor.
+    const drifted = crepe.getMarkdown() !== initialContent;
+    if (!drifted && openingCheckedRef.current) {
       return;
     }
     crepe.editor.action((ctx) => {
-      replaceAll(initialContent)(ctx);
+      if (drifted) {
+        replaceAll(initialContent)(ctx);
+      }
+      const accepted = onOpeningDocumentRef.current?.(crepe.getMarkdown(), hasHiddenHtml(ctx.get(editorViewCtx).state.doc)) ?? true;
+      if (accepted) {
+        openingCheckedRef.current = true;
+      }
     });
   }, [initialContent, loading]);
 

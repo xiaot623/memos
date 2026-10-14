@@ -32,8 +32,7 @@ function hiddenHtml(value: string): [string, Record<string, string>] {
   return ["span", { "data-type": "html", "data-value": value, hidden: "true" }];
 }
 
-function htmlToDOM(node: Node): [string, Record<string, string>] {
-  const value = String(node.attrs.value ?? "");
+function htmlValueToDOM(value: string): [string, Record<string, string>] {
   const iframe = parseVoidTag(value, "iframe");
   if (iframe?.src && isTrustedIframeSrc(iframe.src)) {
     const attrs: Record<string, string> = {
@@ -81,6 +80,25 @@ function htmlToDOM(node: Node): [string, Record<string, string>] {
   }
 
   return hiddenHtml(value);
+}
+
+function htmlToDOM(node: Node): [string, Record<string, string>] {
+  return htmlValueToDOM(String(node.attrs.value ?? ""));
+}
+
+function isVisibleTrustedHtml(value: string): boolean {
+  return htmlValueToDOM(value)[1].hidden !== "true";
+}
+
+/** True when the parsed Milkdown document contains HTML the rich editor cannot show. */
+export function hasHiddenHtml(doc: Node): boolean {
+  let hidden = false;
+  doc.descendants((node) => {
+    if (node.type.name === "html" && !isVisibleTrustedHtml(String(node.attrs.value ?? ""))) {
+      hidden = true;
+    }
+  });
+  return hidden;
 }
 
 export function configureTrustedHtml(ctx: Ctx): void {
