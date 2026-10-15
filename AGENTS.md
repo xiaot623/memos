@@ -123,3 +123,11 @@ cd proto && buf format -w          # Format proto files
 - Frontend CI: Node 24, pnpm 11.0.1, `pnpm lint`, `pnpm test`, `pnpm build`.
 - Proto CI: `buf lint` and `buf format` check.
 - Docker: `scripts/Dockerfile`, Alpine 3.21 runtime, non-root user, port 5230, multi-arch amd64/arm64/arm/v7.
+
+## Cursor Cloud specific instructions
+
+- Login shells put Go 1.27.0, Node.js 24.22.0, pnpm 11.0.1, golangci-lint 2.13.1, and buf 1.74.0 ahead of the base image's older Node. Use those binaries; do not install another toolchain.
+- Boot starts the API as `go run ./cmd/memos --port 8081 --data /var/tmp/memos-dev` (tmux session `memos-api`) and Vite on port 3001 (tmux session `memos-web`). The Vite proxy target is `http://localhost:8081`. Readiness is `GET /healthz` on 8081 and `GET /` on 3001. Logs are the tmux panes and `/tmp/cursor/start-user/start-user.log`.
+- SQLite data is `/var/tmp/memos-dev`. The first `POST /api/v1/users` becomes the instance admin. Sign-in is `POST /api/v1/auth/signin` with `passwordCredentials`, then `Authorization: Bearer <accessToken>`.
+- The sibling checkout `memos-channel` is Memogram. `go test ./...` there does not need Telegram. Running the bot needs `BOT_TOKEN` and `SERVER_ADDR` from `.env.example`; boot does not start it.
+- MySQL and PostgreSQL store tests need Docker via Testcontainers. This environment does not start Docker. Use `DRIVER=sqlite SKIP_CONTAINER_TESTS=1 go test ./store/...` for the SQLite driver.
